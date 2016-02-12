@@ -1,0 +1,21 @@
+#!/bin/bash
+
+echo "Setting test controller path"
+controller_path=$(pwd)
+echo "Controller path:" $controller_path
+
+echo " "
+echo "Setting protocol messages path"
+root_path=${controller_path%/tests/*}
+src_path=$root_path/src/MESSAGES/V2
+echo "Messages source path:" $src_path
+echo " "
+
+echo "Compiling python protocol messages"
+protoc -I=$src_path --python_out=$controller_path $src_path/*.proto
+
+python2 example_controller.py
+
+
+
+
