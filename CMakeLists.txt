@@ -1,6 +1,6 @@
 cmake_minimum_required (VERSION 2.8)
 
-project (rt_controller)
+project (rt_controller C CXX)
 
 macro(use_cxx11)
   if (CMAKE_VERSION VERSION_LESS "3.1")
@@ -20,12 +20,12 @@ set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/build/lib)
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/build/lib)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/build)
 
+#Find threads library
+find_package (Threads)
+
 # Create and generate protobuf messages library
 include(FindProtobuf)
-find_package(Protobuf REQUIRED 2.6.1)
-include_directories(${PROTOBUF_INCLUDE_DIRS})
-
-include_directories(${CMAKE_CURRENT_BINARY_DIR})
+find_package(Protobuf REQUIRED)
 
 set(PROTOBUF_IMPORT_DIR "src/MESSAGES/V2")
 
@@ -40,6 +40,8 @@ set (msgs
     ${PROTOBUF_IMPORT_DIR}/config_messages.proto
     ${PROTOBUF_IMPORT_DIR}/config_common.proto
 )
+
+set(GENERATED_PROTO_DIR proto_messages)
 
 set(protoc_call "tools/generate_protobuf")
 set(protobuf_generated_dir ${RT_CONTROLLER_BIN_DIR})
@@ -110,5 +112,6 @@ target_link_libraries(rt_controller
     ${PROTOBUF_LIBRARY}
     ${PRPT_MSG_LIB}
     ${Boost_LIBRARIES}
+    ${CMAKE_THREAD_LIBS_INIT}
     RT_CONTROLLER_NETWORK_LIB
 )
