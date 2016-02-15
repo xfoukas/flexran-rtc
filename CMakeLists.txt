@@ -109,9 +109,9 @@ set (RT_CONTROLLER_CORE ${RT_CONTROLLER_DIR}/core)
 add_executable(rt_controller ${RT_CONTROLLER_CORE}/rt_controller.cc)
 
 target_link_libraries(rt_controller
-    ${PROTOBUF_LIBRARY}
     ${PRPT_MSG_LIB}
     ${Boost_LIBRARIES}
     ${CMAKE_THREAD_LIBS_INIT}
     RT_CONTROLLER_NETWORK_LIB
+    ${PROTOBUF_LIBRARY}
 )
