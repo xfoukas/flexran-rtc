@@ -16,7 +16,7 @@ class async_xface {
 
   void forward_message(tagged_message *msg);
 
-  bool get_msg_from_network(tagged_message *msg);
+  bool get_msg_from_network(tagged_message **msg);
 
   bool send_msg(protocol::progran_message& msg, int agent_tag);
 

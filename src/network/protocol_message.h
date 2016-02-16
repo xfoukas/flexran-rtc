@@ -38,7 +38,7 @@ class protocol_message {
 
   void body_length(std::size_t new_length);
 
-  void set_message(char * buf, std::size_t size);
+  void set_message(const char * buf, std::size_t size);
 
   bool decode_header();
 

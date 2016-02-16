@@ -11,15 +11,16 @@ void async_xface::forward_message(tagged_message *msg) {
   in_queue_.push(msg);
 }
 
-bool async_xface::get_msg_from_network(tagged_message *msg) {
-  return in_queue_.pop(msg);
+bool async_xface::get_msg_from_network(tagged_message **msg) {
+  return in_queue_.pop(*msg);
 }
 
 bool async_xface::send_msg(protocol::progran_message& msg, int agent_tag) {
-  tagged_message * tm = new tagged_message(msg.ByteSize(), agent_tag);
+  tagged_message *tm =  new tagged_message(msg.ByteSize(), agent_tag);
   msg.SerializeToArray(tm->getMessageArray(), msg.ByteSize());
   if (out_queue_.push(tm)) {
     io_service.post(boost::bind(&async_xface::forward_msg_to_agent, this));
+    return true;
   } else {
     return false;
   }

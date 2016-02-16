@@ -9,7 +9,7 @@ void protocol_message::body_length(std::size_t new_length) {
     body_length_ = max_body_length;
 }
 
-void protocol_message::set_message(char * buf, std::size_t size) {
+void protocol_message::set_message(const char * buf, std::size_t size) {
   body_length(size);
   encode_header();
   std::memcpy(data_ + header_length, buf, body_length_);
