@@ -99,7 +99,22 @@ set(NETWORK_SRC
   
 add_library(RT_CONTROLLER_NETWORK_LIB
   ${NETWORK_SRC}
-  ${PROTOBUF_LIBRARY}
+)
+
+# RIB component
+
+set (RT_CONTROLLER_RIB_DIR ${RT_CONTROLLER_DIR}/rib)
+
+include_directories(${RT_CONTROLLER_RIB_DIR})
+
+set(RIB_SRC
+  ${RT_CONTROLLER_RIB_DIR}/rib_updater.cc
+  ${RT_CONTROLLER_RIB_DIR}/rib.cc
+  ${RT_CONTROLLER_RIB_DIR}/enb_rib_info.cc
+)
+
+add_library(RT_CONTROLLER_RIB_LIB
+  ${RIB_SRC}
 )
 
 # Core controller
@@ -109,9 +124,10 @@ set (RT_CONTROLLER_CORE ${RT_CONTROLLER_DIR}/core)
 add_executable(rt_controller ${RT_CONTROLLER_CORE}/rt_controller.cc)
 
 target_link_libraries(rt_controller
-    ${PRPT_MSG_LIB}
-    ${Boost_LIBRARIES}
-    ${CMAKE_THREAD_LIBS_INIT}
-    RT_CONTROLLER_NETWORK_LIB
-    ${PROTOBUF_LIBRARY}
+  RT_CONTROLLER_RIB_LIB
+  RT_CONTROLLER_NETWORK_LIB
+  ${PRPT_MSG_LIB}
+  ${Boost_LIBRARIES}
+  ${CMAKE_THREAD_LIBS_INIT}
+  ${PROTOBUF_LIBRARY}
 )
