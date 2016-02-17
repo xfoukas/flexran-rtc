@@ -1,10 +1,21 @@
 #include <thread>
 #include <iostream>
 
+#include <pthread.h>
+#include <sched.h>
+#include <linux/sched.h>
+
+#include "rt_wrapper.h"
+
 #include "async_xface.h"
 #include "progran.pb.h"
 #include "rib_updater.h"
 #include "rib.h"
+#include "task_manager.h"
+
+#include <errno.h>
+#include <string.h>
+#include <stdio.h>
 
 int main(int argc, char *argv[]) {
 
@@ -16,16 +27,18 @@ int main(int argc, char *argv[]) {
   // Create the rib update manager
   rib_updater r_updater(net_xface, rib);
 
-  std::thread networkThread(&async_xface::establish_xface, &net_xface);
+  // Create the task manager
+  task_manager tm(r_updater);
 
-  while(true) {
+  // Start the network thread
+  std::thread networkThread(&async_xface::execute_task, &net_xface);
 
-    std::shared_ptr<std::thread> rib_updater_thread(new std::thread(&rib_updater::update_rib, &r_updater));
-    if (rib_updater_thread->joinable()) {
-      rib_updater_thread->join();
-    }
-  }
-   
+  // Start the task manager thread
+  std::thread task_manager_thread(&task_manager::execute_task, &tm);
+  
+  if (task_manager_thread.joinable())
+    task_manager_thread.join();
+  
   if (networkThread.joinable())
     networkThread.join();
   

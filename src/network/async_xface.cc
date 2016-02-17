@@ -1,9 +1,15 @@
 #include <boost/bind.hpp>
 
 #include "async_xface.h"
+#include "rt_wrapper.h"
+
+void async_xface::run() {
+  establish_xface();
+}
 
 void async_xface::establish_xface() {
   manager_.reset(new connection_manager(io_service, endpoint_, *this));
+  
   io_service.run();
 }
 

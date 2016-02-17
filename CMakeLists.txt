@@ -12,6 +12,14 @@ endmacro(use_cxx11)
 
 use_cxx11()
 
+# Enable low-latency kernel (for kernel 3.14 and above)
+option(LOWLATENCY "Enable soft-real time scheduling (for Linux kernel 3.14 and above)")
+
+if(LOWLATENCY)
+add_definitions(-DLOWLATENCY)
+include_directories("/usr/include")
+endif()
+
 # Base directories
 set(RT_CONTROLLER_DIR src)
 set(RT_CONTROLLER_BIN_DIR build)
@@ -119,11 +127,24 @@ add_library(RT_CONTROLLER_RIB_LIB
 
 # Core controller
 
-set (RT_CONTROLLER_CORE ${RT_CONTROLLER_DIR}/core)
+set (RT_CONTROLLER_CORE_DIR ${RT_CONTROLLER_DIR}/core)
 
-add_executable(rt_controller ${RT_CONTROLLER_CORE}/rt_controller.cc)
+include_directories(${RT_CONTROLLER_CORE_DIR})
+
+set (RT_CONTROLLER_CORE_SRC
+    ${RT_CONTROLLER_CORE_DIR}/rt_wrapper.cc
+    ${RT_CONTROLLER_CORE_DIR}/task_manager.cc
+    ${RT_CONTROLLER_CORE_DIR}/rt_task.cc
+)	
+
+add_library(RT_CONTROLLER_CORE_LIB
+  ${RT_CONTROLLER_CORE_SRC}
+)	
+
+add_executable(rt_controller ${RT_CONTROLLER_CORE_DIR}/rt_controller.cc)
 
 target_link_libraries(rt_controller
+  RT_CONTROLLER_CORE_LIB
   RT_CONTROLLER_RIB_LIB
   RT_CONTROLLER_NETWORK_LIB
   ${PRPT_MSG_LIB}

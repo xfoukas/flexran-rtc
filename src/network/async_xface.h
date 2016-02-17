@@ -6,11 +6,14 @@
 
 #include "tagged_message.h"
 #include "connection_manager.h"
+#include "rt_task.h"
 
 class connection_manager;
-class async_xface {
+class async_xface : public rt_task {
  public:
- async_xface(int port):port_(port), endpoint_(boost::asio::ip::tcp::v4(), port) { }
+ async_xface(int port):port_(port), endpoint_(boost::asio::ip::tcp::v4(), port), rt_task(Policy::RR) {}
+
+  void run();
   
   void establish_xface();
 

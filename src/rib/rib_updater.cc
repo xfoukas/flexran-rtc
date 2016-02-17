@@ -1,7 +1,14 @@
+#include <iostream>
+
 #include "rib_updater.h"
 #include "tagged_message.h"
+#include "rt_wrapper.h"
 
-void rib_updater::update_rib() {
+void rib_updater::run() {
+  update_rib();
+}
+
+void rib_updater::update_rib() {  
   int rem_msgs = messages_to_check_;
   tagged_message *tm;
   protocol::progran_message in_message;

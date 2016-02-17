@@ -5,15 +5,24 @@
 #include "progran.pb.h"
 #include "rib.h"
 #include "progran.pb.h"
+#include "rt_task.h"
 
-class rib_updater {
+class rib_updater : public rt_task {
 
  public:
  rib_updater(async_xface& xface, Rib& storage)
-   : net_xface_(xface), rib_(storage),  messages_to_check_(50) {}
+   : net_xface_(xface), rib_(storage),  messages_to_check_(50), rt_task(Policy::DEADLINE,
+									2 * 100 * 1000,
+									2 * 100 * 1000,
+									1000 * 1000) {}
 
  rib_updater(async_xface& xface, Rib& storage, int n_msg_check)
-   : net_xface_(xface), rib_(storage), messages_to_check_(n_msg_check) {}
+   : net_xface_(xface), rib_(storage), messages_to_check_(n_msg_check), rt_task(Policy::DEADLINE,
+										2 * 100 * 1000,
+										2 * 100 * 1000,
+										1000* 1000) {}
+
+  void run();
   
   void update_rib();
 
@@ -32,6 +41,7 @@ class rib_updater {
   
   
  private:
+  
   async_xface& net_xface_;
   Rib& rib_;
 	      
