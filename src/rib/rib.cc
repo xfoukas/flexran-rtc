@@ -56,3 +56,24 @@ void Rib::lc_config_update(int agent_id,
     it->second->update_LC_config(lc_config_update);
   }
 }
+
+void Rib::update_liveness(int agent_id) {
+  auto it = eNB_configs_.find(agent_id);
+
+  if (it == eNB_configs_.end()) {
+    return;
+  } else {
+    it->second->update_liveness();
+  }
+}
+
+void Rib::set_subframe_updates(int agent_id,
+			       const protocol::prp_sf_trigger& sf_trigger_msg) {
+  auto it = eNB_configs_.find(agent_id);
+
+  if (it == eNB_configs_.end()) {
+    return;
+  } else {
+    it->second->update_subframe(sf_trigger_msg);
+  }
+}

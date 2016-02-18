@@ -40,11 +40,11 @@ void rib_updater::update_rib() {
       } else if(in_message.has_echo_request_msg()) {
 	handle_message(tm->getTag(), in_message.echo_request_msg());
       } else if(in_message.has_echo_reply_msg()) {
-	/* TODO: Could update some liveness value */
+	handle_message(tm->getTag(), in_message.echo_reply_msg());
       } else if(in_message.has_stats_reply_msg()) {
 	/* TODO */
       } else if(in_message.has_sf_trigger_msg()) {
-	/* TODO */
+	handle_message(tm->getTag(), in_message.sf_trigger_msg());
       } else if(in_message.has_ul_sr_info_msg()) {
 	/* TODO: Need to implement to enable UL scheduling */
       } else if(in_message.has_enb_config_reply_msg()) {
@@ -113,6 +113,24 @@ void rib_updater::handle_message(int agent_id,
   out_message.set_msg_dir(protocol::SUCCESSFUL_OUTCOME);
   out_message.set_allocated_echo_reply_msg(echo_reply_msg);
   net_xface_.send_msg(out_message, agent_id);
+}
+
+void rib_updater::handle_message(int agent_id,
+				 const protocol::prp_echo_reply& echo_reply_msg) {
+  if (rib_.has_eNB_config_entry(agent_id)) {
+    rib_.update_liveness(agent_id);
+  } else {
+    /* TODO: Should probably do some error handling */
+  }
+}
+
+void rib_updater::handle_message(int agent_id,
+				 const protocol::prp_sf_trigger& sf_trigger_msg) {
+  if (rib_.has_eNB_config_entry(agent_id)) {
+    rib_.set_subframe_updates(agent_id, sf_trigger_msg);
+  } else {
+    /* TODO: Should probably do some error handling */
+  }
 }
 
 void rib_updater::handle_message(int agent_id,

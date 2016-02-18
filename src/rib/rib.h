@@ -25,6 +25,10 @@ class Rib {
   void lc_config_update(int agent_id,
 			const protocol::prp_lc_config_reply& lc_config_update);
   
+  void update_liveness(int agent_id);
+
+  void set_subframe_updates(int agent_id,
+			    const protocol::prp_sf_trigger& sf_trigger_msg);
   
  private:
 

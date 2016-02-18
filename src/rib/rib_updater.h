@@ -33,6 +33,10 @@ class rib_updater : public rt_task {
   void handle_message(int agent_id,
 		      const protocol::prp_echo_request& echo_request_msg);
   void handle_message(int agent_id,
+		      const protocol::prp_echo_reply& echo_reply_msg);
+  void handle_message(int agent_id,
+		      const protocol::prp_sf_trigger& sf_trigger_msg);
+  void handle_message(int agent_id,
 		      const protocol::prp_enb_config_reply& enb_config_reply_msg);
   void handle_message(int agent_id,
 		      const protocol::prp_ue_config_reply& ue_config_reply_msg);
