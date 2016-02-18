@@ -42,7 +42,7 @@ void rib_updater::update_rib() {
       } else if(in_message.has_echo_reply_msg()) {
 	handle_message(tm->getTag(), in_message.echo_reply_msg());
       } else if(in_message.has_stats_reply_msg()) {
-	/* TODO */
+	handle_message(tm->getTag(), in_message.stats_reply_msg());
       } else if(in_message.has_sf_trigger_msg()) {
 	handle_message(tm->getTag(), in_message.sf_trigger_msg());
       } else if(in_message.has_ul_sr_info_msg()) {
@@ -156,6 +156,15 @@ void rib_updater::handle_message(int agent_id,
 				 const protocol::prp_lc_config_reply& lc_config_reply_msg) {
   if(rib_.has_eNB_config_entry(agent_id)) {
     rib_.lc_config_update(agent_id, lc_config_reply_msg);
+  } else {
+    /* TODO: We did not receive the eNB config message for some reason, need to request it again */
+  }
+}
+
+void rib_updater::handle_message(int agent_id,
+		    const protocol::prp_stats_reply& mac_stats_reply) {
+  if(rib_.has_eNB_config_entry(agent_id)) {
+    rib_.mac_stats_update(agent_id, mac_stats_reply);
   } else {
     /* TODO: We did not receive the eNB config message for some reason, need to request it again */
   }

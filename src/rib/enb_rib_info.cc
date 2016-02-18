@@ -61,6 +61,25 @@ void enb_rib_info::update_subframe(const protocol::prp_sf_trigger& sf_trigger) {
   update_liveness();
 }
 
+void enb_rib_info::update_mac_stats(const protocol::prp_stats_reply& mac_stats) {
+  rnti_t rnti;
+  // First make the UE updates
+  for (int i = 0; i < mac_stats.ue_report_size(); i++) {
+    rnti = mac_stats.ue_report(i).rnti();
+    auto it = ue_mac_info_.find(rnti);
+    if (it == ue_mac_info_.end()) {
+      /* TODO: For some reason we have no such entry. This shouldn't happen */
+    } else {
+      it->second->update_mac_stats_report(mac_stats.ue_report(i));
+    }
+  }
+  // Then work on the Cell updates
+  uint32_t cell_id;
+  for (int i = 0; i < mac_stats.cell_report_size(); i++) {
+    cell_mac_info_[i].update_cell_stats_report(mac_stats.cell_report(i));
+  }
+}
+
 bool enb_rib_info::need_to_query() {
   return ((clock() - last_checked) > time_to_query); 
 }

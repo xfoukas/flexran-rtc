@@ -29,6 +29,9 @@ class Rib {
 
   void set_subframe_updates(int agent_id,
 			    const protocol::prp_sf_trigger& sf_trigger_msg);
+
+  void mac_stats_update(int agent_id,
+			const protocol::prp_stats_reply& mac_stats_update);
   
  private:
 

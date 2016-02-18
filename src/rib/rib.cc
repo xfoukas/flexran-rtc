@@ -77,3 +77,14 @@ void Rib::set_subframe_updates(int agent_id,
     it->second->update_subframe(sf_trigger_msg);
   }
 }
+
+void Rib::mac_stats_update(int agent_id,
+		      const protocol::prp_stats_reply& mac_stats_update) {
+  auto it = eNB_configs_.find(agent_id);
+
+  if (it == eNB_configs_.end()) {
+    return;
+  } else {
+    it->second->update_mac_stats(mac_stats_update);
+  }
+}

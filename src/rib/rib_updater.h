@@ -42,6 +42,9 @@ class rib_updater : public rt_task {
 		      const protocol::prp_ue_config_reply& ue_config_reply_msg);
   void handle_message(int agent_id,
 		      const protocol::prp_lc_config_reply& lc_config_reply_msg);
+
+  void handle_message(int agent_id,
+		      const protocol::prp_stats_reply& mac_stats_reply);
   
   
  private:

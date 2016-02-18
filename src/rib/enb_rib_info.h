@@ -8,6 +8,7 @@
 #include "progran.pb.h"
 #include "rib_common.h"
 #include "ue_mac_rib_info.h"
+#include "cell_mac_rib_info.h"
 
 class enb_rib_info {
  public:
@@ -22,6 +23,8 @@ class enb_rib_info {
   void update_liveness();
 
   void update_subframe(const protocol::prp_sf_trigger& sf_trigger);
+
+  void update_mac_stats(const protocol::prp_stats_reply& mac_stats);
   
   bool need_to_query();
   
@@ -42,6 +45,9 @@ class enb_rib_info {
   protocol::prp_lc_config_reply lc_config_;
 
   std::map<rnti_t, std::shared_ptr<ue_mac_rib_info>> ue_mac_info_;
+
+  cell_mac_rib_info cell_mac_info_[MAX_NUM_CC];
+  
   
 };
 

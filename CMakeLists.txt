@@ -121,6 +121,7 @@ set(RIB_SRC
   ${RT_CONTROLLER_RIB_DIR}/enb_rib_info.cc
   ${RT_CONTROLLER_RIB_DIR}/rib_common.cc
   ${RT_CONTROLLER_RIB_DIR}/ue_mac_rib_info.cc
+  ${RT_CONTROLLER_RIB_DIR}/cell_mac_rib_info.cc
 )
 
 add_library(RT_CONTROLLER_RIB_LIB
