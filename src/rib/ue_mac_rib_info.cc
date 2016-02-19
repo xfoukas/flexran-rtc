@@ -1,3 +1,5 @@
+#include <iostream>
+
 #include "ue_mac_rib_info.h"
 
 void ue_mac_rib_info::update_dl_sf_info(const protocol::prp_dl_info& dl_info) {
@@ -21,7 +23,7 @@ void ue_mac_rib_info::update_ul_sf_info(const protocol::prp_ul_info& ul_info) {
 void ue_mac_rib_info::update_mac_stats_report(const protocol::prp_ue_stats_report& stats_report) {
   // Check the flags of the incoming report and copy only those elements that have been updated
   uint32_t flags = stats_report.flags();
-
+  
   if (protocol::PRUST_BSR & flags) {
     mac_stats_report_.clear_bsr();
     for (int i = 0; i < stats_report.bsr_size(); i++) {
@@ -56,4 +58,9 @@ void ue_mac_rib_info::update_mac_stats_report(const protocol::prp_ue_stats_repor
   if (protocol::PRUST_UL_CQI & flags) {
     mac_stats_report_.mutable_ul_cqi_report()->CopyFrom(stats_report.ul_cqi_report());
   }
+}
+
+void ue_mac_rib_info::dump_stats() const {
+  std::cout << "Rnti: " << rnti_ << std::endl;
+  std::cout << mac_stats_report_.DebugString() << std::endl;
 }

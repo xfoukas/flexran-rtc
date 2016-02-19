@@ -128,6 +128,21 @@ add_library(RT_CONTROLLER_RIB_LIB
   ${RIB_SRC}
 )
 
+# App component
+
+set (RT_CONTROLLER_APP_DIR ${RT_CONTROLLER_DIR}/app)
+
+include_directories(${RT_CONTROLLER_APP_DIR})
+
+set(APP_SRC
+  ${RT_CONTROLLER_APP_DIR}/stats_manager.cc
+)
+
+add_library(RT_CONTROLLER_APP_LIB
+  ${APP_SRC}
+)
+
+
 # Core controller
 
 set (RT_CONTROLLER_CORE_DIR ${RT_CONTROLLER_DIR}/core)
@@ -138,6 +153,7 @@ set (RT_CONTROLLER_CORE_SRC
     ${RT_CONTROLLER_CORE_DIR}/rt_wrapper.cc
     ${RT_CONTROLLER_CORE_DIR}/task_manager.cc
     ${RT_CONTROLLER_CORE_DIR}/rt_task.cc
+    ${RT_CONTROLLER_CORE_DIR}/requests_manager.cc
 )	
 
 add_library(RT_CONTROLLER_CORE_LIB
@@ -147,6 +163,7 @@ add_library(RT_CONTROLLER_CORE_LIB
 add_executable(rt_controller ${RT_CONTROLLER_CORE_DIR}/rt_controller.cc)
 
 target_link_libraries(rt_controller
+  RT_CONTROLLER_APP_LIB
   RT_CONTROLLER_CORE_LIB
   RT_CONTROLLER_RIB_LIB
   RT_CONTROLLER_NETWORK_LIB

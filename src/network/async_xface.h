@@ -21,7 +21,7 @@ class async_xface : public rt_task {
 
   bool get_msg_from_network(tagged_message **msg);
 
-  bool send_msg(protocol::progran_message& msg, int agent_tag);
+  bool send_msg(const protocol::progran_message& msg, int agent_tag) const;
 
   void forward_msg_to_agent();
 
@@ -29,16 +29,18 @@ class async_xface : public rt_task {
   
  private:
 
-  boost::asio::io_service io_service;
+  mutable boost::asio::io_service io_service;
 
-  boost::lockfree::queue<tagged_message *, boost::lockfree::fixed_sized<true>> in_queue_{10000};
-  boost::lockfree::queue<tagged_message *, boost::lockfree::fixed_sized<true>> out_queue_{10000};
+  mutable boost::lockfree::queue<tagged_message *, boost::lockfree::fixed_sized<true>> in_queue_{10000};
+  mutable boost::lockfree::queue<tagged_message *, boost::lockfree::fixed_sized<true>> out_queue_{10000};
 
-  boost::asio::ip::tcp::endpoint endpoint_;
+  mutable boost::asio::ip::tcp::endpoint endpoint_;
 
   std::unique_ptr<connection_manager> manager_;
   
   int port_;
+
+  mutable async_xface* self_ = this;
   
 };
 

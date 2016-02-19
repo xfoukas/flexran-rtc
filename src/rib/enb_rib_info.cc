@@ -1,3 +1,5 @@
+#include <iostream>
+
 #include "enb_rib_info.h"
 
 enb_rib_info::enb_rib_info(int agent_id)
@@ -69,6 +71,9 @@ void enb_rib_info::update_mac_stats(const protocol::prp_stats_reply& mac_stats) 
     auto it = ue_mac_info_.find(rnti);
     if (it == ue_mac_info_.end()) {
       /* TODO: For some reason we have no such entry. This shouldn't happen */
+      //      ue_mac_info_.insert(std::pair<int,
+      //std::shared_ptr<ue_mac_rib_info>>(rnti,
+      //							    std::shared_ptr<ue_mac_rib_info>(new ue_mac_rib_info(rnti))));
     } else {
       it->second->update_mac_stats_report(mac_stats.ue_report(i));
     }
@@ -86,4 +91,11 @@ bool enb_rib_info::need_to_query() {
 
 void enb_rib_info::update_liveness() {
   last_checked = clock();
+}
+
+void enb_rib_info::dump_mac_stats() const {
+  std::cout << "UE MAC stats for agent " << agent_id_ << std::endl;
+  for (auto ue_stats : ue_mac_info_) {
+    ue_stats.second->dump_stats();
+  }
 }

@@ -6,6 +6,7 @@
 
 #include "enb_rib_info.h"
 #include <memory>
+#include <set>
 
 class Rib {
  public:
@@ -32,6 +33,10 @@ class Rib {
 
   void mac_stats_update(int agent_id,
 			const protocol::prp_stats_reply& mac_stats_update);
+
+  std::set<int> get_available_agents() const;
+
+  void dump_mac_stats() const;
   
  private:
 

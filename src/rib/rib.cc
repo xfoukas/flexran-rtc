@@ -88,3 +88,17 @@ void Rib::mac_stats_update(int agent_id,
     it->second->update_mac_stats(mac_stats_update);
   }
 }
+
+std::set<int> Rib::get_available_agents() const {
+  std::set<int> agents;
+  for (auto it : eNB_configs_) {
+    agents.insert(it.first);
+  }
+  return agents;
+}
+
+void Rib::dump_mac_stats() const {
+  for (auto enb_config : eNB_configs_) {
+    enb_config.second->dump_mac_stats();
+  }
+}

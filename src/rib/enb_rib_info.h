@@ -27,6 +27,8 @@ class enb_rib_info {
   void update_mac_stats(const protocol::prp_stats_reply& mac_stats);
   
   bool need_to_query();
+
+  void dump_mac_stats() const;
   
  private:
   int agent_id_;

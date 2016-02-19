@@ -18,6 +18,8 @@ public:
   void update_ul_sf_info(const protocol::prp_ul_info& ul_info);
 
   void update_mac_stats_report(const protocol::prp_ue_stats_report& stats_report);
+
+  void dump_stats() const;
   
 private:
 
