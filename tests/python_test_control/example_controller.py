@@ -176,7 +176,9 @@ while inputs:
                 #print msg
                 #with lock:
                 #    outgoing[connection].put_nowait(msg)
-                        
+            elif (msg.HasField("sf_trigger_msg")):
+                print 'Received: '+header_pb2.prp_type.Name(msg.sf_trigger_msg.header.type)
+                print msg
     for s in writeable:
 
         with lock:
