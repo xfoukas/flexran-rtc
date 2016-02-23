@@ -1,5 +1,6 @@
 #include <cstring>
 #include <cstdlib>
+#include <iostream>
 
 #include "protocol_message.h"
 
@@ -16,10 +17,11 @@ void protocol_message::set_message(const char * buf, std::size_t size) {
 }
 
 bool protocol_message::decode_header() {
-  body_length_ = std::size_t ((data_[0] << 24) |
-			      (data_[1] << 16) |
-			      (data_[2] << 8)  |
-			      data_[3]);
+  body_length_ = (data_[0] << 24) |
+    (data_[1] << 16) |
+    (data_[2] << 8)  |
+    data_[3];
+  
   if (body_length_ > max_body_length) {
     body_length_ = 0;
     return false;

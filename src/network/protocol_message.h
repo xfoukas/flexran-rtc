@@ -7,29 +7,29 @@ class protocol_message {
 
  public:
   enum { header_length = 4 };
-  enum { max_body_length = 2048 };
+  enum { max_body_length = 240000 };
 
  protocol_message()
    : body_length_(0) {}
 
   const char* data() const {
-    return data_;
+    return (char *) data_;
   }
 
   char* data() {
-    return data_;
+    return (char *) data_;
   }
 
-  std::size_t length() const {
+  uint32_t length() const {
     return header_length + body_length_;
   }
 
   const char* body() const {
-    return data_ + header_length;
+    return (char *) data_ + header_length;
   }
 
   char* body() {
-    return data_ + header_length;
+    return (char *) data_ + header_length;
   }
   
   std::size_t body_length() const {
@@ -45,8 +45,8 @@ class protocol_message {
   void encode_header();
 
  private:
-  char data_[header_length + max_body_length];
-  std::size_t body_length_;
+  unsigned char data_[header_length + max_body_length];
+  uint32_t body_length_;
   
 };
 

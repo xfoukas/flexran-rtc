@@ -12,7 +12,7 @@ void rib_updater::update_rib() {
   int rem_msgs = messages_to_check_;
   tagged_message *tm;
   protocol::progran_message in_message;
-  while((rem_msgs > 0) && net_xface_.get_msg_from_network(&tm)) {
+  while(net_xface_.get_msg_from_network(&tm) && (rem_msgs > 0)) {
     /* TODO: update the RIB based on what you see */
     if (tm->getSize() == 0) { // New connection. update the pending eNBs list
       std::cout << "Seems that a new connection was established" << std::endl;
@@ -30,13 +30,14 @@ void rib_updater::update_rib() {
       out_message.set_allocated_hello_msg(hello_msg);
       net_xface_.send_msg(out_message, tm->getTag());
     } else { // Message from existing connection. Just update the proper rib entries
+      std::cout<<"Need to check type of message" << std::endl;
       // Deserialize the message
       in_message.ParseFromArray(tm->getMessageContents(), tm->getSize());
-      
       // Update the RIB based on the message type
       if(in_message.has_hello_msg()) {
 	std::cout << "Time to handle a hello msg" << std::endl;
 	handle_message(tm->getTag(), in_message.hello_msg(), in_message.msg_dir());
+	std::cout << "Handled it" << std::endl;
       } else if(in_message.has_echo_request_msg()) {
 	handle_message(tm->getTag(), in_message.echo_request_msg());
       } else if(in_message.has_echo_reply_msg()) {
@@ -44,19 +45,26 @@ void rib_updater::update_rib() {
       } else if(in_message.has_stats_reply_msg()) {
 	handle_message(tm->getTag(), in_message.stats_reply_msg());
       } else if(in_message.has_sf_trigger_msg()) {
+	//std::cout<<"Got a sf trigger msg" << std::endl;
 	handle_message(tm->getTag(), in_message.sf_trigger_msg());
       } else if(in_message.has_ul_sr_info_msg()) {
 	/* TODO: Need to implement to enable UL scheduling */
       } else if(in_message.has_enb_config_reply_msg()) {
+	std::cout<<"Got an eNB config reply msg" << std::endl;
 	handle_message(tm->getTag(), in_message.enb_config_reply_msg());
       } else if(in_message.has_ue_config_reply_msg()) {
+	std::cout<<"Got a UE config reply msg" << std::endl;
 	handle_message(tm->getTag(), in_message.ue_config_reply_msg());
       } else if(in_message.has_lc_config_reply_msg()) {
+	std::cout<<"Got an LC config reply msg" << std::endl;
         handle_message(tm->getTag(), in_message.lc_config_reply_msg());
+      } else if(in_message.has_ue_state_change_msg()) {
+	std::cout << "Seems like a UE was added" << std::endl;
       }
-    }  
+    }
     rem_msgs--;
     delete tm;
+    std::cout<<"Time to make a check" <<std::endl;
   }
 }
 
@@ -67,34 +75,40 @@ void rib_updater::handle_message(int agent_id,
   if (dir == protocol::SUCCESSFUL_OUTCOME) {
     // Agent is alive. Request info about its configuration
     // eNB config first
-    protocol::prp_header *header(new protocol::prp_header);
-    header->set_type(protocol::PRPT_GET_ENB_CONFIG_REQUEST);
-    header->set_version(0);
-    header->set_xid(0);
+    protocol::prp_header *header1(new protocol::prp_header);
+    header1->set_type(protocol::PRPT_GET_ENB_CONFIG_REQUEST);
+    header1->set_version(0);
+    header1->set_xid(0);
 
     protocol::prp_enb_config_request *enb_config_request_msg(new protocol::prp_enb_config_request);
-    enb_config_request_msg->set_allocated_header(header);
+    enb_config_request_msg->set_allocated_header(header1);
 
-    protocol::progran_message out_message;
-    out_message.set_msg_dir(protocol::INITIATING_MESSAGE);
-    out_message.set_allocated_enb_config_request_msg(enb_config_request_msg);
-    net_xface_.send_msg(out_message, agent_id);
-
+    protocol::progran_message out_message1;
+    out_message1.set_msg_dir(protocol::INITIATING_MESSAGE);
+    out_message1.set_allocated_enb_config_request_msg(enb_config_request_msg);
+    net_xface_.send_msg(out_message1, agent_id);
+  
     // UE config second
-    header->set_type(protocol::PRPT_GET_UE_CONFIG_REQUEST);
-    header->set_xid(1);
+    protocol::progran_message out_message2;
+    out_message2.set_msg_dir(protocol::INITIATING_MESSAGE);
+    protocol::prp_header *header2(new protocol::prp_header);
+    header2->set_type(protocol::PRPT_GET_UE_CONFIG_REQUEST);
+    header2->set_xid(1);
     protocol::prp_ue_config_request *ue_config_request_msg(new protocol::prp_ue_config_request);
-    ue_config_request_msg->set_allocated_header(header);
-    out_message.set_allocated_ue_config_request_msg(ue_config_request_msg);
-    net_xface_.send_msg(out_message, agent_id);
+    ue_config_request_msg->set_allocated_header(header2);
+    out_message2.set_allocated_ue_config_request_msg(ue_config_request_msg);
+    net_xface_.send_msg(out_message2, agent_id);
 
     // LC config third
-    header->set_type(protocol::PRPT_GET_LC_CONFIG_REQUEST);
-    header->set_xid(2);
+    protocol::progran_message out_message3;
+    out_message3.set_msg_dir(protocol::INITIATING_MESSAGE);
+    protocol::prp_header *header3(new protocol::prp_header);
+    header3->set_type(protocol::PRPT_GET_LC_CONFIG_REQUEST);
+    header3->set_xid(2);
     protocol::prp_lc_config_request *lc_config_request_msg(new protocol::prp_lc_config_request);
-    lc_config_request_msg->set_allocated_header(header);
-    out_message.set_allocated_lc_config_request_msg(lc_config_request_msg);
-    net_xface_.send_msg(out_message, agent_id);
+    lc_config_request_msg->set_allocated_header(header3);
+    out_message3.set_allocated_lc_config_request_msg(lc_config_request_msg);
+    net_xface_.send_msg(out_message3, agent_id);
   } // Hello should originate from controller - Ignore in all other cases
 }
 
