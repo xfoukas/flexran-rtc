@@ -47,6 +47,7 @@ set (msgs
     ${PROTOBUF_IMPORT_DIR}/time_common.proto
     ${PROTOBUF_IMPORT_DIR}/config_messages.proto
     ${PROTOBUF_IMPORT_DIR}/config_common.proto
+    ${PROTOBUF_IMPORT_DIR}/control_delegation.proto
 )
 
 set(GENERATED_PROTO_DIR proto_messages)
@@ -67,7 +68,8 @@ set(PRPT_RT_CONTROLLER_generated
     ${PRPT_CC_DIR}/controller_commands.pb.cc
     ${PRPT_CC_DIR}/mac_primitives.pb.cc
     ${PRPT_CC_DIR}/config_messages.pb.cc
-    ${PRPT_CC_DIR}/config_common.pb.cc    
+    ${PRPT_CC_DIR}/config_common.pb.cc
+    ${PRPT_CC_DIR}/control_delegation.pb.cc    
     )
   
 file(GLOB prpt_h ${PRPT_CC_DIR}/*.h)

@@ -6,6 +6,7 @@ import threading
 import progran_pb2
 import header_pb2
 import stats_messages_pb2
+import control_delegation_pb2
 import struct
 
 def recvall(sock, size):
@@ -36,7 +37,7 @@ def get_message(sock, msgtype):
     """
     len_buf = recvall(sock, 4)
     msg_len = struct.unpack('>L', len_buf)[0]
-    print 'Message is', msg_len,'long'
+#    print 'Message is', msg_len,'long'
     msg_buf = recvall(sock, msg_len)
 
     msg = msgtype()
@@ -85,6 +86,7 @@ lock = threading.Lock()
 #Set to size of header message
 header_size = 8
 
+rounds = 0
 while inputs:
     readable, writeable, exceptional = select.select(inputs, outputs, inputs)
 
@@ -110,9 +112,9 @@ while inputs:
                 outgoing[connection].put_nowait(msg)
         #If s is an agent
         else:
-            print 'Something is coming'
+            #print 'Something is coming'
             msg = get_message(s, progran_pb2.progran_message)
-            print 'Received message'
+            #print 'Received message'
             if (msg.HasField("hello_msg")):
                 print 'Received: '+header_pb2.prp_type.Name(msg.hello_msg.header.type)
                 # Create an echo request message
@@ -161,6 +163,25 @@ while inputs:
                     list = get_frame_subframe(msg.stats_reply_msg.cell_report[0].noise_inter_report.sfn_sf)
                 print list
                 print msg
+                rounds = rounds + 1
+                if rounds == 100:
+                    msg = progran_pb2.progran_message()
+                    msg.msg_dir = progran_pb2.INITIATING_MESSAGE
+                    header = msg.control_delegation_msg.header
+                    header.version = 0
+                    header.xid = 100
+                    payload = msg.control_delegation_msg
+                    payload.delegation_type = control_delegation_pb2.PRCDT_MAC_DL_UE_SCHEDULER
+                    payload.name.append("schedule_ue_spec_alt");
+                    with open("/home/openair2/oai/openairinterface5g/cmake_targets/oaisim_noS1_build_oai/build/libalt_sched.so", "rb") as sharedLib:
+                        f = sharedLib.read()
+                        b = bytearray(f)
+                    bytesfield = ''.join(chr(item) for item in b)
+                    payload.payload = bytesfield
+                    print 'Seding: '+header_pb2.prp_type.Name(msg.control_delegation_msg.header.type)
+                    print msg
+                    with lock:
+                        outgoing[connection].put_nowait(msg)
                 # Create a stats request message to turn the periodical info off
                 #msg = progran_pb2.progran_message()
                 #msg.msg_dir = progran_pb2.INITIATING_MESSAGE
@@ -176,9 +197,9 @@ while inputs:
                 #print msg
                 #with lock:
                 #    outgoing[connection].put_nowait(msg)
-            elif (msg.HasField("sf_trigger_msg")):
-                print 'Received: '+header_pb2.prp_type.Name(msg.sf_trigger_msg.header.type)
-                print msg
+            #elif (msg.HasField("sf_trigger_msg")):
+            #    print 'Received: '+header_pb2.prp_type.Name(msg.sf_trigger_msg.header.type)
+            #    print msg
     for s in writeable:
 
         with lock:
