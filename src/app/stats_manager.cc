@@ -10,7 +10,7 @@ void stats_manager::run_periodic_task() {
     auto it = agent_list_.find(agent_id);
     if (it == agent_list_.end()) {
       agent_list_.insert(agent_id);
-      // Make a new stats request for that particular agents
+      // Make a new stats request for the newly added agents
       protocol::prp_header *header(new protocol::prp_header);
       header->set_type(protocol::PRPT_STATS_REQUEST);
       header->set_version(0);
@@ -43,8 +43,15 @@ void stats_manager::run_periodic_task() {
   
   times_executed_++;
 
-  if (times_executed_ == 1000) {
+  if (times_executed_ == 100000) {
     // Dump all the stats
+    std::cout << "***************" << std::endl;
+    std::cout << "Configurations" << std::endl;
+    std::cout << "***************" << std::endl;
+    rib_.dump_enb_configurations();
+    std::cout << "***************" << std::endl;
+    std::cout << "MAC stats" << std::endl;
+    std::cout << "***************" << std::endl;
     rib_.dump_mac_stats();
     times_executed_ = 0;
   }

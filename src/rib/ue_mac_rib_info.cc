@@ -63,4 +63,19 @@ void ue_mac_rib_info::update_mac_stats_report(const protocol::prp_ue_stats_repor
 void ue_mac_rib_info::dump_stats() const {
   std::cout << "Rnti: " << rnti_ << std::endl;
   std::cout << mac_stats_report_.DebugString() << std::endl;
+  std::cout << "Harq status" << std::endl;
+  for (int i = 0; i < 8; i++) {
+    std::cout << "  |  " << i;
+  }
+  std::cout << "   |   " << std::endl;
+  std::cout << " ";
+  for (int i = 0; i < 8; i++) {
+    if (harq_stats_[0][i][0] == 0) {
+      std::cout << " | " << "ACK";
+    } else {
+      std::cout << " | " << "NACK";
+    }
+  }
+  std::cout << "  |" << std::endl;
+
 }

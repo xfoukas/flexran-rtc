@@ -113,3 +113,9 @@ void Rib::dump_mac_stats() const {
     enb_config.second->dump_mac_stats();
   }
 }
+
+void Rib::dump_enb_configurations() const {
+  for (auto eNB_config : eNB_configs_) {
+    eNB_config.second->dump_configs();
+  }
+}

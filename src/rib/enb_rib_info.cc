@@ -132,3 +132,9 @@ void enb_rib_info::dump_mac_stats() const {
     ue_stats.second->dump_stats();
   }
 }
+
+void enb_rib_info::dump_configs() const {
+  std::cout << eNB_config_.DebugString() << std::endl;
+  std::cout << ue_config_.DebugString() << std::endl;
+  std::cout << lc_config_.DebugString() << std::endl;
+}

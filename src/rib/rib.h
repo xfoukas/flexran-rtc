@@ -39,6 +39,8 @@ class Rib {
   std::set<int> get_available_agents() const;
 
   void dump_mac_stats() const;
+
+  void dump_enb_configurations() const;
   
  private:
 

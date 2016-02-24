@@ -31,6 +31,8 @@ class enb_rib_info {
   bool need_to_query();
 
   void dump_mac_stats() const;
+
+  void dump_configs() const;
   
  private:
   int agent_id_;
