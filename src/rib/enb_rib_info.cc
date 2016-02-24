@@ -8,12 +8,12 @@ enb_rib_info::enb_rib_info(int agent_id)
 }
 
 void enb_rib_info::update_eNB_config(const protocol::prp_enb_config_reply& enb_config_update) {
-  eNB_config_.MergeFrom(enb_config_update);
+  eNB_config_.CopyFrom(enb_config_update);
   update_liveness();
 }
 
 void enb_rib_info::update_UE_config(const protocol::prp_ue_config_reply& ue_config_update) {
-  ue_config_.MergeFrom(ue_config_update);
+  ue_config_.CopyFrom(ue_config_update);
   rnti_t rnti;
   // Check if UE exists and if not create a ue_mac_rib_info entry
   for (int i = 0; i < ue_config_update.ue_config_size(); i++) {
@@ -28,8 +28,41 @@ void enb_rib_info::update_UE_config(const protocol::prp_ue_config_reply& ue_conf
   update_liveness();
 }
 
+void enb_rib_info::update_UE_config(const protocol::prp_ue_state_change& ue_state_change) {
+  rnti_t rnti;  
+  if (ue_state_change.type() == protocol::PRUESC_ACTIVATED) {
+    protocol::prp_ue_config *c = ue_config_.add_ue_config();
+    c->CopyFrom(ue_state_change.config());
+    rnti = ue_state_change.config().rnti();
+    ue_mac_info_.insert(std::pair<int,
+			std::shared_ptr<ue_mac_rib_info>>(rnti,
+							  std::shared_ptr<ue_mac_rib_info>(new ue_mac_rib_info(rnti))));
+    return;
+  }
+  for (int i = 0; i < ue_config_.ue_config_size(); i++) {
+    rnti = ue_config_.ue_config(i).rnti();
+    if (rnti == ue_state_change.config().rnti()) {
+      // Check if this was updated or removed
+      if (ue_state_change.type() == protocol::PRUESC_DEACTIVATED) {
+	ue_config_.mutable_ue_config()->DeleteSubrange(i, i+1);
+	// Erase mac info
+	ue_mac_info_.erase(rnti);
+	// Erase lc info as well
+	for (int j = 0; j < lc_config_.lc_ue_config_size(); j++) {
+	  if (rnti == lc_config_.lc_ue_config(j).rnti()) {
+	    lc_config_.mutable_lc_ue_config()->DeleteSubrange(j, j+i);
+	  }
+	}
+	return;
+      } else if (ue_state_change.type() == protocol::PRUESC_UPDATED) {
+	ue_config_.mutable_ue_config(i)->CopyFrom(ue_state_change.config());
+      }
+    }
+  }
+}
+
 void enb_rib_info::update_LC_config(const protocol::prp_lc_config_reply& lc_config_update) {
-  lc_config_.MergeFrom(lc_config_update);
+  lc_config_.CopyFrom(lc_config_update);
   update_liveness();
 }
 

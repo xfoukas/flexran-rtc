@@ -18,6 +18,8 @@ class enb_rib_info {
 
   void update_UE_config(const protocol::prp_ue_config_reply& ue_config_update);
 
+  void update_UE_config(const protocol::prp_ue_state_change& ue_state_change);
+
   void update_LC_config(const protocol::prp_lc_config_reply& lc_config_update);
 
   void update_liveness();

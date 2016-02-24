@@ -30,7 +30,6 @@ void rib_updater::update_rib() {
       out_message.set_allocated_hello_msg(hello_msg);
       net_xface_.send_msg(out_message, tm->getTag());
     } else { // Message from existing connection. Just update the proper rib entries
-      std::cout<<"Need to check type of message" << std::endl;
       // Deserialize the message
       in_message.ParseFromArray(tm->getMessageContents(), tm->getSize());
       // Update the RIB based on the message type
@@ -59,12 +58,12 @@ void rib_updater::update_rib() {
 	std::cout<<"Got an LC config reply msg" << std::endl;
         handle_message(tm->getTag(), in_message.lc_config_reply_msg());
       } else if(in_message.has_ue_state_change_msg()) {
-	std::cout << "Seems like a UE was added" << std::endl;
+	std::cout << "Seems like a UE state changed" << std::endl;
+	handle_message(tm->getTag(), in_message.ue_state_change_msg());
       }
     }
     rem_msgs--;
     delete tm;
-    std::cout<<"Time to make a check" <<std::endl;
   }
 }
 
@@ -179,6 +178,25 @@ void rib_updater::handle_message(int agent_id,
 		    const protocol::prp_stats_reply& mac_stats_reply) {
   if(rib_.has_eNB_config_entry(agent_id)) {
     rib_.mac_stats_update(agent_id, mac_stats_reply);
+  } else {
+    /* TODO: We did not receive the eNB config message for some reason, need to request it again */
+  }
+}
+
+void rib_updater::handle_message(int agent_id,
+				 const protocol::prp_ue_state_change& ue_state_change_msg) {
+  if(rib_.has_eNB_config_entry(agent_id)) {
+    /* TODO add the handler for the update of the state */
+    rib_.ue_config_update(agent_id, ue_state_change_msg);
+    protocol::progran_message out_message;
+    out_message.set_msg_dir(protocol::INITIATING_MESSAGE);
+    protocol::prp_header *header(new protocol::prp_header);
+    header->set_type(protocol::PRPT_GET_LC_CONFIG_REQUEST);
+    header->set_xid(2);
+    protocol::prp_lc_config_request *lc_config_request_msg(new protocol::prp_lc_config_request);
+    lc_config_request_msg->set_allocated_header(header);
+    out_message.set_allocated_lc_config_request_msg(lc_config_request_msg);
+    net_xface_.send_msg(out_message, agent_id);
   } else {
     /* TODO: We did not receive the eNB config message for some reason, need to request it again */
   }

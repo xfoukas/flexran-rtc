@@ -46,6 +46,17 @@ void Rib::ue_config_update(int agent_id,
   }
 }
 
+void Rib::ue_config_update(int agent_id,
+			   const protocol::prp_ue_state_change& ue_state_change) {
+  auto it = eNB_configs_.find(agent_id);
+
+  if (it == eNB_configs_.end()) {
+    return;
+  } else {
+    it->second->update_UE_config(ue_state_change);
+  }
+}
+
 void Rib::lc_config_update(int agent_id,
 			   const protocol::prp_lc_config_reply& lc_config_update) {
   auto it = eNB_configs_.find(agent_id);

@@ -23,6 +23,8 @@ class Rib {
 			 const protocol::prp_enb_config_reply& enb_config_update);
   void ue_config_update(int agent_id,
 			const protocol::prp_ue_config_reply& ue_config_update);
+  void ue_config_update(int agent_id,
+			     const protocol::prp_ue_state_change& ue_state_change);
   void lc_config_update(int agent_id,
 			const protocol::prp_lc_config_reply& lc_config_update);
   
