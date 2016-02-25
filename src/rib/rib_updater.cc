@@ -10,9 +10,9 @@ void rib_updater::run() {
 
 void rib_updater::update_rib() {  
   int rem_msgs = messages_to_check_;
-  tagged_message *tm;
   protocol::progran_message in_message;
-  while(net_xface_.get_msg_from_network(&tm) && (rem_msgs > 0)) {
+  std::shared_ptr<tagged_message> tm;
+  while(net_xface_.get_msg_from_network(tm) && (rem_msgs > 0)) {
     /* TODO: update the RIB based on what you see */
     if (tm->getSize() == 0) { // New connection. update the pending eNBs list
       std::cout << "Seems that a new connection was established" << std::endl;
@@ -63,7 +63,6 @@ void rib_updater::update_rib() {
       }
     }
     rem_msgs--;
-    delete tm;
   }
 }
 

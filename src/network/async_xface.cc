@@ -17,8 +17,10 @@ void async_xface::forward_message(tagged_message *msg) {
   in_queue_.push(msg);
 }
 
-bool async_xface::get_msg_from_network(tagged_message **msg) {
-  return in_queue_.pop(*msg);
+bool async_xface::get_msg_from_network(std::shared_ptr<tagged_message>& msg) {
+  return in_queue_.consume_one([&] (tagged_message *tm) {
+      std::shared_ptr<tagged_message> p(std::move(tm));
+      msg = p;});
 }
 
 bool async_xface::send_msg(const protocol::progran_message& msg, int agent_tag) const {

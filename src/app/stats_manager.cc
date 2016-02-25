@@ -18,8 +18,8 @@ void stats_manager::run_periodic_task() {
       header->set_xid(0);
 
       protocol::prp_complete_stats_request *complete_stats_request(new protocol::prp_complete_stats_request);
-      complete_stats_request->set_report_frequency(protocol::PRSRF_PERIODICAL);
-      complete_stats_request->set_sf(100);
+      complete_stats_request->set_report_frequency(protocol::PRSRF_CONTINUOUS);
+      complete_stats_request->set_sf(2);
       int ue_flags = 0;
       ue_flags |= protocol::PRUST_PRH;                                                                            
       ue_flags |= protocol::PRUST_DL_CQI;

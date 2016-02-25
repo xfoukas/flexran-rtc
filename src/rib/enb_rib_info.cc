@@ -84,7 +84,7 @@ void enb_rib_info::update_subframe(const protocol::prp_sf_trigger& sf_trigger) {
   }
 
   // Update ul_sf_info
-  for (int i = 0; i < sf_trigger.ul_info_size(); i++) {
+  for (int i = 0; i < sf_trigger.ul_info_size(); i++){ 
     rnti = sf_trigger.ul_info(i).rnti();
     auto it = ue_mac_info_.find(rnti);
     if (it == ue_mac_info_.end()) {

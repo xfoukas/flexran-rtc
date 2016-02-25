@@ -22,6 +22,12 @@ class tagged_message {
     size_ = m.getSize();
     std::memcpy(p_msg_, m.getMessageContents(), size_);
   }
+
+  tagged_message(tagged_message&& other) {
+    tag_ = other.getTag();
+    size_ = other.getSize();
+    std::memcpy(p_msg_, other.getMessageContents(), size_);
+  }
   
   int getTag() const { return tag_; }
 
@@ -31,6 +37,12 @@ class tagged_message {
   
   const char* getMessageContents() const { return p_msg_; }
 
+  tagged_message& operator=(tagged_message&& other) {
+    tag_ = other.getTag();
+    size_ = other.getSize();
+    std::memcpy(p_msg_, other.getMessageContents(), size_);
+  }
+  
 private:
   
   int tag_;
