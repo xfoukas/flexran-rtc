@@ -1,3 +1,5 @@
+#include <iostream>
+
 #include "stats_manager.h"
 #include "progran.pb.h"
 
