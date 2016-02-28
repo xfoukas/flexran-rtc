@@ -2,8 +2,12 @@
 #include <iostream>
 
 rt_task::rt_task(Policy pol, sched_time runtime, sched_time deadline, sched_time period) {
+#ifdef LOWLATENCY
   set_scheduling_policy(pol, runtime, deadline, period);
+#endif
 }
+
+#ifdef LOWLATENCY
 
 void rt_task::set_scheduling_policy(Policy pol, sched_time runtime, sched_time deadline, sched_time period) {
 
@@ -30,6 +34,8 @@ void rt_task::set_scheduling_policy(Policy pol, sched_time runtime, sched_time d
   attr_.sched_deadline = deadline;
   attr_.sched_period   = period;
 }
+
+#endif
 
 void rt_task::execute_task() {
 #ifdef LOWLATENCY
