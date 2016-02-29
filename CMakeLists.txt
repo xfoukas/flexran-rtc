@@ -138,6 +138,7 @@ include_directories(${RT_CONTROLLER_APP_DIR})
 
 set(APP_SRC
   ${RT_CONTROLLER_APP_DIR}/stats_manager.cc
+  ${RT_CONTROLLER_APP_DIR}/remote_scheduler.cc
 )
 
 add_library(RT_CONTROLLER_APP_LIB
