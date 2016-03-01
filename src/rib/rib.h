@@ -38,6 +38,8 @@ class Rib {
 
   std::set<int> get_available_agents() const;
 
+  std::shared_ptr<const enb_rib_info> get_agent(int agent_id) const;
+
   void dump_mac_stats() const;
 
   void dump_enb_configurations() const;

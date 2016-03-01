@@ -118,6 +118,14 @@ void enb_rib_info::update_mac_stats(const protocol::prp_stats_reply& mac_stats) 
   }
 }
 
+std::shared_ptr<const ue_mac_rib_info> enb_rib_info::get_ue_mac_info(rnti_t rnti) const {
+  auto it = ue_mac_info_.find(rnti);
+  if (it != ue_mac_info_.end()) {
+    return it->second;
+  }
+  return std::shared_ptr<ue_mac_rib_info>(nullptr);
+}
+
 bool enb_rib_info::need_to_query() {
   return ((clock() - last_checked) > time_to_query); 
 }

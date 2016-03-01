@@ -108,6 +108,14 @@ std::set<int> Rib::get_available_agents() const {
   return agents;
 }
 
+std::shared_ptr<const enb_rib_info> Rib::get_agent(int agent_id) const {
+  auto it = eNB_configs_.find(agent_id);
+  if (it != eNB_configs_.end()) {
+    return it->second;
+  }
+  return std::shared_ptr<enb_rib_info>(nullptr);
+}
+
 void Rib::dump_mac_stats() const {
   for (auto enb_config : eNB_configs_) {
     enb_config.second->dump_mac_stats();

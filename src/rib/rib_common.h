@@ -15,6 +15,8 @@ static int const MAX_NUM_CC = 2;
 static int const MAX_NUM_LC = 11;
 static int const MAX_NUM_UE = 1024;
 
+static int const N_RBG_MAX = 25; // for 20MHz channel BW
+
 #define TBStable_rowCnt 27
 
 static const int cqi_to_mcs[16]= {0, 0, 1, 2, 4, 6, 8, 11, 13, 16, 18, 20, 23, 25, 27, 28};

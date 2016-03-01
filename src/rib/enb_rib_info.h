@@ -33,6 +33,18 @@ class enb_rib_info {
   void dump_mac_stats() const;
 
   void dump_configs() const;
+
+  frame_t get_current_frame() const { return current_frame_; }
+
+  subframe_t get_current_subframe() const { return current_subframe_; }
+
+  const protocol::prp_enb_config_reply& get_enb_config() const { return eNB_config_;}
+
+  const protocol::prp_ue_config_reply& get_ue_configs() const {return ue_config_;}
+
+  const protocol::prp_lc_config_reply& get_lc_configs() const {return lc_config_;}
+
+  std::shared_ptr<const ue_mac_rib_info> get_ue_mac_info(rnti_t rnti) const;
   
  private:
   int agent_id_;

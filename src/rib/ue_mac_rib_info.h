@@ -11,7 +11,8 @@ class ue_mac_rib_info {
 public:
 
  ue_mac_rib_info(rnti_t rnti)
-   : rnti_(rnti), harq_stats_{{{0}}}, uplink_reception_stats_{0}, ul_reception_data_{{0}} {}
+   : rnti_(rnti), harq_stats_{{{0}}},
+    uplink_reception_stats_{0}, ul_reception_data_{{0}} {}
 
   void update_dl_sf_info(const protocol::prp_dl_info& dl_info);
 
@@ -20,6 +21,12 @@ public:
   void update_mac_stats_report(const protocol::prp_ue_stats_report& stats_report);
 
   void dump_stats() const;
+
+  const protocol::prp_ue_stats_report& get_mac_stats_report() const { return mac_stats_report_; }
+
+  uint8_t get_harq_stats(uint16_t cell_id, int harq_pid) const {
+    return harq_stats_[cell_id][harq_pid][0];
+  }
   
 private:
 
