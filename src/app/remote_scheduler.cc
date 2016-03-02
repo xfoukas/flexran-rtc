@@ -78,8 +78,8 @@ void remote_scheduler::run_periodic_task() {
       const protocol::prp_cell_config cell_config = enb_config.cell_config(i);
       int cell_id = cell_config.cell_id();
 
-      for (int j = 0; i < ue_configs.ue_config_size(); j++) {
-	const protocol::prp_ue_config ue_config = ue_configs.ue_config(i);
+      for (int UE_id = 0; UE_id < ue_configs.ue_config_size(); UE_id++) {
+	const protocol::prp_ue_config ue_config = ue_configs.ue_config(UE_id);
 	if (ue_config.pcell_carrier_index() == cell_id) {
 	  // Get the scheduling info
 	  std::shared_ptr<ue_scheduling_info> ue_sched_info = enb_sched_info->get_ue_scheduling_info(ue_config.rnti());
