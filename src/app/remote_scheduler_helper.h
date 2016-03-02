@@ -22,7 +22,6 @@ void perform_pre_processor_allocation(const protocol::prp_cell_config& cell_conf
 				      const protocol::prp_ue_config& ue_config,
 				      std::shared_ptr<enb_scheduling_info> sched_info,
 				      std::shared_ptr<ue_scheduling_info> ue_sched_info,
-				      int transmission_mode,
-				      unsigned char rballoc_sub[N_RBG_MAX]);
+				      int transmission_mode);
 
 #endif

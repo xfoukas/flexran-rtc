@@ -35,7 +35,6 @@ void remote_scheduler::run_periodic_task() {
       if (!needs_scheduling(enb_sched_info, current_frame, current_subframe)) {
 	continue;
       }
-      enb_sched_info->start_new_scheduling_round();
       target_subframe = (current_subframe + schedule_ahead) % 10;
       if (target_subframe < current_subframe) {
 	target_frame = (target_frame + 1) % 1024;
@@ -60,10 +59,13 @@ void remote_scheduler::run_periodic_task() {
       // Assume an FDD scheduler
       switch(target_subframe) {
       case 0:
-      case 5:
 	total_nb_available_rb[i] -= 4;
 	break;
+      case 5:
+	total_nb_available_rb[i] -= 8;
+	break;
       }
+      enb_sched_info->start_new_scheduling_round(target_subframe, cell_config);
       // Get the number of resource block groups used for this cell configuration
       N_RBG[i] = get_nb_rbg(cell_config);
 

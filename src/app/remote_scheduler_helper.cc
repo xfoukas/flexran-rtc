@@ -10,7 +10,6 @@ void run_dlsch_scheduler_preprocessor(const protocol::prp_cell_config& cell_conf
   uint16_t nb_rbs_required[MAX_NUM_UE];
   int total_ue_count;
   uint16_t average_rbs_per_user = 0;
-  unsigned char rballoc_sub[N_RBG_MAX] = {0};
   int transmission_mode;
 
   min_rb_unit = get_min_rb_unit(cell_config);
@@ -18,7 +17,7 @@ void run_dlsch_scheduler_preprocessor(const protocol::prp_cell_config& cell_conf
   // Find the active UEs for this cell
   for (int i = 0; i < ue_configs.ue_config_size(); i++) {
     const protocol::prp_ue_config ue_config = ue_configs.ue_config(i);
-    int cell_id = cell_config.carrier_index();
+    int cell_id = cell_config.cell_id();
     // If this UE is assigned to this cell
     if (ue_config.pcell_carrier_index() == cell_id) {
       // Get the MAC stats for this UE
@@ -43,7 +42,7 @@ void run_dlsch_scheduler_preprocessor(const protocol::prp_cell_config& cell_conf
 
   for (int i = 0; i < ue_configs.ue_config_size(); i++) {
     const protocol::prp_ue_config ue_config = ue_configs.ue_config(i);
-    int cell_id = cell_config.carrier_index();
+    int cell_id = cell_config.cell_id();
     // If this UE is assigned to this cell
     if (ue_config.pcell_carrier_index() == cell_id) {
       // Get the MAC stats for this UE
@@ -89,7 +88,7 @@ void run_dlsch_scheduler_preprocessor(const protocol::prp_cell_config& cell_conf
     // Go through each of the UEs that need to be scheduled
     for (int i = 0; i < ue_configs.ue_config_size(); i++) {
       const protocol::prp_ue_config ue_config = ue_configs.ue_config(i);
-      int cell_id = cell_config.carrier_index();
+      int cell_id = cell_config.cell_id();
       // If this UE is assigned to this cell
       if (ue_config.pcell_carrier_index() == cell_id) {
 	// Get the MAC stats for this UE
@@ -113,7 +112,7 @@ void run_dlsch_scheduler_preprocessor(const protocol::prp_cell_config& cell_conf
       // Go through all the UEs and allocate the resources in sched info
       for (int i = 0; i < ue_configs.ue_config_size(); i++) {
 	const protocol::prp_ue_config ue_config = ue_configs.ue_config(i);
-	int cell_id = cell_config.carrier_index();
+	int cell_id = cell_config.cell_id();
 	// If this UE is assigned to this cell
 	if (ue_config.pcell_carrier_index() == cell_id) {
 	  // Get the MAC stats for this UE
@@ -127,8 +126,7 @@ void run_dlsch_scheduler_preprocessor(const protocol::prp_cell_config& cell_conf
 					   ue_config,
 					   sched_info,
 					   ue_sched_info,
-					   transmission_mode,
-					   rballoc_sub);
+					   transmission_mode);
 	}
       }
     }
@@ -139,12 +137,12 @@ void perform_pre_processor_allocation(const protocol::prp_cell_config& cell_conf
 				      const protocol::prp_ue_config& ue_config,
 				      std::shared_ptr<enb_scheduling_info> sched_info,
 				      std::shared_ptr<ue_scheduling_info> ue_sched_info,
-				      int transmission_mode,
-				      unsigned char rballoc_sub[N_RBG_MAX]) {
+				      int transmission_mode) {
 
   int n_rbg = get_nb_rbg(cell_config);
   int min_rb_unit = get_min_rb_unit(cell_config);
   uint16_t cell_id = cell_config.cell_id();
+  uint8_t* rballoc_sub = sched_info->get_vrb_map(cell_id);
   for (int i = 0; i < n_rbg; i++) {
     if ((rballoc_sub[i] == 0) &&
 	(ue_sched_info->get_rballoc_sub(cell_id, i) == 0) &&

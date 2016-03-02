@@ -5,6 +5,8 @@
 #include <memory>
 
 #include "ue_scheduling_info.h"
+#include "rib_common.h"
+#include "progran.pb.h"
 
 
 class enb_scheduling_info {
@@ -27,7 +29,11 @@ class enb_scheduling_info {
     pre_nb_rbs_available_[cell_id] = nb_rbs;
   }
 
-  void start_new_scheduling_round();
+  uint8_t* get_vrb_map(uint16_t cell_id) {
+    return vrb_map_[cell_id];
+  }
+
+  void start_new_scheduling_round(subframe_t subframe, const protocol::prp_cell_config& cell_config);
   
   std::shared_ptr<ue_scheduling_info> get_ue_scheduling_info(rnti_t rnti);
   
@@ -39,6 +45,7 @@ class enb_scheduling_info {
   std::map<rnti_t, std::shared_ptr<ue_scheduling_info>> scheduling_info_;
 
   uint16_t pre_nb_rbs_available_[MAX_NUM_CC] = {0};
+  uint8_t vrb_map_[MAX_NUM_CC][N_RBG_MAX] = {{0}};
   
 };
 
