@@ -90,3 +90,168 @@ unsigned char get_I_TBS(unsigned char I_MCS) {
   else return(I_MCS-2);
 
 }
+
+bool CCE_allocation_infeasible(std::shared_ptr<enb_scheduling_info>& enb_sched_info,
+			       const protocol::prp_cell_config& cell_config,
+			       const protocol::prp_ue_config& ue_config,
+			       uint8_t aggregation,
+			       subframe_t subframe) {
+  int allocation_is_feasible = 1;
+  int nCCE_max;
+  uint16_t cell_id = cell_config.cell_id();
+  int common_dci = 0;
+  // if ((subframe == 0) || (subframe == 5)) {
+  //   common_dci = 1;
+  // }
+  
+  nCCE_max = get_nCCE_max(enb_sched_info->get_num_pdcch_symbols(cell_id),
+			  cell_config,
+			  subframe);
+  
+  while (allocation_is_feasible == 1) {
+    if ((1<<aggregation) > nCCE_max) {
+      if (enb_sched_info->get_num_pdcch_symbols(cell_id) == 3) {
+	allocation_is_feasible = 0;
+      } else {
+	enb_sched_info->increase_num_pdcch_symbols(cell_id);
+	nCCE_max = get_nCCE_max(enb_sched_info->get_num_pdcch_symbols(cell_id),
+				cell_config,
+				subframe);
+      }
+      continue;
+    } else {
+      // Since assignment is feasible, get the index
+      
+      if (get_nCCE_offset(1<<aggregation,
+			  nCCE_max,
+			  common_dci,
+			  ue_config.rnti(),
+			  subframe) >= 0) {
+	return false;
+      } else {
+	if (enb_sched_info->get_num_pdcch_symbols(cell_id) == 3) {
+	  allocation_is_feasible = 0;
+	} else {
+	  enb_sched_info->increase_num_pdcch_symbols(cell_id);
+	  nCCE_max = get_nCCE_max(enb_sched_info->get_num_pdcch_symbols(cell_id),
+				  cell_config,
+				  subframe);
+	}
+	continue;
+      }
+    }
+  }
+  if (allocation_is_feasible == 1) {
+    return false;
+  }
+  return true;
+}
+
+int get_nCCE_offset(const uint8_t aggregation,
+		    const int nCCE,
+		    const int common_dci,
+		    const rnti_t rnti,
+		    const subframe_t subframe) {
+  int search_space_free, nb_candidates = 0;
+  unsigned int Yk;
+
+  /* TODO */
+  // This should test a CCE allocation in correlation with the the other UEs and
+  // common channels dcis
+  
+  if (common_dci == 1) {
+    // TODO: For common search space
+  } else { // For a UE DCI
+    Yk = (unsigned int)rnti;
+
+    for (int i = 0; i <= subframe; i++) {
+      Yk = (Yk*39827)%65537;
+    }
+
+    Yk = Yk % (nCCE/aggregation);
+
+    switch (aggregation) {
+    case 1:
+    case 2:
+      nb_candidates = 6;
+      break;
+    case 4:
+    case 8:
+      nb_candidates = 2;
+      break;
+    default:
+      break;
+    }
+
+    for (int m = 0; m < nb_candidates; m++) {
+      search_space_free = 1;
+
+      for (int l = 0; l < aggregation; l++) {
+
+      }
+      if (search_space_free == 1) {
+	return (((Yk+m) % (nCCE/aggregation))*aggregation);
+      }
+    }
+
+    return -1;
+  }
+  return -1;
+}
+
+
+uint16_t get_nCCE_max(uint8_t num_pdcch_symbols,
+		 const protocol::prp_cell_config& cell_config,
+		 subframe_t subframe) {
+  uint8_t mi = get_mi(cell_config, subframe);
+  return (get_nquad(num_pdcch_symbols, cell_config, mi)/9);
+}
+
+uint16_t get_nquad(uint8_t num_pdcch_symbols,
+	      const protocol::prp_cell_config& cell_config,
+	      uint8_t mi) {
+
+  uint16_t n_reg = 0;
+  uint8_t n_group_PHICH = (cell_config.phich_resource()*cell_config.dl_bandwidth())/48;
+
+  if (((cell_config.phich_resource()*cell_config.dl_bandwidth())%48) > 0) {
+    n_group_PHICH++;
+  }
+
+  if (cell_config.dl_cyclic_prefix_length() == protocol::PRDCPL_EXTENDED) {
+    n_group_PHICH<<=1;
+  }
+
+  n_group_PHICH *= mi;
+
+  if ((num_pdcch_symbols > 0) && (num_pdcch_symbols<4)) {
+    switch(cell_config.dl_bandwidth()) {
+    case 6:
+      n_reg = 12 + (num_pdcch_symbols - 1) * 18;
+      break;
+    case 25:
+      n_reg = 50 + (num_pdcch_symbols - 1) * 75;
+      break;
+    case 50:
+      n_reg = 100 + (num_pdcch_symbols - 1) * 150;
+      break;
+    case 100:
+      n_reg = 200 + (num_pdcch_symbols - 1) * 300;
+      break;
+    default:
+      return 0;
+    }
+  }
+
+  return (n_reg - 4 - (3 * n_group_PHICH));
+}
+
+uint8_t get_mi(const protocol::prp_cell_config& cell_config, subframe_t subframe) {
+
+  if (cell_config.duplex_mode() == protocol::PRDM_FDD) {
+    return 1;
+  }
+
+  /* TODO implement for TDD */
+}
+

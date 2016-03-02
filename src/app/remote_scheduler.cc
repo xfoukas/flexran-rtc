@@ -73,17 +73,29 @@ void remote_scheduler::run_periodic_task() {
       run_dlsch_scheduler_preprocessor(cell_config, ue_configs, agent_config, enb_sched_info);
     }
 
-    /*TODO*/
-    
-    // Go through the UEs of this eNB and create a scheduling decision
-    for (int i = 0; i < ue_configs.ue_config_size(); i++) {
-      const protocol::prp_ue_config& config = ue_configs.ue_config(i);
-      rnti_t rnti = config.rnti();
+    // Go through the cells and schedule the UEs of this cell
+    for (int i = 0; i < enb_config.cell_config_size(); i++) {
+      const protocol::prp_cell_config cell_config = enb_config.cell_config(i);
+      int cell_id = cell_config.cell_id();
 
-      // Get the MAC stats for the UE under study
-      std::shared_ptr<const ue_mac_rib_info> ue_mac_info = agent_config->get_ue_mac_info(rnti);
+      for (int j = 0; i < ue_configs.ue_config_size(); j++) {
+	const protocol::prp_ue_config ue_config = ue_configs.ue_config(i);
+	if (ue_config.pcell_carrier_index() == cell_id) {
+	  // Get the scheduling info
+	  std::shared_ptr<ue_scheduling_info> ue_sched_info = enb_sched_info->get_ue_scheduling_info(ue_config.rnti());
+	  // Schedule this UE
+	  // Check if the preprocessor allocated rbs for this and if
+	  // CCE allocation is feasible
+	  if ((ue_sched_info->get_pre_nb_rbs_available(cell_id) == 0) ||
+	      CCE_allocation_infeasible(enb_sched_info, cell_config, ue_config, aggregation, target_subframe)) {
+	    continue;
+	  }
 
-      
+	  // After this point all UEs will be scheduled
+	  /*TODO*/
+	  	  
+	}
+      }
       
     }
     // Done with scheduling of eNB UEs. Set the last scheduled frame and subframe

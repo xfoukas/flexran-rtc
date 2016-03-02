@@ -27,6 +27,10 @@ class enb_scheduling_info {
     return vrb_map_[cell_id];
   }
 
+  uint8_t get_num_pdcch_symbols(uint16_t cell_id) const { return num_pdcch_symbols_[cell_id]; }
+
+  void increase_num_pdcch_symbols(uint16_t cell_id) { num_pdcch_symbols_[cell_id]++;}
+
   void start_new_scheduling_round(subframe_t subframe, const protocol::prp_cell_config& cell_config);
   
   std::shared_ptr<ue_scheduling_info> get_ue_scheduling_info(rnti_t rnti);
@@ -39,7 +43,7 @@ class enb_scheduling_info {
   std::map<rnti_t, std::shared_ptr<ue_scheduling_info>> scheduling_info_;
 
   uint8_t vrb_map_[MAX_NUM_CC][N_RBG_MAX] = {{0}};
-  
+  uint8_t num_pdcch_symbols_[MAX_NUM_CC] = {0};
 };
 
 #endif
