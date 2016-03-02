@@ -23,12 +23,6 @@ class enb_scheduling_info {
 
   void create_ue_scheduling_info(rnti_t rnti);
 
-  uint16_t get_pre_nb_rbs_available(uint16_t cell_id) const { return pre_nb_rbs_available_[cell_id]; }
-
-  void set_pre_nb_rbs_available(uint16_t cell_id, uint16_t nb_rbs) {
-    pre_nb_rbs_available_[cell_id] = nb_rbs;
-  }
-
   uint8_t* get_vrb_map(uint16_t cell_id) {
     return vrb_map_[cell_id];
   }
@@ -44,7 +38,6 @@ class enb_scheduling_info {
 
   std::map<rnti_t, std::shared_ptr<ue_scheduling_info>> scheduling_info_;
 
-  uint16_t pre_nb_rbs_available_[MAX_NUM_CC] = {0};
   uint8_t vrb_map_[MAX_NUM_CC][N_RBG_MAX] = {{0}};
   
 };

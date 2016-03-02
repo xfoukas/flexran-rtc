@@ -20,7 +20,6 @@ void enb_scheduling_info::start_new_scheduling_round(subframe_t subframe, const 
 
   int cell_id = cell_config.cell_id();
   
-  std::fill(pre_nb_rbs_available_, pre_nb_rbs_available_ + MAX_NUM_CC, 0);
   std::fill(vrb_map_[cell_id], vrb_map_[cell_id] + N_RBG_MAX, 0);
 
   int n_rb_dl = cell_config.dl_bandwidth();

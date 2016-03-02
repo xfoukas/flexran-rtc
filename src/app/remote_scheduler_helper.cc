@@ -147,7 +147,7 @@ void perform_pre_processor_allocation(const protocol::prp_cell_config& cell_conf
     if ((rballoc_sub[i] == 0) &&
 	(ue_sched_info->get_rballoc_sub(cell_id, i) == 0) &&
 	(ue_sched_info->get_nb_rbs_required_remaining(cell_id) > 0) &&
-	(sched_info->get_pre_nb_rbs_available(cell_id) <  ue_sched_info->get_nb_rbs_required(cell_id))) {
+	(ue_sched_info->get_pre_nb_rbs_available(cell_id) <  ue_sched_info->get_nb_rbs_required(cell_id))) {
 	  
       //TODO: No TM5 for now
       if ((i == n_rbg - 1) && ((cell_config.dl_bandwidth() == 25) || (cell_config.dl_bandwidth() == 50))) {
@@ -155,16 +155,16 @@ void perform_pre_processor_allocation(const protocol::prp_cell_config& cell_conf
 	ue_sched_info->set_rballoc_sub(cell_id, i, 1);
 	int nb_rem = ue_sched_info->get_nb_rbs_required_remaining(cell_id) - min_rb_unit + 1;
 	ue_sched_info->set_nb_rbs_required_remaining(cell_id, nb_rem);
-	nb_rem = sched_info->get_pre_nb_rbs_available(cell_id) + min_rb_unit - 1;
-	sched_info->set_pre_nb_rbs_available(cell_id, nb_rem);
+	nb_rem = ue_sched_info->get_pre_nb_rbs_available(cell_id) + min_rb_unit - 1;
+	ue_sched_info->set_pre_nb_rbs_available(cell_id, nb_rem);
       } else {
 	if (ue_sched_info->get_nb_rbs_required_remaining(cell_id) >= min_rb_unit) {
 	  rballoc_sub[i] = 1;
 	  ue_sched_info->set_rballoc_sub(cell_id, i, 1);
 	  int nb_rem = ue_sched_info->get_nb_rbs_required_remaining(cell_id) - min_rb_unit;
 	  ue_sched_info->set_nb_rbs_required_remaining(cell_id, nb_rem);
-	  nb_rem = sched_info->get_pre_nb_rbs_available(cell_id) + min_rb_unit;
-	  sched_info->set_pre_nb_rbs_available(cell_id, nb_rem);
+	  nb_rem = ue_sched_info->get_pre_nb_rbs_available(cell_id) + min_rb_unit;
+	  ue_sched_info->set_pre_nb_rbs_available(cell_id, nb_rem);
 	}
       }
 	  

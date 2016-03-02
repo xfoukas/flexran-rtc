@@ -55,6 +55,12 @@ class ue_scheduling_info {
   uint16_t get_nb_scheduled_rbs(uint16_t cell_id) {
     return nb_scheduled_rbs_[cell_id];
   }
+
+  uint16_t get_pre_nb_rbs_available(uint16_t cell_id) const { return pre_nb_rbs_available_[cell_id]; }
+
+  void set_pre_nb_rbs_available(uint16_t cell_id, uint16_t nb_rbs) {
+    pre_nb_rbs_available_[cell_id] = nb_rbs;
+  }
   
  private:
 
@@ -68,7 +74,8 @@ class ue_scheduling_info {
   uint8_t harq_round_[MAX_NUM_CC][MAX_NUM_HARQ][MAX_NUM_TB];
   uint8_t rballoc_sub_[MAX_NUM_CC][N_RBG_MAX];
   uint16_t nb_rbs_required_remaining_[MAX_NUM_CC];
-
+  uint16_t pre_nb_rbs_available_[MAX_NUM_CC] = {0};
+  
   int current_harq_pid_;
   
 };
