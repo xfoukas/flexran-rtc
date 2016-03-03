@@ -41,4 +41,6 @@ int get_nCCE_offset(const uint8_t aggregation,
 		    const rnti_t rnti,
 		    const subframe_t subframe);
 
+uint32_t allocate_prbs_sub(int nb_rb, uint8_t *rballoc, const protocol::prp_cell_config& cell_config);
+
 #endif

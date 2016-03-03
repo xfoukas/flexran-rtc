@@ -255,3 +255,44 @@ uint8_t get_mi(const protocol::prp_cell_config& cell_config, subframe_t subframe
   /* TODO implement for TDD */
 }
 
+uint32_t allocate_prbs_sub(int nb_rb, uint8_t *rballoc, const protocol::prp_cell_config& cell_config) {
+  int check=0;//check1=0,check2=0;
+  uint32_t rballoc_dci=0;
+  //uint8_t number_of_subbands=13;
+
+  while((nb_rb >0) && (check < get_nb_rbg(cell_config))) {
+    if(rballoc[check] == 1) {
+      rballoc_dci |= (1<<((get_nb_rbg(cell_config)-1)-check));
+
+      switch (cell_config.dl_bandwidth()) {
+      case 6:
+        nb_rb--;
+        break;
+
+      case 25:
+        if ((get_nb_rbg(cell_config) - 1)) {
+          nb_rb--;
+        } else {
+          nb_rb-=2;
+        }
+
+        break;
+
+      case 50:
+        if ((get_nb_rbg(cell_config) - 1)) {
+          nb_rb-=2;
+        } else {
+          nb_rb-=3;
+        }
+
+        break;
+
+      case 100:
+        nb_rb-=4;
+        break;
+      }
+    }
+    check = check+1;
+  }
+  return (rballoc_dci);
+}

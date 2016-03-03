@@ -65,9 +65,9 @@ void run_dlsch_scheduler_preprocessor(const protocol::prp_cell_config& cell_conf
       ue_sched_info->set_harq_round(cell_id, harq_pid, round);
 
       if (round > 0) {
-	ue_sched_info->set_nb_rbs_required(cell_id, ue_sched_info->get_nb_scheduled_rbs(cell_id));
+	ue_sched_info->set_nb_rbs_required(cell_id, ue_sched_info->get_nb_scheduled_rbs(cell_id, harq_pid));
       } else {
-	ue_sched_info->set_nb_scheduled_rbs(cell_id, 0);
+	ue_sched_info->set_nb_scheduled_rbs(cell_id, harq_pid, 0);
       }
 
       if (ue_sched_info->get_nb_rbs_required(cell_id) > 0) {

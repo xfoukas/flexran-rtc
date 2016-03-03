@@ -45,6 +45,10 @@ class enb_rib_info {
   const protocol::prp_lc_config_reply& get_lc_configs() const {return lc_config_;}
 
   std::shared_ptr<const ue_mac_rib_info> get_ue_mac_info(rnti_t rnti) const;
+
+  const cell_mac_rib_info& get_cell_mac_rib_info(uint16_t cell_id) const {
+    return cell_mac_info_[cell_id];
+  }
   
  private:
   int agent_id_;

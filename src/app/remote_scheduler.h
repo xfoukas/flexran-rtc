@@ -26,7 +26,10 @@ class remote_scheduler : public periodic_component {
 
 
   const int schedule_ahead = 4;
-    
+
+  const int target_dl_mcs_ = 28;
+
+  int32_t tpc_accumulated_ = 0;
 };
 
 #endif

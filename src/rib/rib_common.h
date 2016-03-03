@@ -54,6 +54,8 @@ frame_t get_frame(uint32_t sfn_sf);
 
 subframe_t get_subframe(uint32_t sfn_sf);
 
+uint16_t get_sfn_sf(frame_t frame, subframe_t subframe);
+
 std::pair<frame_t, subframe_t> get_frame_subframe(uint32_t sfn_sf);
 
 #endif

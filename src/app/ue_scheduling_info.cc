@@ -8,6 +8,7 @@ void ue_scheduling_info::start_new_scheduling_round() {
   std::fill( &rballoc_sub_[0][0], &rballoc_sub_[0][0] + sizeof(rballoc_sub_) /* / sizeof(flags[0][0]) */, 0 );
   std::fill(nb_rbs_required_remaining_, nb_rbs_required_remaining_ + MAX_NUM_CC, 0);
   std::fill(pre_nb_rbs_available_, pre_nb_rbs_available_ + MAX_NUM_CC, 0);
+  std::fill(&rballoc_sub_scheduled_[0][0][0], &rballoc_sub_scheduled_[0][0][0] + sizeof(rballoc_sub_scheduled_), 0);  
 }
 
 int ue_scheduling_info::get_harq_round(uint16_t cell_id, int harq_pid) const {
