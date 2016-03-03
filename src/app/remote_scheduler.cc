@@ -356,10 +356,10 @@ void remote_scheduler::run_periodic_task() {
 	      int16_t normalized_rx_power;
 	      bool has_normalized_rx_power = false;
 	      
-	      for (int k = 0; k < mac_report.ul_cqi_report().cqi_meas_size(); k++) {
-		if (mac_report.ul_cqi_report().cqi_meas(k).serv_cell_index() == cell_id) {
-		  if (mac_report.ul_cqi_report().cqi_meas(k).has_p0_pucch_dbm()) {
-		    normalized_rx_power = mac_report.ul_cqi_report().cqi_meas(k).p0_pucch_dbm();
+	      for (int k = 0; k < mac_report.ul_cqi_report().pucch_dbm_size(); k++) {
+		if (mac_report.ul_cqi_report().pucch_dbm(k).serv_cell_index() == cell_id) {
+		  if (mac_report.ul_cqi_report().pucch_dbm(k).has_p0_pucch_dbm()) {
+		    normalized_rx_power = mac_report.ul_cqi_report().pucch_dbm(k).p0_pucch_dbm();
 		    has_normalized_rx_power = true;
 		    break;
 		  }
