@@ -23,7 +23,7 @@ void remote_scheduler::run_periodic_task() {
   uint8_t harq_pid, round, ta_len = 0;
 
   uint32_t dci_tbs;
-  int mcs, ndi, tpc, mcs_tmp;
+  int mcs, ndi, tpc = 1, mcs_tmp;
   uint32_t ce_flags = 0;
   uint32_t data_to_request;
 
@@ -213,6 +213,7 @@ void remote_scheduler::run_periodic_task() {
 
 	    if (ue_sched_info->get_ta_timer() == 0) {
 	      // Check if we need to update
+	      ue_sched_info->set_ta_timer(20);
 	      if (mac_report.pending_mac_ces() & protocol::PRPCET_TA) {
 		ta_len = 2;
 	      } else {
