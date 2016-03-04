@@ -61,7 +61,7 @@ void remote_scheduler::run_periodic_task() {
       }
       target_subframe = (current_subframe + schedule_ahead) % 10;
       if (target_subframe < current_subframe) {
-	target_frame = (target_frame + 1) % 1024;
+	target_frame = (current_frame + 1) % 1024;
       }
     } else { // eNB sched info was not found for this agent
       std::cout << "Config was not found. Creating" << std::endl;
@@ -116,13 +116,20 @@ void remote_scheduler::run_periodic_task() {
 	  
 	  // Get the scheduling info
 	  std::shared_ptr<ue_scheduling_info> ue_sched_info = enb_sched_info->get_ue_scheduling_info(ue_config.rnti());
+	  // if (ue_sched_info) {
+	  //   ue_sched_info->start_new_scheduling_round();
+	  // } else { // we need to create the scheduling info
+	  //   enb_sched_info->create_ue_scheduling_info(ue_config.rnti());
+	  //   ue_sched_info = enb_sched_info->get_ue_scheduling_info(ue_config.rnti());
+	  // }
+	  
 	  // Check if we have stats for this UE
 	  if (!ue_mac_info) {
 	    continue;
 	  }
 	  
 	  const protocol::prp_ue_stats_report& mac_report = ue_mac_info->get_mac_stats_report();
-	  
+
 	  // Schedule this UE
 	  // Check if the preprocessor allocated rbs for this and if
 	  // CCE allocation is feasible
@@ -131,16 +138,12 @@ void remote_scheduler::run_periodic_task() {
 	    continue;
 	  }
 
-	  // After this point all UEs will be scheduled
-	  // Create a dl_data message
-	  protocol::prp_dl_data *dl_data = dl_mac_config_msg->add_dl_ue_data();
-	  dl_data->set_rnti(ue_config.rnti());
-	  dl_data->set_serv_cell_index(cell_id);
+	  
 
 	  nb_available_rb = ue_sched_info->get_pre_nb_rbs_available(cell_id);
 	  harq_pid = ue_sched_info->get_active_harq_pid();
 	  round = ue_sched_info->get_harq_round(cell_id, harq_pid);
-
+	  
 	  sdu_length_total = 0;
 
 	  for (int j = 0; j < mac_report.dl_cqi_report().csi_report_size(); j++) {
@@ -152,12 +155,9 @@ void remote_scheduler::run_periodic_task() {
 
 	  mcs = std::min(mcs, target_dl_mcs_);
 
-	  protocol::prp_dl_dci *dl_dci(new protocol::prp_dl_dci);
-	  dl_data->set_allocated_dl_dci(dl_dci);
-
-	  dl_dci->set_rnti(ue_config.rnti());
-	  dl_dci->set_harq_process(harq_pid);
-
+	  // Create a dl_data message
+	  protocol::prp_dl_data *dl_data = dl_mac_config_msg->add_dl_ue_data();
+	  
 	  if (round > 0) {
 	    // Use the MCS that was previously assigned to this HARQ process
 	    mcs = ue_sched_info->get_mcs(cell_id, harq_pid);
@@ -207,10 +207,10 @@ void remote_scheduler::run_periodic_task() {
 	      // Do not schedule. The retransmission takes more resources than what we have
 	      ue_has_transmission = false;
 	    }
-	  } else { /* This is potentially a new SDU opportunity */
+	  } else { /* This is potentially a new SDU opportunity */	    
 	    TBS = get_TBS_DL(mcs, nb_available_rb);
 	    dci_tbs = TBS;
-
+	    
 	    if (ue_sched_info->get_ta_timer() == 0) {
 	      // Check if we need to update
 	      ue_sched_info->set_ta_timer(20);
@@ -228,27 +228,23 @@ void remote_scheduler::run_periodic_task() {
 	      ce_flags |= protocol::PRPCET_TA;
 	    }
 
-	    // Add the control element flags to the progran message
-	    dl_data->add_ce_bitmap(ce_flags);
-	    dl_data->add_ce_bitmap(ce_flags);
-
 	    header_len_dcch = 2; // 2 bytes DCCH SDU subheader
-
+	    
 	    // Loop through the UE logical channels
 	    for (int j = 1; j < mac_report.rlc_report_size() + 1; j++) {
 	      header_len += 3;
-	      const protocol::prp_rlc_bsr& rlc_report = mac_report.rlc_report(j);
+	      const protocol::prp_rlc_bsr& rlc_report = mac_report.rlc_report(j-1);
 
 	      if (dci_tbs - ta_len - header_len > 0) {
 		if (rlc_report.tx_queue_size() > 0) {
 		  data_to_request = std::min(dci_tbs - ta_len - header_len, rlc_report.tx_queue_size());
-
 		  if (data_to_request < 128) { // The header will be one byte less
 		    header_len--;
 		  }
 		  if (j == 1) {
 		    data_to_request++; // It is not correct but fixes some RLC bug for DCCH
 		  }
+		  
 		  protocol::prp_rlc_pdu *rlc_pdu = dl_data->add_rlc_pdu();
 		  protocol::prp_rlc_pdu_tb *tb1 = rlc_pdu->add_rlc_pdu_tb();
 		  protocol::prp_rlc_pdu_tb *tb2 = rlc_pdu->add_rlc_pdu_tb();
@@ -258,6 +254,7 @@ void remote_scheduler::run_periodic_task() {
 		  tb2->set_size(data_to_request);
 		  //Set this to the max value that we might request
 		  sdu_length_total = data_to_request;
+		  std::cout << "Need to request " << data_to_request << " from channel " << j << std::endl;
 		} else {
 		  header_len -= 3;
 		} //End tx_queue_size == 0
@@ -346,10 +343,6 @@ void remote_scheduler::run_periodic_task() {
 	      // Update the mcs used for this harq process
 	      ue_sched_info->set_mcs(cell_id, harq_pid, mcs);
 
-	      // TODO: Currently set to static value. Need to create a function to obtain this
-	      aggregation = 2;
-	      dl_dci->set_aggr_level(aggregation);
-
 	      ue_sched_info->set_nb_scheduled_rbs(cell_id, harq_pid, nb_rb);
 
 	      // do PUCCH power control
@@ -405,6 +398,24 @@ void remote_scheduler::run_periodic_task() {
 	  
 	  // If we had a new transmission or retransmission
 	  if (ue_has_transmission) {
+	    // After this point all UEs will be scheduled
+	    dl_data->set_rnti(ue_config.rnti());
+	    dl_data->set_serv_cell_index(cell_id);
+
+	    // Add the control element flags to the progran message
+	    dl_data->add_ce_bitmap(ce_flags);
+	    dl_data->add_ce_bitmap(ce_flags);
+
+	    protocol::prp_dl_dci *dl_dci(new protocol::prp_dl_dci);
+	    dl_data->set_allocated_dl_dci(dl_dci);
+	    
+	    dl_dci->set_rnti(ue_config.rnti());
+	    dl_dci->set_harq_process(harq_pid);
+
+	    // TODO: Currently set to static value. Need to create a function to obtain this
+	    aggregation = 2;
+	    dl_dci->set_aggr_level(aggregation);
+	    
 	    switch(ue_config.transmission_mode()) {
 	    case 1:
 	    case 2:
@@ -422,6 +433,8 @@ void remote_scheduler::run_periodic_task() {
 						      ue_sched_info->get_rballoc_sub_scheduled(cell_id,harq_pid),
 						      cell_config));
 	    }
+	  } else {
+	    dl_mac_config_msg->mutable_dl_ue_data()->RemoveLast();
 	  }
 	}
       }

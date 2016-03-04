@@ -68,7 +68,7 @@ void enb_rib_info::update_LC_config(const protocol::prp_lc_config_reply& lc_conf
 
 void enb_rib_info::update_subframe(const protocol::prp_sf_trigger& sf_trigger) {
   rnti_t rnti;
-  uint32_t sfn_sf = sf_trigger.sfn_sf();
+  uint16_t sfn_sf = sf_trigger.sfn_sf();
   current_frame_ = get_frame(sfn_sf);
   current_subframe_ = get_subframe(sfn_sf);
 

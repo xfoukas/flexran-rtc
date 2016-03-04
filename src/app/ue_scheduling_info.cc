@@ -4,6 +4,7 @@
 
 void ue_scheduling_info::start_new_scheduling_round() {
   current_harq_pid_++;
+  current_harq_pid_ = current_harq_pid_ % 8;
   // std::copy(pre_nb_rbs_required_, pre_nb_rbs_required_ + MAX_NUM_CC, nb_rbs_required_);
   std::fill( &rballoc_sub_[0][0], &rballoc_sub_[0][0] + sizeof(rballoc_sub_) /* / sizeof(flags[0][0]) */, 0 );
   std::fill(nb_rbs_required_remaining_, nb_rbs_required_remaining_ + MAX_NUM_CC, 0);

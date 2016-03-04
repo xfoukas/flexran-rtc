@@ -23,7 +23,7 @@ class ue_scheduling_info {
 
   void start_new_scheduling_round();
 
-  int get_active_harq_pid() const { return current_harq_pid_; }
+  uint8_t get_active_harq_pid() const { return current_harq_pid_; }
 
   int get_harq_round(uint16_t cell_id, int harq_pid) const;
 
@@ -135,7 +135,7 @@ class ue_scheduling_info {
   frame_t pucch_tpc_tx_frame_;
   subframe_t pucch_tpc_tx_subframe_;
   
-  int current_harq_pid_;
+  uint8_t current_harq_pid_;
   
 };
 
