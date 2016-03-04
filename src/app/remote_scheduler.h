@@ -16,6 +16,8 @@ class remote_scheduler : public periodic_component {
 
   void run_periodic_task();
 
+  static int32_t tpc_accumulated;
+  
  private:
 
   std::shared_ptr<enb_scheduling_info> get_scheduling_info(int agent_id);
@@ -29,7 +31,6 @@ class remote_scheduler : public periodic_component {
 
   const int target_dl_mcs_ = 28;
 
-  int32_t tpc_accumulated_ = 0;
 };
 
 #endif

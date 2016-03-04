@@ -7,6 +7,7 @@
 
 #include <iostream>
 
+int32_t remote_scheduler::tpc_accumulated = 0;
 
 void remote_scheduler::run_periodic_task() {
 
@@ -341,6 +342,8 @@ void remote_scheduler::run_periodic_task() {
 
 	      dci_tbs = TBS;
 	      mcs = mcs_tmp;
+	      // Update the mcs used for this harq process
+	      ue_sched_info->set_mcs(cell_id, harq_pid, mcs);
 
 	      // TODO: Currently set to static value. Need to create a function to obtain this
 	      aggregation = 2;
@@ -378,10 +381,10 @@ void remote_scheduler::run_periodic_task() {
 		  ue_sched_info->set_pucch_tpc_tx_subframe(target_subframe);
 		  if (normalized_rx_power > (target_rx_power+1)) {
 		    tpc = 0; //-1
-		    tpc_accumulated_--;
+		    tpc_accumulated--;
 		  } else if (normalized_rx_power < (target_rx_power - 1)) {
 		    tpc = 2; //+1
-		    tpc_accumulated_++;
+		    tpc_accumulated++;
 		  } else {
 		    tpc = 1; //0
 		  }
