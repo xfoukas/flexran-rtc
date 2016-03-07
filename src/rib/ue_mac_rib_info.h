@@ -11,7 +11,7 @@ class ue_mac_rib_info {
 public:
 
  ue_mac_rib_info(rnti_t rnti)
-   : rnti_(rnti), harq_stats_{{{0}}},
+   : rnti_(rnti), harq_stats_{{{protocol::PRHS_ACK}}},
     uplink_reception_stats_{0}, ul_reception_data_{{0}} {}
 
   void update_dl_sf_info(const protocol::prp_dl_info& dl_info);

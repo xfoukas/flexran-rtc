@@ -70,7 +70,7 @@ void ue_mac_rib_info::dump_stats() const {
   std::cout << "   |   " << std::endl;
   std::cout << " ";
   for (int i = 0; i < 8; i++) {
-    if (harq_stats_[0][i][0] == 0) {
+    if (harq_stats_[0][i][0] == protocol::PRHS_ACK) {
       std::cout << " | " << "ACK";
     } else {
       std::cout << " | " << "NACK";
