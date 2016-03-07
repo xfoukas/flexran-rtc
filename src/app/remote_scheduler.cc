@@ -55,20 +55,24 @@ void remote_scheduler::run_periodic_task() {
     // Check if scheduling context for this eNB is already present and if not create it
     std::shared_ptr<enb_scheduling_info> enb_sched_info = get_scheduling_info(agent_id);
     if (enb_sched_info) {
-     // Check if we have already run the scheduler for this particular time slot and if yes go to next eNB
-      if (!needs_scheduling(enb_sched_info, current_frame, current_subframe)) {
-	continue;
-      }
-      target_subframe = (current_subframe + schedule_ahead) % 10;
-      if (target_subframe < current_subframe) {
-	target_frame = (current_frame + 1) % 1024;
-      }
+      // Leave empty
     } else { // eNB sched info was not found for this agent
       std::cout << "Config was not found. Creating" << std::endl;
       scheduling_info_.insert(std::pair<int,
 			      std::shared_ptr<enb_scheduling_info>>(agent_id,
 								    std::shared_ptr<enb_scheduling_info>(new enb_scheduling_info)));
       enb_sched_info = get_scheduling_info(agent_id);
+    }
+
+    // Check if we have already run the scheduler for this particular time slot and if yes go to next eNB
+    if (!needs_scheduling(enb_sched_info, current_frame, current_subframe)) {
+      continue;
+    }
+    target_subframe = (current_subframe + schedule_ahead) % 10;
+    if (target_subframe < current_subframe) {
+      target_frame = (current_frame + 1) % 1024;
+    } else {
+      target_frame = current_frame;
     }
 
     // Create dl_mac_config message
@@ -446,7 +450,11 @@ void remote_scheduler::run_periodic_task() {
     // Create and send the progran message
     out_message.set_msg_dir(protocol::INITIATING_MESSAGE);
     out_message.set_allocated_dl_mac_config_msg(dl_mac_config_msg);
-    req_manager_.send_message(agent_id, out_message);
+    if (dl_mac_config_msg->dl_ue_data_size() > 0) {
+      std::cout << "Target frame and subframe are: " << target_frame << ", " << target_subframe << std::endl;
+      req_manager_.send_message(agent_id, out_message);
+
+    }
   }
 }
 
