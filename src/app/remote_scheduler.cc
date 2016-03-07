@@ -15,9 +15,7 @@ void remote_scheduler::run_periodic_task() {
   subframe_t target_subframe;
   
   unsigned char aggregation;
-  uint16_t min_rb_unit[MAX_NUM_CC];
   uint16_t total_nb_available_rb[MAX_NUM_CC];
-  int N_RBG[MAX_NUM_CC];
 
   uint16_t nb_available_rb, nb_rb, nb_rb_tmp, TBS, sdu_length_total = 0;
   uint8_t harq_pid, round, ta_len = 0;
@@ -55,7 +53,7 @@ void remote_scheduler::run_periodic_task() {
     // Check if scheduling context for this eNB is already present and if not create it
     std::shared_ptr<enb_scheduling_info> enb_sched_info = get_scheduling_info(agent_id);
     if (enb_sched_info) {
-      // Leave empty
+      // Nothing to do if this exists
     } else { // eNB sched info was not found for this agent
       std::cout << "Config was not found. Creating" << std::endl;
       scheduling_info_.insert(std::pair<int,
@@ -74,33 +72,30 @@ void remote_scheduler::run_periodic_task() {
     } else {
       target_frame = current_frame;
     }
-
+    
     // Create dl_mac_config message
     protocol::prp_dl_mac_config *dl_mac_config_msg(new protocol::prp_dl_mac_config);
     dl_mac_config_msg->set_allocated_header(header);
     dl_mac_config_msg->set_sfn_sf(get_sfn_sf(target_frame, target_subframe));
     
-    aggregation = 1;
+    aggregation = 2;
     
     // Go through the cell configs and set the variables
     for (int i = 0; i < enb_config.cell_config_size(); i++) {
       const protocol::prp_cell_config cell_config = enb_config.cell_config(i);
-      min_rb_unit[i] = get_min_rb_unit(cell_config);
       total_nb_available_rb[i] = cell_config.dl_bandwidth();
       //Remove the RBs used by common channels
       //TODO: For now we will do this manually based on OAI config and scheduling sf. Important to fix it later.
       // Assume an FDD scheduler
-      switch(target_subframe) {
-      case 0:
-	total_nb_available_rb[i] -= 4;
-	break;
-      case 5:
-	total_nb_available_rb[i] -= 8;
-	break;
-      }
+      // switch(target_subframe) {
+      // case 0:
+      // 	total_nb_available_rb[i] -= 4;
+      // 	break;
+      // case 5:
+      // 	total_nb_available_rb[i] -= 8;
+      // 	break;
+      // }
       enb_sched_info->start_new_scheduling_round(target_subframe, cell_config);
-      // Get the number of resource block groups used for this cell configuration
-      N_RBG[i] = get_nb_rbg(cell_config);
 
       // Run the preprocessor to make initial allocation of RBs to UEs (Need to do this over all scheduling_info of eNB)
       run_dlsch_scheduler_preprocessor(cell_config, ue_configs, agent_config, enb_sched_info);
@@ -142,10 +137,11 @@ void remote_scheduler::run_periodic_task() {
 	    continue;
 	  }
 
-	  
 
 	  nb_available_rb = ue_sched_info->get_pre_nb_rbs_available(cell_id);
-	  harq_pid = ue_sched_info->get_active_harq_pid();
+	  harq_pid = ue_mac_info->get_currently_active_harq(cell_id);
+	  //harq_pid = ue_sched_info->get_active_harq_pid();
+
 	  round = ue_sched_info->get_harq_round(cell_id, harq_pid);
 	  
 	  sdu_length_total = 0;
@@ -161,8 +157,10 @@ void remote_scheduler::run_periodic_task() {
 
 	  // Create a dl_data message
 	  protocol::prp_dl_data *dl_data = dl_mac_config_msg->add_dl_ue_data();
-	  
-	  if (round > 0) {
+
+	  int status = ue_mac_info->get_harq_stats(cell_id, harq_pid);
+
+	  if (status == protocol::PRHS_NACK) {
 	    // Use the MCS that was previously assigned to this HARQ process
 	    mcs = ue_sched_info->get_mcs(cell_id, harq_pid);
 	    nb_rb = ue_sched_info->get_nb_rbs_required(cell_id);
@@ -258,7 +256,7 @@ void remote_scheduler::run_periodic_task() {
 		  tb2->set_size(data_to_request);
 		  //Set this to the max value that we might request
 		  sdu_length_total = data_to_request;
-		  std::cout << "Need to request " << data_to_request << " from channel " << j << std::endl;
+		  //std::cout << "Need to request " << data_to_request << " from channel " << j << std::endl;
 		} else {
 		  header_len -= 3;
 		} //End tx_queue_size == 0
@@ -315,7 +313,7 @@ void remote_scheduler::run_periodic_task() {
 		    ue_sched_info->set_rballoc_sub_scheduled(cell_id,
 							     harq_pid,
 							     j,
-							     ue_sched_info->get_rballoc_sub(cell_id, j));
+							     1);
 		    if ((j == get_nb_rbg(cell_config) - 1) &&
 			((cell_config.dl_bandwidth() == 25) ||
 			 (cell_config.dl_bandwidth() == 50))) {
@@ -344,6 +342,11 @@ void remote_scheduler::run_periodic_task() {
 
 	      dci_tbs = TBS;
 	      mcs = mcs_tmp;
+	      //if (mcs == 28) {
+	      //mcs = 27;
+	      //}
+	      
+	      //	      std::cout << "Decided MCS, nb_rb and TBS are " << mcs << " " << nb_rb << " " << dci_tbs << std::endl;
 	      // Update the mcs used for this harq process
 	      ue_sched_info->set_mcs(cell_id, harq_pid, mcs);
 
@@ -451,7 +454,6 @@ void remote_scheduler::run_periodic_task() {
     out_message.set_msg_dir(protocol::INITIATING_MESSAGE);
     out_message.set_allocated_dl_mac_config_msg(dl_mac_config_msg);
     if (dl_mac_config_msg->dl_ue_data_size() > 0) {
-      std::cout << "Target frame and subframe are: " << target_frame << ", " << target_subframe << std::endl;
       req_manager_.send_message(agent_id, out_message);
 
     }

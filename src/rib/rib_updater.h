@@ -11,7 +11,7 @@ class rib_updater : public rt_task {
 
  public:
  rib_updater(async_xface& xface, Rib& storage)
-   : net_xface_(xface), rib_(storage),  messages_to_check_(50), rt_task(Policy::DEADLINE,
+   : net_xface_(xface), rib_(storage),  messages_to_check_(100), rt_task(Policy::DEADLINE,
 									2 * 100 * 1000,
 									2 * 100 * 1000,
 									1000 * 1000) {}

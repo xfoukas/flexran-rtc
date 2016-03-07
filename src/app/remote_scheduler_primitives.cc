@@ -4,7 +4,7 @@ bool needs_scheduling(std::shared_ptr<enb_scheduling_info>& enb_sched_info,
 					frame_t curr_frame, subframe_t curr_subframe) {
   frame_t last_checked_frame = enb_sched_info->get_last_checked_frame();
   subframe_t last_checked_subframe = enb_sched_info->get_last_checked_subframe();
-
+      
   return !(last_checked_frame == curr_frame && last_checked_subframe == curr_subframe);
 }
 

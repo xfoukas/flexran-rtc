@@ -2,6 +2,9 @@
 #define UE_SCHEDULING_INFO_H_
 
 #include "rib_common.h"
+#include "ue_mac_rib_info.h"
+
+#include <memory>
 
 class ue_scheduling_info {
 
@@ -12,8 +15,8 @@ class ue_scheduling_info {
     dl_pow_off_{2}, nb_rbs_required_{0}, ndi_{{0}},
 		     rnti_(rnti), rballoc_sub_{{0}},
 		       nb_rbs_required_remaining_{0},
-			 current_harq_pid_(0), harq_round_{{{0}}},
-			   pucch_tpc_tx_frame_(0), pucch_tpc_tx_subframe_(0){}
+			 harq_round_{{{0}}},
+			   pucch_tpc_tx_frame_(0), pucch_tpc_tx_subframe_(0) {}
 
   void decr_ta_timer() { ta_timer_--; }
 
@@ -21,14 +24,15 @@ class ue_scheduling_info {
 
   void set_ta_timer(int val) { ta_timer_ = val; }
 
-  void start_new_scheduling_round();
+  void start_new_scheduling_round(uint16_t cell_id, std::shared_ptr<const ue_mac_rib_info> ue_mac_info);
 
-  uint8_t get_active_harq_pid() const { return current_harq_pid_; }
+   //uint8_t get_active_harq_pid() const { return current_harq_; }
 
   int get_harq_round(uint16_t cell_id, int harq_pid) const;
 
   void set_harq_round(uint16_t cell_id, int harq_pid, int round) {
     harq_round_[cell_id][harq_pid][0] = round;
+    //harq_uptodate_[cell_id][harq_pid][0] = false;
   }
 
   void set_nb_rbs_required(uint16_t cell_id, uint16_t nb_rbs) { nb_rbs_required_[cell_id] = nb_rbs; }
@@ -128,6 +132,10 @@ class ue_scheduling_info {
   uint16_t dl_pow_off_[MAX_NUM_CC];
   uint16_t nb_rbs_required_[MAX_NUM_CC];
   uint8_t harq_round_[MAX_NUM_CC][MAX_NUM_HARQ][MAX_NUM_TB];
+
+  //bool harq_uptodate_[MAX_NUM_CC][MAX_NUM_HARQ][MAX_NUM_TB];
+  //uint8_t current_harq_;
+  
   uint8_t rballoc_sub_[MAX_NUM_CC][N_RBG_MAX];
   uint16_t nb_rbs_required_remaining_[MAX_NUM_CC];
   uint16_t pre_nb_rbs_available_[MAX_NUM_CC] = {0};
@@ -135,7 +143,7 @@ class ue_scheduling_info {
   frame_t pucch_tpc_tx_frame_;
   subframe_t pucch_tpc_tx_subframe_;
   
-  uint8_t current_harq_pid_;
+  //uint8_t current_harq_pid_;
   
 };
 

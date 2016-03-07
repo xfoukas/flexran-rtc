@@ -29,7 +29,7 @@ void run_dlsch_scheduler_preprocessor(const protocol::prp_cell_config& cell_conf
 	sched_info->create_ue_scheduling_info(ue_config.rnti());
 	ue_sched_info = sched_info->get_ue_scheduling_info(ue_config.rnti());
       } else {
-	ue_sched_info->start_new_scheduling_round(); // reset scheduling-related values 
+	ue_sched_info->start_new_scheduling_round(cell_id, ue_mac_info); // reset scheduling-related values 
       }
       //Calculate the number of RBs required by each UE based on their logical channels' buffer status
       assign_rbs_required(ue_sched_info, ue_mac_info, cell_config, ue_config);
@@ -52,7 +52,9 @@ void run_dlsch_scheduler_preprocessor(const protocol::prp_cell_config& cell_conf
       std::shared_ptr<ue_scheduling_info> ue_sched_info = sched_info->get_ue_scheduling_info(ue_config.rnti());
 
       // Get the active HARQ process
-      int harq_pid = ue_sched_info->get_active_harq_pid();
+      int harq_pid = ue_mac_info->get_currently_active_harq(cell_id);
+      //int harq_pid = ue_sched_info->get_active_harq_pid();
+
       int round = ue_sched_info->get_harq_round(cell_id, harq_pid);
       // Check if round needs to be increased
       int status = ue_mac_info->get_harq_stats(cell_id, harq_pid);
@@ -60,11 +62,11 @@ void run_dlsch_scheduler_preprocessor(const protocol::prp_cell_config& cell_conf
 	round = 0;
       } else {
 	round++;
-	round = round%3;
+	round = round % 4;
       }
       ue_sched_info->set_harq_round(cell_id, harq_pid, round);
 
-      if (round > 0) {
+      if (status == protocol::PRHS_NACK) {
 	ue_sched_info->set_nb_rbs_required(cell_id, ue_sched_info->get_nb_scheduled_rbs(cell_id, harq_pid));
       } else {
 	ue_sched_info->set_nb_scheduled_rbs(cell_id, harq_pid, 0);
