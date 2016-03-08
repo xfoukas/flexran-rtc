@@ -1,4 +1,5 @@
 #include "remote_scheduler_helper.h"
+#include "remote_scheduler.h"
 #include "remote_scheduler_primitives.h"
 
 void run_dlsch_scheduler_preprocessor(const protocol::prp_cell_config& cell_config,
@@ -188,6 +189,7 @@ void assign_rbs_required(std::shared_ptr<ue_scheduling_info> ue_sched_info,
   for (int i = 0; i < mac_report.dl_cqi_report().csi_report_size(); i++) {
     if (cell_config.cell_id() == mac_report.dl_cqi_report().csi_report(i).serv_cell_index()) {
       mcs = cqi_to_mcs[mac_report.dl_cqi_report().csi_report(i).p10csi().wb_cqi()];
+      mcs = std::min(mcs, target_dl_mcs_);
       break;
     }
   }

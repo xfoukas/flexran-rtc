@@ -20,6 +20,11 @@ add_definitions(-DLOWLATENCY)
 include_directories("/usr/include")
 endif()
 
+# Set constants for abstract simulation mode
+if(ABSTRACT_SIMULATION)
+add_definitions(-DABSTRACT_SIMULATION)
+endif()
+
 # Base directories
 set(RT_CONTROLLER_DIR src)
 set(RT_CONTROLLER_BIN_DIR build)
