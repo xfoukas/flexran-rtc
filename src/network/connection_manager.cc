@@ -10,7 +10,7 @@ connection_manager::connection_manager(boost::asio::io_service& io_service,
 }
 
 void connection_manager::send_msg_to_agent(std::shared_ptr<tagged_message> msg) {
-  sessions_[msg->getTag()]->deliver(*msg);
+  sessions_[msg->getTag()]->deliver(msg);
 }
 
 void connection_manager::do_accept() {

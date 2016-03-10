@@ -30,6 +30,7 @@ class async_xface : public rt_task {
  private:
 
   mutable boost::asio::io_service io_service;
+  std::unique_ptr<boost::asio::io_service::work> work_ptr_;
 
   mutable boost::lockfree::queue<tagged_message *, boost::lockfree::fixed_sized<true>> in_queue_{10000};
   mutable boost::lockfree::queue<tagged_message *, boost::lockfree::fixed_sized<true>> out_queue_{10000};

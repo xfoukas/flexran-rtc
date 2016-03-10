@@ -9,7 +9,7 @@ void async_xface::run() {
 
 void async_xface::establish_xface() {
   manager_.reset(new connection_manager(io_service, endpoint_, *this));
-  
+  work_ptr_.reset(new boost::asio::io_service::work(io_service));
   io_service.run();
 }
 

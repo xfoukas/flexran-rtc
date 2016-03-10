@@ -5,11 +5,11 @@ void agent_session::start() {
   do_read_header();
 }
 
-void agent_session::deliver(const tagged_message& msg) {
+void agent_session::deliver(std::shared_ptr<tagged_message> msg) {
   bool write_in_progress = !write_queue_.empty();
   protocol_message data;
-  std::size_t size = msg.getSize();
-  data.set_message(msg.getMessageContents(), size);
+  std::size_t size = msg->getSize();
+  data.set_message(msg->getMessageContents(), size);
   write_queue_.push_back(data);
   if (!write_in_progress) {
       do_write();

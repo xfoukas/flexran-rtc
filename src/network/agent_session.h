@@ -25,7 +25,7 @@ class agent_session :
 
   void start();
 
-  void deliver(const tagged_message& msg);
+  void deliver(std::shared_ptr<tagged_message> msg);
 
  private:
   
