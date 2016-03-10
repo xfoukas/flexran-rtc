@@ -14,6 +14,7 @@
 #include "task_manager.h"
 #include "stats_manager.h"
 #include "remote_scheduler.h"
+#include "remote_scheduler_delegation.h"
 #include "requests_manager.h"
 
 #include <errno.h>
@@ -44,6 +45,10 @@ int main(int argc, char *argv[]) {
   // Remote scheduler
   std::shared_ptr<component> remote_sched(new remote_scheduler(rib, rm));
   tm.register_app(remote_sched);
+
+  // Remote scheduler with delegation (TEST purposes)
+  // std::shared_ptr<component> remote_sched(new remote_scheduler_delegation(rib, rm));
+  // tm.register_app(remote_sched);
   
   // Start the network thread
   std::thread networkThread(&async_xface::execute_task, &net_xface);

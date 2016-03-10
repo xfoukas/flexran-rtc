@@ -110,6 +110,7 @@ set(NETWORK_SRC
   ${RT_CONTROLLER_NETWORK_DIR}/connection_manager.cc
   ${RT_CONTROLLER_NETWORK_DIR}/agent_session.cc
   ${RT_CONTROLLER_NETWORK_DIR}/protocol_message.cc
+  ${RT_CONTROLLER_NETWORK_DIR}/tagged_message.cc
 )
   
 add_library(RT_CONTROLLER_NETWORK_LIB
@@ -148,6 +149,7 @@ set(APP_SRC
   ${RT_CONTROLLER_APP_DIR}/remote_scheduler_primitives.cc
   ${RT_CONTROLLER_APP_DIR}/enb_scheduling_info.cc
   ${RT_CONTROLLER_APP_DIR}/ue_scheduling_info.cc
+  ${RT_CONTROLLER_APP_DIR}/remote_scheduler_delegation.cc
 )
 
 add_library(RT_CONTROLLER_APP_LIB
