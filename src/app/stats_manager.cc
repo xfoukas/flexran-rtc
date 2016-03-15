@@ -27,6 +27,7 @@ void stats_manager::run_periodic_task() {
       ue_flags |= protocol::PRUST_DL_CQI;
       ue_flags |= protocol::PRUST_RLC_BS;
       ue_flags |= protocol::PRUST_MAC_CE_BS;
+      ue_flags |= protocol::PRUST_UL_CQI;
       complete_stats_request->set_ue_report_flags(ue_flags);
       int cell_flags = 0;
       cell_flags |= protocol::PRCST_NOISE_INTERFERENCE;
