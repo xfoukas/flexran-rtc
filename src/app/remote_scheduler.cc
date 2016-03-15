@@ -73,6 +73,10 @@ void remote_scheduler::run_periodic_task() {
       target_frame = current_frame;
     }
     
+    if ((target_subframe != 1) && (target_subframe != 6)) {
+      continue;
+    }
+
     // Create dl_mac_config message
     protocol::prp_dl_mac_config *dl_mac_config_msg(new protocol::prp_dl_mac_config);
     dl_mac_config_msg->set_allocated_header(header);
