@@ -36,17 +36,19 @@ void ue_mac_rib_info::update_mac_stats_report(const protocol::prp_ue_stats_repor
     mac_stats_report_.set_phr(stats_report.phr());
   }
   if (protocol::PRUST_RLC_BS & flags) {
-    if (stats_report.rlc_report_size() == mac_stats_report_.rlc_report_size()) {
-      for (int i = 0; i < mac_stats_report_.rlc_report_size(); i++) {
-	mac_stats_report_.mutable_rlc_report(i)->CopyFrom(stats_report.rlc_report(i));
-      }
-    } else {
-      mac_stats_report_.clear_rlc_report();
-      for (int i = 0; i < stats_report.rlc_report_size(); i++) {
-	mac_stats_report_.add_rlc_report();
-	mac_stats_report_.mutable_rlc_report(i)->CopyFrom(stats_report.rlc_report(i));
-      }
-    }
+    mac_stats_report_.mutable_rlc_report()->CopyFrom(stats_report.rlc_report());
+
+    //if (stats_report.rlc_report_size() == mac_stats_report_.rlc_report_size()) {
+    //  for (int i = 0; i < mac_stats_report_.rlc_report_size(); i++) {
+    //	mac_stats_report_.mutable_rlc_report(i)->CopyFrom(stats_report.rlc_report(i));
+    //      }
+    //    } else {
+    //      mac_stats_report_.clear_rlc_report();
+    //      for (int i = 0; i < stats_report.rlc_report_size(); i++) {
+    //	mac_stats_report_.add_rlc_report();
+    //	mac_stats_report_.mutable_rlc_report(i)->CopyFrom(stats_report.rlc_report(i));
+    //      }
+    //    }
   }
   if (protocol::PRUST_MAC_CE_BS & flags) {
     mac_stats_report_.set_pending_mac_ces(stats_report.pending_mac_ces());
