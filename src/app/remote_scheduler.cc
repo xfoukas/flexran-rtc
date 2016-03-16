@@ -73,7 +73,7 @@ void remote_scheduler::run_periodic_task() {
       target_frame = current_frame;
     }
     
-    if ((target_subframe != 1) && (target_subframe != 6)) {
+    if ((target_subframe != 1) && (target_subframe != 4) && (target_subframe != 6) && (target_subframe != 8)) {
       continue;
     }
 
