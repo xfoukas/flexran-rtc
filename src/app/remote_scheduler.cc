@@ -73,9 +73,15 @@ void remote_scheduler::run_periodic_task() {
       target_frame = current_frame;
     }
     
-    if ((target_subframe != 1) && (target_subframe != 4) && (target_subframe != 6) && (target_subframe != 8)) {
+    //if ((target_subframe != 1) && (target_subframe != 4) && (target_subframe != 6) && (target_subframe != 8)) {
+    //  continue;
+    //}
+    
+
+    if ((target_subframe  == 0) || (target_subframe == 5)) {
       continue;
     }
+    //std::cout << "Scheduling for frame " << target_frame << " and subframe " << target_subframe << std::endl;
 
     // Create dl_mac_config message
     protocol::prp_dl_mac_config *dl_mac_config_msg(new protocol::prp_dl_mac_config);
@@ -145,6 +151,8 @@ void remote_scheduler::run_periodic_task() {
 	  nb_available_rb = ue_sched_info->get_pre_nb_rbs_available(cell_id);
 	  harq_pid = ue_mac_info->get_currently_active_harq(cell_id);
 	  //harq_pid = ue_sched_info->get_active_harq_pid();
+	  
+	  //std::cout << "The current harq_pid is " << (int) harq_pid << std::endl;
 
 	  round = ue_sched_info->get_harq_round(cell_id, harq_pid);
 	  
@@ -242,6 +250,7 @@ void remote_scheduler::run_periodic_task() {
 	      const protocol::prp_rlc_bsr& rlc_report = mac_report.rlc_report(j-1);
 
 	      if (dci_tbs - ta_len - header_len > 0) {
+		//std::cout << "Need to request " << rlc_report.tx_queue_size() << " from channel " << j << std::endl;
 		if (rlc_report.tx_queue_size() > 0) {
 		  data_to_request = std::min(dci_tbs - ta_len - header_len, rlc_report.tx_queue_size());
 		  if (data_to_request < 128) { // The header will be one byte less
@@ -260,7 +269,6 @@ void remote_scheduler::run_periodic_task() {
 		  tb2->set_size(data_to_request);
 		  //Set this to the max value that we might request
 		  sdu_length_total = data_to_request;
-		  //std::cout << "Need to request " << data_to_request << " from channel " << j << std::endl;
 		} else {
 		  header_len -= 3;
 		} //End tx_queue_size == 0
