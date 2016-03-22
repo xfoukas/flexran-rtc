@@ -11,7 +11,8 @@
 void run_dlsch_scheduler_preprocessor(const protocol::prp_cell_config& cell_config,
 				      const protocol::prp_ue_config_reply& ue_configs,
 				      std::shared_ptr<const enb_rib_info> agent_config,
-				      std::shared_ptr<enb_scheduling_info> sched_info);
+				      std::shared_ptr<enb_scheduling_info> sched_info,
+				      subframe_t subframe);
 
 void assign_rbs_required(std::shared_ptr<ue_scheduling_info> ue_sched_info,
 			 std::shared_ptr<const ue_mac_rib_info> ue_mac_info,

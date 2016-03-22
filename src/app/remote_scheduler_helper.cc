@@ -5,14 +5,27 @@
 void run_dlsch_scheduler_preprocessor(const protocol::prp_cell_config& cell_config,
 				      const protocol::prp_ue_config_reply& ue_configs,
 				      std::shared_ptr<const enb_rib_info> agent_config,
-				      std::shared_ptr<enb_scheduling_info> sched_info) {
-  
+				      std::shared_ptr<enb_scheduling_info> sched_info,
+				      subframe_t subframe) {
+
+  uint16_t total_nb_available_rb;
   uint16_t min_rb_unit;
   uint16_t nb_rbs_required[MAX_NUM_UE];
   int total_ue_count;
   uint16_t average_rbs_per_user = 0;
   int transmission_mode;
 
+
+  total_nb_available_rb = cell_config.dl_bandwidth();
+  //Remove the RBs used by common channels
+  //TODO: For now we will do this manually based on OAI config and scheduling sf number. Important to fix it later.
+  // Assume an FDD scheduler
+  if (subframe == 0) {
+    total_nb_available_rb -= 4;
+  } else if (subframe == 5) {
+    total_nb_available_rb -=8;
+  }
+  
   min_rb_unit = get_min_rb_unit(cell_config);
 
   // Find the active UEs for this cell
@@ -77,10 +90,12 @@ void run_dlsch_scheduler_preprocessor(const protocol::prp_cell_config& cell_conf
 	total_ue_count = total_ue_count + 1;
       }
 
+      
+      
       if (total_ue_count == 0) {
 	average_rbs_per_user = 0;
-      } else if ((get_min_rb_unit(cell_config) * total_ue_count) <= cell_config.dl_bandwidth()) {
-	average_rbs_per_user = cell_config.dl_bandwidth()/total_ue_count;
+      } else if ((get_min_rb_unit(cell_config) * total_ue_count) <= total_nb_available_rb) {
+	average_rbs_per_user = total_nb_available_rb/total_ue_count;
       } else {
 	average_rbs_per_user = get_min_rb_unit(cell_config);
       }
