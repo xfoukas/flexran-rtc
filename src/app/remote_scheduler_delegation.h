@@ -7,29 +7,41 @@
 #include "enb_scheduling_info.h"
 #include "ue_scheduling_info.h"
 
-class remote_scheduler_delegation : public periodic_component {
+namespace progran {
 
- public:
+  namespace app {
 
-  remote_scheduler_delegation(const Rib& rib, const requests_manager& rm)
-    : periodic_component(rib, rm), delegation_enabled_(false) {}
+    namespace scheduler {
 
-  void run_periodic_task();
+      class remote_scheduler_delegation : public periodic_component {
+	
+      public:
+	
+      remote_scheduler_delegation(const rib::Rib& rib, const core::requests_manager& rm)
+	: periodic_component(rib, rm), delegation_enabled_(false) {}
+	
+	void run_periodic_task();
+	
+	static int32_t tpc_accumulated;
+	
+      private:
+	
+	::std::shared_ptr<enb_scheduling_info> get_scheduling_info(int agent_id);
+	
+	::std::map<int, ::std::shared_ptr<enb_scheduling_info>> scheduling_info_;
+	
+	::std::atomic<bool> delegation_enabled_;
+	
+	// Set these values internally for now
+	
+	const int schedule_ahead = 4;
+	
+      };
 
-  static int32_t tpc_accumulated;
-  
- private:
+    }
+    
+  }
 
-  std::shared_ptr<enb_scheduling_info> get_scheduling_info(int agent_id);
-  
-  std::map<int, std::shared_ptr<enb_scheduling_info>> scheduling_info_;
-
-  std::atomic<bool> delegation_enabled_;
-  
-  // Set these values internally for now
-
-  const int schedule_ahead = 4;
-
-};
+}
 
 #endif

@@ -3,17 +3,25 @@
 
 #include "component.h"
 
-class periodic_component : public component {
+namespace progran {
 
- public:
+  namespace app {
 
- periodic_component(const Rib& rib, const requests_manager& rm)
-   : component(rib, rm) {}
+    class periodic_component : public component {
+
+    public:
+      
+    periodic_component(const rib::Rib& rib, const core::requests_manager& rm)
+      : component(rib, rm) {}
   
-  virtual void run_periodic_task() = 0;
+      virtual void run_periodic_task() = 0;
+      
+      void run_app() { run_periodic_task(); }
+      
+    };
 
-  void run_app() { run_periodic_task(); }
-  
-};
+  }
+
+}
 
 #endif

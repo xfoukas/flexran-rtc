@@ -1,7 +1,7 @@
 #include "rt_task.h"
 #include <iostream>
 
-rt_task::rt_task(Policy pol, sched_time runtime, sched_time deadline, sched_time period) {
+progran::core::rt::rt_task::rt_task(Policy pol, sched_time runtime, sched_time deadline, sched_time period) {
 #ifdef LOWLATENCY
   set_scheduling_policy(pol, runtime, deadline, period);
 #endif
@@ -9,7 +9,7 @@ rt_task::rt_task(Policy pol, sched_time runtime, sched_time deadline, sched_time
 
 #ifdef LOWLATENCY
 
-void rt_task::set_scheduling_policy(Policy pol, sched_time runtime, sched_time deadline, sched_time period) {
+void progran::core::rt::rt_task::set_scheduling_policy(Policy pol, sched_time runtime, sched_time deadline, sched_time period) {
 
   __u32 sched_policy;
 
@@ -37,7 +37,7 @@ void rt_task::set_scheduling_policy(Policy pol, sched_time runtime, sched_time d
 
 #endif
 
-void rt_task::execute_task() {
+void progran::core::rt::rt_task::execute_task() {
 #ifdef LOWLATENCY
   
   if (sched_setattr(0, &attr_, 0) < 0 ) {

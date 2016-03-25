@@ -3,7 +3,7 @@
 #include "stats_manager.h"
 #include "progran.pb.h"
 
-void stats_manager::run_periodic_task() {
+void progran::app::stats::stats_manager::run_periodic_task() {
 
   // Simply request stats for any registered eNB and print them
   std::set<int> current_agents = rib_.get_available_agents();

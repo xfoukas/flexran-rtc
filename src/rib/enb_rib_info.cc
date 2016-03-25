@@ -2,17 +2,17 @@
 
 #include "enb_rib_info.h"
 
-enb_rib_info::enb_rib_info(int agent_id)
+progran::rib::enb_rib_info::enb_rib_info(int agent_id)
   : agent_id_(agent_id) {
   last_checked = clock();
 }
 
-void enb_rib_info::update_eNB_config(const protocol::prp_enb_config_reply& enb_config_update) {
+void progran::rib::enb_rib_info::update_eNB_config(const protocol::prp_enb_config_reply& enb_config_update) {
   eNB_config_.CopyFrom(enb_config_update);
   update_liveness();
 }
 
-void enb_rib_info::update_UE_config(const protocol::prp_ue_config_reply& ue_config_update) {
+void progran::rib::enb_rib_info::update_UE_config(const protocol::prp_ue_config_reply& ue_config_update) {
   ue_config_.CopyFrom(ue_config_update);
   rnti_t rnti;
   // Check if UE exists and if not create a ue_mac_rib_info entry
@@ -28,7 +28,7 @@ void enb_rib_info::update_UE_config(const protocol::prp_ue_config_reply& ue_conf
   update_liveness();
 }
 
-void enb_rib_info::update_UE_config(const protocol::prp_ue_state_change& ue_state_change) {
+void progran::rib::enb_rib_info::update_UE_config(const protocol::prp_ue_state_change& ue_state_change) {
   rnti_t rnti;  
   if (ue_state_change.type() == protocol::PRUESC_ACTIVATED) {
     protocol::prp_ue_config *c = ue_config_.add_ue_config();
@@ -61,12 +61,12 @@ void enb_rib_info::update_UE_config(const protocol::prp_ue_state_change& ue_stat
   }
 }
 
-void enb_rib_info::update_LC_config(const protocol::prp_lc_config_reply& lc_config_update) {
+void progran::rib::enb_rib_info::update_LC_config(const protocol::prp_lc_config_reply& lc_config_update) {
   lc_config_.CopyFrom(lc_config_update);
   update_liveness();
 }
 
-void enb_rib_info::update_subframe(const protocol::prp_sf_trigger& sf_trigger) {
+void progran::rib::enb_rib_info::update_subframe(const protocol::prp_sf_trigger& sf_trigger) {
   rnti_t rnti;
   uint16_t sfn_sf = sf_trigger.sfn_sf();
   current_frame_ = get_frame(sfn_sf);
@@ -96,7 +96,7 @@ void enb_rib_info::update_subframe(const protocol::prp_sf_trigger& sf_trigger) {
   update_liveness();
 }
 
-void enb_rib_info::update_mac_stats(const protocol::prp_stats_reply& mac_stats) {
+void progran::rib::enb_rib_info::update_mac_stats(const protocol::prp_stats_reply& mac_stats) {
   rnti_t rnti;
   // First make the UE updates
   for (int i = 0; i < mac_stats.ue_report_size(); i++) {
@@ -118,7 +118,7 @@ void enb_rib_info::update_mac_stats(const protocol::prp_stats_reply& mac_stats) 
   }
 }
 
-std::shared_ptr<const ue_mac_rib_info> enb_rib_info::get_ue_mac_info(rnti_t rnti) const {
+std::shared_ptr<const progran::rib::ue_mac_rib_info> progran::rib::enb_rib_info::get_ue_mac_info(rnti_t rnti) const {
   auto it = ue_mac_info_.find(rnti);
   if (it != ue_mac_info_.end()) {
     return it->second;
@@ -126,22 +126,22 @@ std::shared_ptr<const ue_mac_rib_info> enb_rib_info::get_ue_mac_info(rnti_t rnti
   return std::shared_ptr<ue_mac_rib_info>(nullptr);
 }
 
-bool enb_rib_info::need_to_query() {
+bool progran::rib::enb_rib_info::need_to_query() {
   return ((clock() - last_checked) > time_to_query); 
 }
 
-void enb_rib_info::update_liveness() {
+void progran::rib::enb_rib_info::update_liveness() {
   last_checked = clock();
 }
 
-void enb_rib_info::dump_mac_stats() const {
+void progran::rib::enb_rib_info::dump_mac_stats() const {
   std::cout << "UE MAC stats for agent " << agent_id_ << std::endl;
   for (auto ue_stats : ue_mac_info_) {
     ue_stats.second->dump_stats();
   }
 }
 
-void enb_rib_info::dump_configs() const {
+void progran::rib::enb_rib_info::dump_configs() const {
   std::cout << eNB_config_.DebugString() << std::endl;
   std::cout << ue_config_.DebugString() << std::endl;
   std::cout << lc_config_.DebugString() << std::endl;

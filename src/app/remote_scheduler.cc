@@ -1,3 +1,5 @@
+#include <iostream>
+
 #include "remote_scheduler.h"
 #include "remote_scheduler_helper.h"
 #include "remote_scheduler_primitives.h"
@@ -5,17 +7,15 @@
 #include "rib_common.h"
 #include "cell_mac_rib_info.h"
 
-#include <iostream>
+int32_t progran::app::scheduler::remote_scheduler::tpc_accumulated = 0;
 
-int32_t remote_scheduler::tpc_accumulated = 0;
+void progran::app::scheduler::remote_scheduler::run_periodic_task() {
 
-void remote_scheduler::run_periodic_task() {
-
-  frame_t target_frame;
-  subframe_t target_subframe;
+  rib::frame_t target_frame;
+  rib::subframe_t target_subframe;
   
   unsigned char aggregation;
-  uint16_t total_nb_available_rb[MAX_NUM_CC];
+  uint16_t total_nb_available_rb[rib::MAX_NUM_CC];
 
   uint16_t nb_available_rb, nb_rb, nb_rb_tmp, TBS, sdu_length_total = 0;
   uint8_t harq_pid, round, ta_len = 0;
@@ -30,7 +30,7 @@ void remote_scheduler::run_periodic_task() {
 
   bool ue_has_transmission = false;
   
-  std::set<int> agent_ids = std::move(rib_.get_available_agents());
+  ::std::set<int> agent_ids = ::std::move(rib_.get_available_agents());
 
   for (const auto& agent_id : agent_ids) {
 
@@ -42,23 +42,23 @@ void remote_scheduler::run_periodic_task() {
     header->set_version(0);
     header->set_xid(0);
     
-    std::shared_ptr<const enb_rib_info> agent_config = rib_.get_agent(agent_id);
+    ::std::shared_ptr<const rib::enb_rib_info> agent_config = rib_.get_agent(agent_id);
     const protocol::prp_enb_config_reply& enb_config = agent_config->get_enb_config();
     const protocol::prp_ue_config_reply& ue_configs = agent_config->get_ue_configs();
     const protocol::prp_lc_config_reply& lc_configs = agent_config->get_lc_configs();
 
-    frame_t current_frame = agent_config->get_current_frame();
-    subframe_t current_subframe = agent_config->get_current_subframe();
+    rib::frame_t current_frame = agent_config->get_current_frame();
+    rib::subframe_t current_subframe = agent_config->get_current_subframe();
 
     // Check if scheduling context for this eNB is already present and if not create it
-    std::shared_ptr<enb_scheduling_info> enb_sched_info = get_scheduling_info(agent_id);
+    ::std::shared_ptr<enb_scheduling_info> enb_sched_info = get_scheduling_info(agent_id);
     if (enb_sched_info) {
       // Nothing to do if this exists
     } else { // eNB sched info was not found for this agent
-      std::cout << "Config was not found. Creating" << std::endl;
-      scheduling_info_.insert(std::pair<int,
-			      std::shared_ptr<enb_scheduling_info>>(agent_id,
-								    std::shared_ptr<enb_scheduling_info>(new enb_scheduling_info)));
+      ::std::cout << "Config was not found. Creating" << ::std::endl;
+      scheduling_info_.insert(::std::pair<int,
+			      ::std::shared_ptr<enb_scheduling_info>>(agent_id,
+								      ::std::shared_ptr<enb_scheduling_info>(new enb_scheduling_info)));
       enb_sched_info = get_scheduling_info(agent_id);
     }
 
@@ -86,7 +86,7 @@ void remote_scheduler::run_periodic_task() {
     // Create dl_mac_config message
     protocol::prp_dl_mac_config *dl_mac_config_msg(new protocol::prp_dl_mac_config);
     dl_mac_config_msg->set_allocated_header(header);
-    dl_mac_config_msg->set_sfn_sf(get_sfn_sf(target_frame, target_subframe));
+    dl_mac_config_msg->set_sfn_sf(rib::get_sfn_sf(target_frame, target_subframe));
     
     aggregation = 2;
     
@@ -121,10 +121,10 @@ void remote_scheduler::run_periodic_task() {
 	if (ue_config.pcell_carrier_index() == cell_id) {
 
 	  // Get the MAC stats for this UE
-	  std::shared_ptr<const ue_mac_rib_info> ue_mac_info = agent_config->get_ue_mac_info(ue_config.rnti());
+	  ::std::shared_ptr<const rib::ue_mac_rib_info> ue_mac_info = agent_config->get_ue_mac_info(ue_config.rnti());
 	  
 	  // Get the scheduling info
-	  std::shared_ptr<ue_scheduling_info> ue_sched_info = enb_sched_info->get_ue_scheduling_info(ue_config.rnti());
+	  ::std::shared_ptr<ue_scheduling_info> ue_sched_info = enb_sched_info->get_ue_scheduling_info(ue_config.rnti());
 	  // if (ue_sched_info) {
 	  //   ue_sched_info->start_new_scheduling_round();
 	  // } else { // we need to create the scheduling info
@@ -160,12 +160,12 @@ void remote_scheduler::run_periodic_task() {
 
 	  for (int j = 0; j < mac_report.dl_cqi_report().csi_report_size(); j++) {
 	    if (cell_config.cell_id() == mac_report.dl_cqi_report().csi_report(j).serv_cell_index()) {
-	      mcs = cqi_to_mcs[mac_report.dl_cqi_report().csi_report(j).p10csi().wb_cqi()];
+	      mcs = rib::cqi_to_mcs[mac_report.dl_cqi_report().csi_report(j).p10csi().wb_cqi()];
 	      break;
 	    }
 	  }
 
-	  mcs = std::min(mcs, target_dl_mcs_);
+	  mcs = ::std::min(mcs, target_dl_mcs_);
 
 	  // Create a dl_data message
 	  protocol::prp_dl_data *dl_data = dl_mac_config_msg->add_dl_ue_data();
@@ -252,7 +252,7 @@ void remote_scheduler::run_periodic_task() {
 	      if (dci_tbs - ta_len - header_len > 0) {
 		//std::cout << "Need to request " << rlc_report.tx_queue_size() << " from channel " << j << std::endl;
 		if (rlc_report.tx_queue_size() > 0) {
-		  data_to_request = std::min(dci_tbs - ta_len - header_len, rlc_report.tx_queue_size());
+		  data_to_request = ::std::min(dci_tbs - ta_len - header_len, rlc_report.tx_queue_size());
 		  if (data_to_request < 128) { // The header will be one byte less
 		    header_len--;
 		  }
@@ -366,7 +366,7 @@ void remote_scheduler::run_periodic_task() {
 
 	      // do PUCCH power control
 	      // This is the normalized RX power
-	      const cell_mac_rib_info& cell_rib_info = agent_config->get_cell_mac_rib_info(cell_id);
+	      const rib::cell_mac_rib_info& cell_rib_info = agent_config->get_cell_mac_rib_info(cell_id);
 	      const protocol::prp_cell_stats_report& cell_report = cell_rib_info.get_cell_stats_report();
 
 	      int16_t normalized_rx_power;
@@ -472,10 +472,11 @@ void remote_scheduler::run_periodic_task() {
   }
 }
 
-std::shared_ptr<enb_scheduling_info> remote_scheduler::get_scheduling_info(int agent_id) {
+std::shared_ptr<progran::app::scheduler::enb_scheduling_info>
+progran::app::scheduler::remote_scheduler::get_scheduling_info(int agent_id) {
   auto it = scheduling_info_.find(agent_id);
   if (it != scheduling_info_.end()) {
     return it->second;
   }
-  return std::shared_ptr<enb_scheduling_info>(nullptr);
+  return ::std::shared_ptr<enb_scheduling_info>(nullptr);
 }

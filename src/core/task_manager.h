@@ -10,24 +10,29 @@
 #include <vector>
 #include <memory>
 
-class task_manager : public rt_task {
- public:
+namespace progran {
+
+  namespace core {
+
+    class task_manager : public rt::rt_task {
+    public:
+      
+    task_manager(progran::rib::rib_updater& r_updater)
+      : r_updater_(r_updater), rt_task(Policy::FIFO) {}
+      
+      void manage_rt_tasks();
+      
+      void register_app(const std::shared_ptr<progran::app::component>& app);
+      
+    private:
+      
+      void run();
   
-  task_manager(rib_updater& r_updater)
-    : r_updater_(r_updater), rt_task(Policy::FIFO) {}
-  
-  void manage_rt_tasks();
-
-  void register_app(const std::shared_ptr<component>& app);
-
- private:
-
-  void run();
-  
-  rib_updater& r_updater_;
-
-  std::vector<std::shared_ptr<component>> apps_;
-};
-
+      progran::rib::rib_updater& r_updater_;
+      
+      std::vector<std::shared_ptr<progran::app::component>> apps_;
+    };
+  }
+}
 
 #endif

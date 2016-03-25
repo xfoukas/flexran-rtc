@@ -4,14 +4,14 @@
 #include "tagged_message.h"
 #include "rt_wrapper.h"
 
-void rib_updater::run() {
+void progran::rib::rib_updater::run() {
   update_rib();
 }
 
-void rib_updater::update_rib() {  
+void progran::rib::rib_updater::update_rib() {  
   int rem_msgs = messages_to_check_;
   protocol::progran_message in_message;
-  std::shared_ptr<tagged_message> tm;
+  std::shared_ptr<progran::network::tagged_message> tm;
   while(net_xface_.get_msg_from_network(tm) && (rem_msgs > 0)) {
     /* TODO: update the RIB based on what you see */
     if (tm->getSize() == 0) { // New connection. update the pending eNBs list
@@ -67,9 +67,9 @@ void rib_updater::update_rib() {
 }
 
 // Handle hello message
-void rib_updater::handle_message(int agent_id,
-				 const protocol::prp_hello& hello_msg,
-				 protocol::progran_direction dir) {
+void progran::rib::rib_updater::handle_message(int agent_id,
+					       const protocol::prp_hello& hello_msg,
+					       protocol::progran_direction dir) {
   if (dir == protocol::SUCCESSFUL_OUTCOME) {
     // Agent is alive. Request info about its configuration
     // eNB config first
@@ -110,8 +110,8 @@ void rib_updater::handle_message(int agent_id,
   } // Hello should originate from controller - Ignore in all other cases
 }
 
-void rib_updater::handle_message(int agent_id,
-				 const protocol::prp_echo_request& echo_request_msg) {
+void progran::rib::rib_updater::handle_message(int agent_id,
+					       const protocol::prp_echo_request& echo_request_msg) {
   // Need to send an echo reply
   protocol::prp_header *header(new protocol::prp_header);
   header->set_type(protocol::PRPT_ECHO_REPLY);
@@ -127,8 +127,8 @@ void rib_updater::handle_message(int agent_id,
   net_xface_.send_msg(out_message, agent_id);
 }
 
-void rib_updater::handle_message(int agent_id,
-				 const protocol::prp_echo_reply& echo_reply_msg) {
+void progran::rib::rib_updater::handle_message(int agent_id,
+					       const protocol::prp_echo_reply& echo_reply_msg) {
   if (rib_.has_eNB_config_entry(agent_id)) {
     rib_.update_liveness(agent_id);
   } else {
@@ -136,8 +136,8 @@ void rib_updater::handle_message(int agent_id,
   }
 }
 
-void rib_updater::handle_message(int agent_id,
-				 const protocol::prp_sf_trigger& sf_trigger_msg) {
+void progran::rib::rib_updater::handle_message(int agent_id,
+					       const protocol::prp_sf_trigger& sf_trigger_msg) {
   if (rib_.has_eNB_config_entry(agent_id)) {
     rib_.set_subframe_updates(agent_id, sf_trigger_msg);
   } else {
@@ -145,8 +145,8 @@ void rib_updater::handle_message(int agent_id,
   }
 }
 
-void rib_updater::handle_message(int agent_id,
-				 const protocol::prp_enb_config_reply& enb_config_reply_msg) {
+void progran::rib::rib_updater::handle_message(int agent_id,
+					       const protocol::prp_enb_config_reply& enb_config_reply_msg) {
   if (rib_.agent_is_pending(agent_id)) {
     // Must create a new eNB_config entry
     rib_.new_eNB_config_entry(agent_id);
@@ -155,8 +155,8 @@ void rib_updater::handle_message(int agent_id,
   }// If agent was not pending we should ignore this message. Only for initialization
 }
 
-void rib_updater::handle_message(int agent_id,
-				 const protocol::prp_ue_config_reply& ue_config_reply_msg) {
+void progran::rib::rib_updater::handle_message(int agent_id,
+					       const protocol::prp_ue_config_reply& ue_config_reply_msg) {
   if (rib_.has_eNB_config_entry(agent_id)) {
     rib_.ue_config_update(agent_id, ue_config_reply_msg);
   } else {
@@ -164,8 +164,8 @@ void rib_updater::handle_message(int agent_id,
   }
 }
 
-void rib_updater::handle_message(int agent_id,
-				 const protocol::prp_lc_config_reply& lc_config_reply_msg) {
+void progran::rib::rib_updater::handle_message(int agent_id,
+					       const protocol::prp_lc_config_reply& lc_config_reply_msg) {
   if(rib_.has_eNB_config_entry(agent_id)) {
     rib_.lc_config_update(agent_id, lc_config_reply_msg);
   } else {
@@ -173,8 +173,8 @@ void rib_updater::handle_message(int agent_id,
   }
 }
 
-void rib_updater::handle_message(int agent_id,
-		    const protocol::prp_stats_reply& mac_stats_reply) {
+void progran::rib::rib_updater::handle_message(int agent_id,
+					       const protocol::prp_stats_reply& mac_stats_reply) {
   if(rib_.has_eNB_config_entry(agent_id)) {
     rib_.mac_stats_update(agent_id, mac_stats_reply);
   } else {
@@ -182,8 +182,8 @@ void rib_updater::handle_message(int agent_id,
   }
 }
 
-void rib_updater::handle_message(int agent_id,
-				 const protocol::prp_ue_state_change& ue_state_change_msg) {
+void progran::rib::rib_updater::handle_message(int agent_id,
+					       const protocol::prp_ue_state_change& ue_state_change_msg) {
   if(rib_.has_eNB_config_entry(agent_id)) {
     /* TODO add the handler for the update of the state */
     rib_.ue_config_update(agent_id, ue_state_change_msg);

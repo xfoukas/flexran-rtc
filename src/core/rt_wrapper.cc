@@ -15,7 +15,7 @@ static int32_t latency_target_value = 0;
  *
  * Documentation/power/pm_qos_interface.txt
  */
-void set_latency_target(void) {
+void progran::core::rt::set_latency_target(void) {
   struct stat s;
   int ret;
 
@@ -40,14 +40,12 @@ void set_latency_target(void) {
 
 struct timespec interval, next, now, res;
 clockid_t clock_id = CLOCK_MONOTONIC; //other options are CLOCK_MONOTONIC, CLOCK_REALTIME, CLOCK_PROCESS_CPUTIME_ID, CLOCK_THREAD_CPUTIME_ID
-rtime rt_get_time_ns (void)
-{
+progran::core::rt::rtime progran::core::rt::rt_get_time_ns (void) {
   clock_gettime(clock_id, &now);
   return(now.tv_sec*1e9+now.tv_nsec);
 }
 
-int rt_sleep_ns (rtime x)
-{
+int progran::core::rt::rt_sleep_ns (rtime x) {
   int ret;
   clock_gettime(clock_id, &now);
   interval.tv_sec = x/((rtime)1000000000);
@@ -67,8 +65,7 @@ int rt_sleep_ns (rtime x)
   return(ret);
 }
 
-void check_clock(void)
-{
+void progran::core::rt::check_clock(void) {
   if (clock_getres(clock_id, &res)) {
     //printf("clock_getres failed");
   } else {
@@ -78,12 +75,12 @@ void check_clock(void)
 
 
 #ifdef LOWLATENCY
-int sched_setattr(pid_t pid, const struct sched_attr *attr, unsigned int flags) {
+int progran::core::rt::sched_setattr(pid_t pid, const struct sched_attr *attr, unsigned int flags) {
   return syscall(__NR_sched_setattr, pid, attr, flags);
 }
 
 
-int sched_getattr(pid_t pid,struct sched_attr *attr,unsigned int size, unsigned int flags) {
+int progran::core::rt::sched_getattr(pid_t pid,struct sched_attr *attr,unsigned int size, unsigned int flags) {
 
   return syscall(__NR_sched_getattr, pid, attr, size, flags);
 }

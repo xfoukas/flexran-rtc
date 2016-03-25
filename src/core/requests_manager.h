@@ -4,17 +4,25 @@
 #include "async_xface.h"
 #include "progran.pb.h"
 
-class requests_manager {
+namespace progran {
 
- public:
- requests_manager(async_xface& xface) : net_xface_(xface) {}
+  namespace core {
 
-  void send_message(int agent_id, const protocol::progran_message& msg) const;
+    class requests_manager {
 
- private:
+    public:
+    requests_manager(progran::network::async_xface& xface) : net_xface_(xface) {}
+      
+      void send_message(int agent_id, const protocol::progran_message& msg) const;
+      
+    private:
+      
+      progran::network::async_xface& net_xface_;
+      
+    };
 
-  async_xface& net_xface_;
-  
-};
+  }
+
+}
 
 #endif

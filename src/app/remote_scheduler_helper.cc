@@ -2,15 +2,15 @@
 #include "remote_scheduler.h"
 #include "remote_scheduler_primitives.h"
 
-void run_dlsch_scheduler_preprocessor(const protocol::prp_cell_config& cell_config,
-				      const protocol::prp_ue_config_reply& ue_configs,
-				      std::shared_ptr<const enb_rib_info> agent_config,
-				      std::shared_ptr<enb_scheduling_info> sched_info,
-				      subframe_t subframe) {
+void progran::app::scheduler::run_dlsch_scheduler_preprocessor(const protocol::prp_cell_config& cell_config,
+							       const protocol::prp_ue_config_reply& ue_configs,
+							       std::shared_ptr<const progran::rib::enb_rib_info> agent_config,
+							       std::shared_ptr<enb_scheduling_info> sched_info,
+							       progran::rib::subframe_t subframe) {
 
   uint16_t total_nb_available_rb;
   uint16_t min_rb_unit;
-  uint16_t nb_rbs_required[MAX_NUM_UE];
+  uint16_t nb_rbs_required[rib::MAX_NUM_UE];
   int total_ue_count;
   uint16_t average_rbs_per_user = 0;
   int transmission_mode;
@@ -35,10 +35,10 @@ void run_dlsch_scheduler_preprocessor(const protocol::prp_cell_config& cell_conf
     // If this UE is assigned to this cell
     if (ue_config.pcell_carrier_index() == cell_id) {
       // Get the MAC stats for this UE
-      std::shared_ptr<const ue_mac_rib_info> ue_mac_info = agent_config->get_ue_mac_info(ue_config.rnti());
+      ::std::shared_ptr<const rib::ue_mac_rib_info> ue_mac_info = agent_config->get_ue_mac_info(ue_config.rnti());
       
       // Check to see if there is a scheduling configuration created for this UE and if not create it
-      std::shared_ptr<ue_scheduling_info> ue_sched_info = sched_info->get_ue_scheduling_info(ue_config.rnti());
+      ::std::shared_ptr<ue_scheduling_info> ue_sched_info = sched_info->get_ue_scheduling_info(ue_config.rnti());
       if (!ue_sched_info) {
 	sched_info->create_ue_scheduling_info(ue_config.rnti());
 	ue_sched_info = sched_info->get_ue_scheduling_info(ue_config.rnti());
@@ -60,10 +60,10 @@ void run_dlsch_scheduler_preprocessor(const protocol::prp_cell_config& cell_conf
     // If this UE is assigned to this cell
     if (ue_config.pcell_carrier_index() == cell_id) {
       // Get the MAC stats for this UE
-      std::shared_ptr<const ue_mac_rib_info> ue_mac_info = agent_config->get_ue_mac_info(ue_config.rnti());
+      ::std::shared_ptr<const rib::ue_mac_rib_info> ue_mac_info = agent_config->get_ue_mac_info(ue_config.rnti());
 
       // Get the scheduling info
-      std::shared_ptr<ue_scheduling_info> ue_sched_info = sched_info->get_ue_scheduling_info(ue_config.rnti());
+      ::std::shared_ptr<ue_scheduling_info> ue_sched_info = sched_info->get_ue_scheduling_info(ue_config.rnti());
 
       // Get the active HARQ process
       int harq_pid = ue_mac_info->get_currently_active_harq(cell_id);
@@ -110,17 +110,17 @@ void run_dlsch_scheduler_preprocessor(const protocol::prp_cell_config& cell_conf
       // If this UE is assigned to this cell
       if (ue_config.pcell_carrier_index() == cell_id) {
 	// Get the MAC stats for this UE
-	std::shared_ptr<const ue_mac_rib_info> ue_mac_info = agent_config->get_ue_mac_info(ue_config.rnti());
+	::std::shared_ptr<const rib::ue_mac_rib_info> ue_mac_info = agent_config->get_ue_mac_info(ue_config.rnti());
 	
 	// Get the scheduling info
-	std::shared_ptr<ue_scheduling_info> ue_sched_info = sched_info->get_ue_scheduling_info(ue_config.rnti());
+	::std::shared_ptr<ue_scheduling_info> ue_sched_info = sched_info->get_ue_scheduling_info(ue_config.rnti());
 
 	if (r1 == 0) {
-	  ue_sched_info->set_nb_rbs_required_remaining(cell_id, std::min(average_rbs_per_user,
-									 ue_sched_info->get_nb_rbs_required(cell_id)));
+	  ue_sched_info->set_nb_rbs_required_remaining(cell_id, ::std::min(average_rbs_per_user,
+									   ue_sched_info->get_nb_rbs_required(cell_id)));
 	} else {
-	  uint16_t nb_rem = ue_sched_info->get_nb_rbs_required(cell_id) - std::min(average_rbs_per_user,
-										   ue_sched_info->get_nb_rbs_required(cell_id)) + ue_sched_info->get_nb_rbs_required_remaining(cell_id);
+	  uint16_t nb_rem = ue_sched_info->get_nb_rbs_required(cell_id) - ::std::min(average_rbs_per_user,
+										     ue_sched_info->get_nb_rbs_required(cell_id)) + ue_sched_info->get_nb_rbs_required_remaining(cell_id);
 	    ue_sched_info->set_nb_rbs_required_remaining(cell_id, nb_rem);
 	}
       }
@@ -134,10 +134,10 @@ void run_dlsch_scheduler_preprocessor(const protocol::prp_cell_config& cell_conf
 	// If this UE is assigned to this cell
 	if (ue_config.pcell_carrier_index() == cell_id) {
 	  // Get the MAC stats for this UE
-	  std::shared_ptr<const ue_mac_rib_info> ue_mac_info = agent_config->get_ue_mac_info(ue_config.rnti());
+	  ::std::shared_ptr<const rib::ue_mac_rib_info> ue_mac_info = agent_config->get_ue_mac_info(ue_config.rnti());
 	  
 	  // Get the scheduling info
-	  std::shared_ptr<ue_scheduling_info> ue_sched_info = sched_info->get_ue_scheduling_info(ue_config.rnti());
+	  ::std::shared_ptr<ue_scheduling_info> ue_sched_info = sched_info->get_ue_scheduling_info(ue_config.rnti());
 	  transmission_mode = ue_config.transmission_mode();
 	  
 	  perform_pre_processor_allocation(cell_config,
@@ -151,11 +151,11 @@ void run_dlsch_scheduler_preprocessor(const protocol::prp_cell_config& cell_conf
  }
 }
 
-void perform_pre_processor_allocation(const protocol::prp_cell_config& cell_config,
-				      const protocol::prp_ue_config& ue_config,
-				      std::shared_ptr<enb_scheduling_info> sched_info,
-				      std::shared_ptr<ue_scheduling_info> ue_sched_info,
-				      int transmission_mode) {
+void progran::app::scheduler::perform_pre_processor_allocation(const protocol::prp_cell_config& cell_config,
+							       const protocol::prp_ue_config& ue_config,
+							       std::shared_ptr<enb_scheduling_info> sched_info,
+							       std::shared_ptr<ue_scheduling_info> ue_sched_info,
+							       int transmission_mode) {
 
   int n_rbg = get_nb_rbg(cell_config);
   int min_rb_unit = get_min_rb_unit(cell_config);
@@ -192,10 +192,10 @@ void perform_pre_processor_allocation(const protocol::prp_cell_config& cell_conf
   
 }
 
-void assign_rbs_required(std::shared_ptr<ue_scheduling_info> ue_sched_info,
-			 std::shared_ptr<const ue_mac_rib_info> ue_mac_info,
-			 const protocol::prp_cell_config& cell_config,
-			 const protocol::prp_ue_config& ue_config) {
+void progran::app::scheduler::assign_rbs_required(::std::shared_ptr<ue_scheduling_info> ue_sched_info,
+						  ::std::shared_ptr<const rib::ue_mac_rib_info> ue_mac_info,
+						  const protocol::prp_cell_config& cell_config,
+						  const protocol::prp_ue_config& ue_config) {
   uint16_t TBS = 0;
   
   //Compute the mcs of the UE for this cell
@@ -203,7 +203,7 @@ void assign_rbs_required(std::shared_ptr<ue_scheduling_info> ue_sched_info,
   const protocol::prp_ue_stats_report& mac_report = ue_mac_info->get_mac_stats_report();
   for (int i = 0; i < mac_report.dl_cqi_report().csi_report_size(); i++) {
     if (cell_config.cell_id() == mac_report.dl_cqi_report().csi_report(i).serv_cell_index()) {
-      mcs = cqi_to_mcs[mac_report.dl_cqi_report().csi_report(i).p10csi().wb_cqi()];
+      mcs = rib::cqi_to_mcs[mac_report.dl_cqi_report().csi_report(i).p10csi().wb_cqi()];
       mcs = std::min(mcs, target_dl_mcs_);
       break;
     }

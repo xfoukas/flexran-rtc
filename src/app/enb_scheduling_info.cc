@@ -1,6 +1,7 @@
 #include "enb_scheduling_info.h"
 
-std::shared_ptr<ue_scheduling_info> enb_scheduling_info::get_ue_scheduling_info(rnti_t rnti) {
+std::shared_ptr<progran::app::scheduler::ue_scheduling_info>
+progran::app::scheduler::enb_scheduling_info::get_ue_scheduling_info(progran::rib::rnti_t rnti) {
   auto it = scheduling_info_.find(rnti);
   if (it != scheduling_info_.end()) {
     return it->second;
@@ -9,18 +10,19 @@ std::shared_ptr<ue_scheduling_info> enb_scheduling_info::get_ue_scheduling_info(
   }
 }
 
-void enb_scheduling_info::create_ue_scheduling_info(rnti_t rnti) {
-  scheduling_info_.insert(std::pair<rnti_t,
+void progran::app::scheduler::enb_scheduling_info::create_ue_scheduling_info(progran::rib::rnti_t rnti) {
+  scheduling_info_.insert(std::pair<progran::rib::rnti_t,
 			  std::shared_ptr<ue_scheduling_info>> (rnti,
 								std::shared_ptr<ue_scheduling_info>(new ue_scheduling_info(rnti))));
 }
 
 
-void enb_scheduling_info::start_new_scheduling_round(subframe_t subframe, const protocol::prp_cell_config& cell_config) {
+void progran::app::scheduler::enb_scheduling_info::start_new_scheduling_round(progran::rib::subframe_t subframe,
+									     const protocol::prp_cell_config& cell_config) {
   
   int cell_id = cell_config.cell_id();
   
-  std::fill(vrb_map_[cell_id], vrb_map_[cell_id] + N_RBG_MAX, 0);
+  std::fill(vrb_map_[cell_id], vrb_map_[cell_id] + rib::N_RBG_MAX, 0);
   num_pdcch_symbols_[cell_id] = 0;
   
   int n_rb_dl = cell_config.dl_bandwidth();

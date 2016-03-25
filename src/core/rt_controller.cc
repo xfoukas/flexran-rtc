@@ -23,38 +23,38 @@
 
 int main(int argc, char *argv[]) {
 
-  async_xface net_xface(2210);
+  progran::network::async_xface net_xface(2210);
 
   // Create the rib
-  Rib rib;
+  progran::rib::Rib rib;
 
   // Create the rib update manager
-  rib_updater r_updater(net_xface, rib);
+  progran::rib::rib_updater r_updater(net_xface, rib);
 
   // Create the task manager
-  task_manager tm(r_updater);
+  progran::core::task_manager tm(r_updater);
 
   // Create the requests manager
-  requests_manager rm(net_xface);
+  progran::core::requests_manager rm(net_xface);
 
   // Register any applications that we might want to execute in the controller
   // Stats manager
-  std::shared_ptr<component> stats_app(new stats_manager(rib, rm));
+  std::shared_ptr<progran::app::component> stats_app(new progran::app::stats::stats_manager(rib, rm));
   tm.register_app(stats_app);
 
   // Remote scheduler
-  std::shared_ptr<component> remote_sched(new remote_scheduler(rib, rm));
+  std::shared_ptr<progran::app::component> remote_sched(new progran::app::scheduler::remote_scheduler(rib, rm));
   tm.register_app(remote_sched);
 
   // Remote scheduler with delegation (TEST purposes)
-  // std::shared_ptr<component> remote_sched(new remote_scheduler_delegation(rib, rm));
+  // std::shared_ptr<progran::app::component> remote_sched(new progran::app::scheduler::remote_scheduler_delegation(rib, rm));
   // tm.register_app(remote_sched);
   
   // Start the network thread
-  std::thread networkThread(&async_xface::execute_task, &net_xface);
+  std::thread networkThread(&progran::network::async_xface::execute_task, &net_xface);
 
   // Start the task manager thread
-  std::thread task_manager_thread(&task_manager::execute_task, &tm);
+  std::thread task_manager_thread(&progran::core::task_manager::execute_task, &tm);
   
   if (task_manager_thread.joinable())
     task_manager_thread.join();

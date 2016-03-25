@@ -2,7 +2,7 @@
 
 #include "ue_mac_rib_info.h"
 
-void ue_mac_rib_info::update_dl_sf_info(const protocol::prp_dl_info& dl_info) {
+void progran::rib::ue_mac_rib_info::update_dl_sf_info(const protocol::prp_dl_info& dl_info) {
   uint8_t CC_id = dl_info.serv_cell_index();
   uint8_t harq_id = dl_info.harq_process_id();
 
@@ -13,7 +13,7 @@ void ue_mac_rib_info::update_dl_sf_info(const protocol::prp_dl_info& dl_info) {
   }
 }
 
-void ue_mac_rib_info::update_ul_sf_info(const protocol::prp_ul_info& ul_info) {
+void progran::rib::ue_mac_rib_info::update_ul_sf_info(const protocol::prp_ul_info& ul_info) {
   tpc_ = ul_info.tpc();
   uint8_t CC_id = ul_info.serv_cell_index();
   uplink_reception_stats_[CC_id] = ul_info.reception_status();
@@ -22,7 +22,7 @@ void ue_mac_rib_info::update_ul_sf_info(const protocol::prp_ul_info& ul_info) {
   }
 }
 
-void ue_mac_rib_info::update_mac_stats_report(const protocol::prp_ue_stats_report& stats_report) {
+void progran::rib::ue_mac_rib_info::update_mac_stats_report(const protocol::prp_ue_stats_report& stats_report) {
   // Check the flags of the incoming report and copy only those elements that have been updated
   uint32_t flags = stats_report.flags();
   
@@ -64,7 +64,7 @@ void ue_mac_rib_info::update_mac_stats_report(const protocol::prp_ue_stats_repor
   }
 }
 
-void ue_mac_rib_info::dump_stats() const {
+void progran::rib::ue_mac_rib_info::dump_stats() const {
   std::cout << "Rnti: " << rnti_ << std::endl;
   std::cout << mac_stats_report_.DebugString() << std::endl;
   std::cout << "Harq status" << std::endl;
