@@ -31,10 +31,21 @@ namespace progran {
 	uint8_t* get_vrb_map(uint16_t cell_id) {
 	  return vrb_map_[cell_id];
 	}
+
+	void toggle_vrb_map(uint16_t cell_id, uint16_t index) {
+	  vrb_map_[cell_id][index] = 1;
+	}
 	
 	uint8_t get_num_pdcch_symbols(uint16_t cell_id) const { return num_pdcch_symbols_[cell_id]; }
+
+	uint32_t get_nCCE_rem(uint16_t cell_id) const { return nCCE_rem_[cell_id]; }
 	
-	void increase_num_pdcch_symbols(uint16_t cell_id) { num_pdcch_symbols_[cell_id]++;}
+	void assign_CCE(uint16_t cell_id, int nCCE) { nCCE_rem_[cell_id] -= nCCE; }
+
+	void remove_CCE(uint16_t cell_id, int nCCE) {nCCE_rem_[cell_id] += nCCE; }
+	
+	void increase_num_pdcch_symbols(const protocol::prp_cell_config& cell_config,
+					progran::rib::subframe_t subframe);
 	
 	void start_new_scheduling_round(rib::subframe_t subframe,
 					const protocol::prp_cell_config& cell_config);
@@ -50,6 +61,8 @@ namespace progran {
 	
 	uint8_t vrb_map_[rib::MAX_NUM_CC][rib::N_RBG_MAX] = {{0}};
 	uint8_t num_pdcch_symbols_[rib::MAX_NUM_CC] = {0};
+
+	uint32_t nCCE_rem_[rib::MAX_NUM_CC] = {0};
       };
 
     }

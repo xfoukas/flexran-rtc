@@ -56,6 +56,8 @@ namespace progran {
 			  const int common_dci,
 			  const rib::rnti_t rnti,
 			  const rib::subframe_t subframe);
+      
+      uint8_t get_phich_resource(const protocol::prp_cell_config& cell_config);
 
       uint32_t allocate_prbs_sub(int nb_rb,
 				 uint8_t *rballoc,

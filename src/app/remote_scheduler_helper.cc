@@ -102,6 +102,26 @@ void progran::app::scheduler::run_dlsch_scheduler_preprocessor(const protocol::p
     }
   }
 
+  for (int i = 0; i < ue_configs.ue_config_size(); i++) {
+    const protocol::prp_ue_config ue_config = ue_configs.ue_config(i);
+    int cell_id = cell_config.cell_id();
+    // If this UE is assigned to this cell
+    if (ue_config.pcell_carrier_index() == cell_id) {
+      // Get the MAC stats for this UE
+      ::std::shared_ptr<const rib::ue_mac_rib_info> ue_mac_info = agent_config->get_ue_mac_info(ue_config.rnti());
+      
+      // Get the scheduling info
+      ::std::shared_ptr<ue_scheduling_info> ue_sched_info = sched_info->get_ue_scheduling_info(ue_config.rnti());
+  
+      if (ue_sched_info->is_new_ue()) {
+	ue_sched_info->set_nb_rbs_required_remaining1(cell_id, ue_sched_info->get_nb_rbs_required(cell_id));
+      } else {
+	 ue_sched_info->set_nb_rbs_required_remaining1(cell_id, ::std::min(average_rbs_per_user,
+									   ue_sched_info->get_nb_rbs_required(cell_id)));
+      }
+    }
+  }
+
  for (int r1 = 0; r1 < 2; r1++) {
     // Go through each of the UEs that need to be scheduled
     for (int i = 0; i < ue_configs.ue_config_size(); i++) {
@@ -114,20 +134,23 @@ void progran::app::scheduler::run_dlsch_scheduler_preprocessor(const protocol::p
 	
 	// Get the scheduling info
 	::std::shared_ptr<ue_scheduling_info> ue_sched_info = sched_info->get_ue_scheduling_info(ue_config.rnti());
+	
+	if (ue_sched_info->get_nb_rbs_required(cell_id) <= 0) {
+	  continue;
+	}
 
 	if (r1 == 0) {
-	  ue_sched_info->set_nb_rbs_required_remaining(cell_id, ::std::min(average_rbs_per_user,
-									   ue_sched_info->get_nb_rbs_required(cell_id)));
+	  ue_sched_info->set_nb_rbs_required_remaining(cell_id, ue_sched_info->get_nb_rbs_required_remaining1(cell_id));
 	} else {
-	  uint16_t nb_rem = ue_sched_info->get_nb_rbs_required(cell_id) - ::std::min(average_rbs_per_user,
-										     ue_sched_info->get_nb_rbs_required(cell_id)) + ue_sched_info->get_nb_rbs_required_remaining(cell_id);
-	    ue_sched_info->set_nb_rbs_required_remaining(cell_id, nb_rem);
+	  uint16_t nb_rem = ue_sched_info->get_nb_rbs_required(cell_id) - ue_sched_info->get_nb_rbs_required_remaining1(cell_id) + ue_sched_info->get_nb_rbs_required_remaining(cell_id);
+	  ue_sched_info->set_nb_rbs_required_remaining(cell_id, nb_rem);
 	}
       }
     }
 
     if (total_ue_count > 0) {
-      // Go through all the UEs and allocate the resources in sched info
+      // Go through all the UEs and allocate the resources in sched info first to high priority and then to rest
+
       for (int i = 0; i < ue_configs.ue_config_size(); i++) {
 	const protocol::prp_ue_config ue_config = ue_configs.ue_config(i);
 	int cell_id = cell_config.cell_id();
@@ -140,6 +163,42 @@ void progran::app::scheduler::run_dlsch_scheduler_preprocessor(const protocol::p
 	  ::std::shared_ptr<ue_scheduling_info> ue_sched_info = sched_info->get_ue_scheduling_info(ue_config.rnti());
 	  transmission_mode = ue_config.transmission_mode();
 	  
+	  if (!ue_sched_info->is_high_priority()) {
+	    continue;
+	  }
+
+	  if (ue_sched_info->get_nb_rbs_required(cell_id) <= 0) {
+	    continue;
+	  }
+
+	  perform_pre_processor_allocation(cell_config,
+					   ue_config,
+					   sched_info,
+					   ue_sched_info,
+					   transmission_mode);
+	}
+      }
+      
+      for (int i = 0; i < ue_configs.ue_config_size(); i++) {
+	const protocol::prp_ue_config ue_config = ue_configs.ue_config(i);
+	int cell_id = cell_config.cell_id();
+	// If this UE is assigned to this cell
+	if (ue_config.pcell_carrier_index() == cell_id) {
+	  // Get the MAC stats for this UE
+	  ::std::shared_ptr<const rib::ue_mac_rib_info> ue_mac_info = agent_config->get_ue_mac_info(ue_config.rnti());
+	  
+	  // Get the scheduling info
+	  ::std::shared_ptr<ue_scheduling_info> ue_sched_info = sched_info->get_ue_scheduling_info(ue_config.rnti());
+	  transmission_mode = ue_config.transmission_mode();
+	  
+	  if (ue_sched_info->is_high_priority()) {
+	    continue;
+	  }
+
+	  if (ue_sched_info->get_nb_rbs_required(cell_id) <= 0) {
+	    continue;
+	  }
+
 	  perform_pre_processor_allocation(cell_config,
 					   ue_config,
 					   sched_info,
@@ -170,6 +229,7 @@ void progran::app::scheduler::perform_pre_processor_allocation(const protocol::p
       //TODO: No TM5 for now
       if ((i == n_rbg - 1) && ((cell_config.dl_bandwidth() == 25) || (cell_config.dl_bandwidth() == 50))) {
 	rballoc_sub[i] = 1;
+	sched_info->toggle_vrb_map(cell_id, i);
 	ue_sched_info->set_rballoc_sub(cell_id, i, 1);
 	int nb_rem = ue_sched_info->get_nb_rbs_required_remaining(cell_id) - min_rb_unit + 1;
 	ue_sched_info->set_nb_rbs_required_remaining(cell_id, nb_rem);
@@ -178,6 +238,7 @@ void progran::app::scheduler::perform_pre_processor_allocation(const protocol::p
       } else {
 	if (ue_sched_info->get_nb_rbs_required_remaining(cell_id) >= min_rb_unit) {
 	  rballoc_sub[i] = 1;
+	  sched_info->toggle_vrb_map(cell_id, i);
 	  ue_sched_info->set_rballoc_sub(cell_id, i, 1);
 	  int nb_rem = ue_sched_info->get_nb_rbs_required_remaining(cell_id) - min_rb_unit;
 	  ue_sched_info->set_nb_rbs_required_remaining(cell_id, nb_rem);

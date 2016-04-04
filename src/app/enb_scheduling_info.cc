@@ -1,4 +1,5 @@
 #include "enb_scheduling_info.h"
+#include "remote_scheduler_primitives.h"
 
 std::shared_ptr<progran::app::scheduler::ue_scheduling_info>
 progran::app::scheduler::enb_scheduling_info::get_ue_scheduling_info(progran::rib::rnti_t rnti) {
@@ -17,6 +18,20 @@ void progran::app::scheduler::enb_scheduling_info::create_ue_scheduling_info(pro
 }
 
 
+void progran::app::scheduler::enb_scheduling_info::increase_num_pdcch_symbols(const protocol::prp_cell_config& cell_config,
+									     progran::rib::subframe_t subframe) {
+  int cell_id = cell_config.cell_id();
+  uint32_t prev_nCCE_max = get_nCCE_max(num_pdcch_symbols_[cell_id],
+					cell_config,
+					subframe);
+  num_pdcch_symbols_[cell_id]++;
+  uint32_t nCCE_max = get_nCCE_max(num_pdcch_symbols_[cell_id],
+				   cell_config,
+				   subframe);
+  nCCE_rem_[cell_id] = nCCE_max - (prev_nCCE_max - nCCE_rem_[cell_id]); 
+				   
+}
+
 void progran::app::scheduler::enb_scheduling_info::start_new_scheduling_round(progran::rib::subframe_t subframe,
 									     const protocol::prp_cell_config& cell_config) {
   
@@ -24,6 +39,10 @@ void progran::app::scheduler::enb_scheduling_info::start_new_scheduling_round(pr
   
   std::fill(vrb_map_[cell_id], vrb_map_[cell_id] + rib::N_RBG_MAX, 0);
   num_pdcch_symbols_[cell_id] = 0;
+  
+  nCCE_rem_[cell_id] = get_nCCE_max(num_pdcch_symbols_[cell_id],
+				    cell_config,
+				    subframe);
   
   int n_rb_dl = cell_config.dl_bandwidth();
   

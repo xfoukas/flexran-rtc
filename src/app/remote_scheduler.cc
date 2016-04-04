@@ -435,6 +435,10 @@ void progran::app::scheduler::remote_scheduler::run_periodic_task() {
 	    aggregation = 2;
 	    dl_dci->set_aggr_level(aggregation);
 	    
+	    enb_sched_info->assign_CCE(cell_id, 1<<aggregation);
+	    ue_sched_info->is_new_ue(false);
+	    ue_sched_info->is_high_priority(false);
+
 	    switch(ue_config.transmission_mode()) {
 	    case 1:
 	    case 2:
@@ -466,6 +470,7 @@ void progran::app::scheduler::remote_scheduler::run_periodic_task() {
     out_message.set_msg_dir(protocol::INITIATING_MESSAGE);
     out_message.set_allocated_dl_mac_config_msg(dl_mac_config_msg);
     if (dl_mac_config_msg->dl_ue_data_size() > 0) {
+      std::cout << "Scheduled " << dl_mac_config_msg->dl_ue_data_size() << "UEs in this round" << std::endl;
       req_manager_.send_message(agent_id, out_message);
 
     }

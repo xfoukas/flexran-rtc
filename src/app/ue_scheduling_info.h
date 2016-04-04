@@ -18,11 +18,12 @@ namespace progran {
 	
       ue_scheduling_info(rib::rnti_t rnti)
 	: ta_timer_(20), nb_scheduled_rbs_{0},
-	  dl_pow_off_{2}, nb_rbs_required_{0}, ndi_{{0}},
+	  dl_pow_off_{2}, nb_rbs_required_{0}, ndi_{{0}}, 
 						 rnti_(rnti), rballoc_sub_{{0}},
 						   nb_rbs_required_remaining_{0},
+						     nb_rbs_required_remaining_1_{0},
 						     harq_round_{{{0}}},
-						       pucch_tpc_tx_frame_(0), pucch_tpc_tx_subframe_(0) {}
+						       pucch_tpc_tx_frame_(0), pucch_tpc_tx_subframe_(0), new_ue_(true), high_priority_(true) {}
 
        void decr_ta_timer() { ta_timer_--; }
 
@@ -51,6 +52,14 @@ namespace progran {
        
        uint16_t get_nb_rbs_required_remaining(uint16_t cell_id) const {
 	 return nb_rbs_required_remaining_[cell_id];
+       }
+
+       void set_nb_rbs_required_remaining1(uint16_t cell_id, uint16_t nb_rbs) {
+	 nb_rbs_required_remaining_1_[cell_id] = nb_rbs;
+       }
+       
+       uint16_t get_nb_rbs_required_remaining1(uint16_t cell_id) const {
+	 return nb_rbs_required_remaining_1_[cell_id];
        }
        
        void set_rballoc_sub(uint16_t cell_id, int rbg, int val) {
@@ -121,6 +130,14 @@ namespace progran {
 	 pucch_tpc_tx_subframe_ = subframe;
        }
        
+       bool is_new_ue() const { return new_ue_; }
+
+       void is_new_ue(bool flag) { new_ue_ = flag; }
+
+       bool is_high_priority() const { return high_priority_; }
+
+       void is_high_priority(bool flag) { high_priority_ = flag; }
+
        progran::rib::subframe_t get_pucch_tpc_tx_subframe() const {
 	 return pucch_tpc_tx_subframe_;
        }
@@ -144,11 +161,14 @@ namespace progran {
        
        uint8_t rballoc_sub_[rib::MAX_NUM_CC][rib::N_RBG_MAX];
        uint16_t nb_rbs_required_remaining_[rib::MAX_NUM_CC];
+       uint16_t nb_rbs_required_remaining_1_[rib::MAX_NUM_CC];
        uint16_t pre_nb_rbs_available_[rib::MAX_NUM_CC] = {0};
        
        rib::frame_t pucch_tpc_tx_frame_;
        rib::subframe_t pucch_tpc_tx_subframe_;
-       
+      
+       bool new_ue_;
+       bool high_priority_;
        //uint8_t current_harq_pid_;
        
       };

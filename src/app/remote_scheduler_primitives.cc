@@ -98,42 +98,50 @@ bool progran::app::scheduler::CCE_allocation_infeasible(std::shared_ptr<enb_sche
 							uint8_t aggregation,
 							progran::rib::subframe_t subframe) {
   int allocation_is_feasible = 1;
-  int nCCE_max;
+  int nCCE_rem, nCCE_max;
   uint16_t cell_id = cell_config.cell_id();
   int common_dci = 0;
   // if ((subframe == 0) || (subframe == 5)) {
   //   common_dci = 1;
   // }
   
-  nCCE_max = get_nCCE_max(enb_sched_info->get_num_pdcch_symbols(cell_id),
-			  cell_config,
-			  subframe);
-  
+
+    
+  //nCCE_max = get_nCCE_max(enb_sched_info->get_num_pdcch_symbols(cell_id),
+  //			 cell_config,
+  //			 subframe);
+  nCCE_rem = enb_sched_info->get_nCCE_rem(cell_id);
   while (allocation_is_feasible == 1) {
-    if ((1<<aggregation) > nCCE_max) {
+    if ((1<<aggregation) > nCCE_rem) {
       if (enb_sched_info->get_num_pdcch_symbols(cell_id) == 3) {
 	allocation_is_feasible = 0;
       } else {
-	enb_sched_info->increase_num_pdcch_symbols(cell_id);
-	nCCE_max = get_nCCE_max(enb_sched_info->get_num_pdcch_symbols(cell_id),
-				cell_config,
-				subframe);
+	enb_sched_info->increase_num_pdcch_symbols(cell_config,
+						   subframe);
+	nCCE_rem = enb_sched_info->get_nCCE_rem(cell_id);
+	//nCCE_max = get_nCCE_max(enb_sched_info->get_num_pdcch_symbols(cell_id),
+	//			cell_config,
+	//			subframe);
       }
       continue;
     } else {
       // Since assignment is feasible, get the index
-      
+      nCCE_max = get_nCCE_max(enb_sched_info->get_num_pdcch_symbols(cell_id),
+			      cell_config,
+			      subframe);
       if (get_nCCE_offset(1<<aggregation,
 			  nCCE_max,
 			  common_dci,
 			  ue_config.rnti(),
 			  subframe) >= 0) {
+	//enb_sched_info->assign_CCE(cell_id, 1<<aggregation);
 	return false;
       } else {
 	if (enb_sched_info->get_num_pdcch_symbols(cell_id) == 3) {
 	  allocation_is_feasible = 0;
 	} else {
-	  enb_sched_info->increase_num_pdcch_symbols(cell_id);
+	  enb_sched_info->increase_num_pdcch_symbols(cell_config,
+						     subframe);
 	  nCCE_max = get_nCCE_max(enb_sched_info->get_num_pdcch_symbols(cell_id),
 				  cell_config,
 				  subframe);
@@ -143,8 +151,10 @@ bool progran::app::scheduler::CCE_allocation_infeasible(std::shared_ptr<enb_sche
     }
   }
   if (allocation_is_feasible == 1) {
+    enb_sched_info->assign_CCE(cell_id, 1<<aggregation);
     return false;
   }
+  
   return true;
 }
 
@@ -208,14 +218,35 @@ uint16_t progran::app::scheduler::get_nCCE_max(uint8_t num_pdcch_symbols,
   return (get_nquad(num_pdcch_symbols, cell_config, mi)/9);
 }
 
+uint8_t progran::app::scheduler::get_phich_resource(const protocol::prp_cell_config& cell_config) {
+  switch (cell_config.phich_resource()) {
+    case protocol::PRPR_ONE_SIXTH:
+      return 1;
+      break;
+    case protocol::PRPR_HALF:
+      return 3;
+      break;
+    case protocol::PRPR_ONE:
+      return 6;
+      break;
+    case protocol::PRPR_TWO:
+      return 12;
+      break;
+    default:
+      return 0;
+  }
+}
+
 uint16_t progran::app::scheduler::get_nquad(uint8_t num_pdcch_symbols,
 					    const protocol::prp_cell_config& cell_config,
 					    uint8_t mi) {
 
   uint16_t n_reg = 0;
-  uint8_t n_group_PHICH = (cell_config.phich_resource()*cell_config.dl_bandwidth())/48;
+  uint8_t phich_resource = get_phich_resource(cell_config);
 
-  if (((cell_config.phich_resource()*cell_config.dl_bandwidth())%48) > 0) {
+  uint8_t n_group_PHICH = (phich_resource * cell_config.dl_bandwidth())/48;
+
+  if (((phich_resource * cell_config.dl_bandwidth())%48) > 0) {
     n_group_PHICH++;
   }
 
