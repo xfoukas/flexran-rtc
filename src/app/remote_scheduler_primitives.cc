@@ -305,7 +305,7 @@ uint32_t progran::app::scheduler::allocate_prbs_sub(int nb_rb,
         break;
 
       case 25:
-        if ((get_nb_rbg(cell_config) - 1)) {
+        if (check == (get_nb_rbg(cell_config) - 1)) {
           nb_rb--;
         } else {
           nb_rb-=2;
@@ -314,7 +314,7 @@ uint32_t progran::app::scheduler::allocate_prbs_sub(int nb_rb,
         break;
 
       case 50:
-        if ((get_nb_rbg(cell_config) - 1)) {
+        if (check == (get_nb_rbg(cell_config) - 1)) {
           nb_rb-=2;
         } else {
           nb_rb-=3;

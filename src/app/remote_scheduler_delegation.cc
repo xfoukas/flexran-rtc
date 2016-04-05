@@ -114,7 +114,7 @@ void progran::app::scheduler::remote_scheduler_delegation::run_periodic_task() {
     dl_mac_config_msg->set_allocated_header(header);
     dl_mac_config_msg->set_sfn_sf(rib::get_sfn_sf(target_frame, target_subframe));
     
-    aggregation = 2;
+    aggregation = 1;
     
     // Go through the cell configs and set the variables
     for (int i = 0; i < enb_config.cell_config_size(); i++) {
@@ -134,7 +134,7 @@ void progran::app::scheduler::remote_scheduler_delegation::run_periodic_task() {
       enb_sched_info->start_new_scheduling_round(target_subframe, cell_config);
 
       // Run the preprocessor to make initial allocation of RBs to UEs (Need to do this over all scheduling_info of eNB)
-      run_dlsch_scheduler_preprocessor(cell_config, ue_configs, agent_config, enb_sched_info, target_subframe);
+      run_dlsch_scheduler_preprocessor(cell_config, ue_configs, lc_configs, agent_config, enb_sched_info, target_subframe);
     }
 
     // Go through the cells and schedule the UEs of this cell
@@ -251,7 +251,7 @@ void progran::app::scheduler::remote_scheduler_delegation::run_periodic_task() {
 	      nb_available_rb -= nb_rb;
 
 	      // TODO: Set this statically for now
-	      aggregation = 2;
+	      aggregation = 1;
 	      ndi = ue_sched_info->get_ndi(cell_id, harq_pid);
 	      tpc = 1;
 	      ue_has_transmission = true;
@@ -470,7 +470,7 @@ void progran::app::scheduler::remote_scheduler_delegation::run_periodic_task() {
 	    dl_dci->set_harq_process(harq_pid);
 
 	    // TODO: Currently set to static value. Need to create a function to obtain this
-	    aggregation = 2;
+	    aggregation = 1;
 	    dl_dci->set_aggr_level(aggregation);
 	    
 	    switch(ue_config.transmission_mode()) {

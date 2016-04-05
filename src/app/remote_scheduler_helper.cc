@@ -4,6 +4,7 @@
 
 void progran::app::scheduler::run_dlsch_scheduler_preprocessor(const protocol::prp_cell_config& cell_config,
 							       const protocol::prp_ue_config_reply& ue_configs,
+							       const protocol::prp_lc_config_reply& lc_configs,
 							       std::shared_ptr<const progran::rib::enb_rib_info> agent_config,
 							       std::shared_ptr<enb_scheduling_info> sched_info,
 							       progran::rib::subframe_t subframe) {
@@ -45,8 +46,17 @@ void progran::app::scheduler::run_dlsch_scheduler_preprocessor(const protocol::p
       } else {
 	ue_sched_info->start_new_scheduling_round(cell_id, ue_mac_info); // reset scheduling-related values 
       }
+      
+      const protocol::prp_lc_ue_config *lc_conf;
+
+      for (int k = 0; k < lc_configs.lc_ue_config_size(); k++) {
+	lc_conf = &(lc_configs.lc_ue_config(k));
+	if (lc_conf->rnti() == ue_config.rnti()) {
+	  break;
+	}
+      } 
       //Calculate the number of RBs required by each UE based on their logical channels' buffer status
-      assign_rbs_required(ue_sched_info, ue_mac_info, cell_config, ue_config);
+      assign_rbs_required(ue_sched_info, ue_mac_info, cell_config, ue_config, *lc_conf);
     }
   }
 
@@ -112,8 +122,13 @@ void progran::app::scheduler::run_dlsch_scheduler_preprocessor(const protocol::p
       
       // Get the scheduling info
       ::std::shared_ptr<ue_scheduling_info> ue_sched_info = sched_info->get_ue_scheduling_info(ue_config.rnti());
+
+      if (ue_sched_info->get_nb_rbs_required(cell_id) <= 0 ) {
+	continue;
+      }
   
-      if (ue_sched_info->is_new_ue()) {
+      if (ue_sched_info->is_high_priority()) {
+	std::cout << "Is high-priority UE: " << ue_config.rnti() << std::endl;
 	ue_sched_info->set_nb_rbs_required_remaining1(cell_id, ue_sched_info->get_nb_rbs_required(cell_id));
       } else {
 	 ue_sched_info->set_nb_rbs_required_remaining1(cell_id, ::std::min(average_rbs_per_user,
@@ -171,6 +186,9 @@ void progran::app::scheduler::run_dlsch_scheduler_preprocessor(const protocol::p
 	    continue;
 	  }
 
+	  std::cout << "Need to schedule a high priority UE:" << ue_config.rnti() << std::endl;
+	  std::cout << "Was allocated " << ue_sched_info->get_nb_rbs_required(cell_id) << " rbs" << std::endl;
+
 	  perform_pre_processor_allocation(cell_config,
 					   ue_config,
 					   sched_info,
@@ -208,6 +226,24 @@ void progran::app::scheduler::run_dlsch_scheduler_preprocessor(const protocol::p
       }
     }
  }
+ // for (int i = 0; i < ue_configs.ue_config_size(); i++) {
+ //   const protocol::prp_ue_config ue_config = ue_configs.ue_config(i);
+ //   int cell_id = cell_config.cell_id();
+ //   // If this UE is assigned to this cell
+ //   if (ue_config.pcell_carrier_index() == cell_id) {
+ //     // Get the MAC stats for this UE
+ //     ::std::shared_ptr<const rib::ue_mac_rib_info> ue_mac_info = agent_config->get_ue_mac_info(ue_config.rnti());
+     
+ //     // Get the scheduling info
+ //     ::std::shared_ptr<ue_scheduling_info> ue_sched_info = sched_info->get_ue_scheduling_info(ue_config.rnti());
+ //     std::cout << "Rballoc for UE " << i << std::endl;
+ //     std::cout << "Allocated " << ue_sched_info->get_pre_nb_rbs_available(cell_id) << " RBs " << std::endl;
+ //     for (int j = 0; j <  get_nb_rbg(cell_config); j++) {
+ //       std::cout << (int) ue_sched_info->get_rballoc_sub(cell_id, j);
+ //     }
+ //     std::cout << std::endl;
+ //   }
+ // }
 }
 
 void progran::app::scheduler::perform_pre_processor_allocation(const protocol::prp_cell_config& cell_config,
@@ -256,9 +292,12 @@ void progran::app::scheduler::perform_pre_processor_allocation(const protocol::p
 void progran::app::scheduler::assign_rbs_required(::std::shared_ptr<ue_scheduling_info> ue_sched_info,
 						  ::std::shared_ptr<const rib::ue_mac_rib_info> ue_mac_info,
 						  const protocol::prp_cell_config& cell_config,
-						  const protocol::prp_ue_config& ue_config) {
+						  const protocol::prp_ue_config& ue_config,
+						  const protocol::prp_lc_ue_config& lc_ue_config) {
   uint16_t TBS = 0;
   
+  //std::cout << "Doing this for UE: " << ue_config.rnti() << std::endl;
+
   //Compute the mcs of the UE for this cell
   int mcs = 0;
   const protocol::prp_ue_stats_report& mac_report = ue_mac_info->get_mac_stats_report();
@@ -273,10 +312,27 @@ void progran::app::scheduler::assign_rbs_required(::std::shared_ptr<ue_schedulin
   int total_buffer_bytes = 0;
   // Go through the logical channels of the UE and find how many bytes need to be transmitted in total
   for (int i = 0; i < mac_report.rlc_report_size(); i++) {
+    //std::cout << "We have an RLC report for this" <<  std::endl;
+   
+    if (lc_ue_config.lc_config_size() > 2) {
+      if (ue_sched_info->is_high_priority()) {
+	//std::cout << "No longer high priority" << std::endl;
+      }
+      	ue_sched_info->is_high_priority(false);
+    }
+
+    // Workaround for RRC_CONNECTED
+    //    if ((mac_report.rlc_report(i).lc_id() == 3)) {
+    //  if (mac_report.rlc_report(i).tx_queue_size() > 0) {
+
+    //  }
+    //}
+
     total_buffer_bytes += mac_report.rlc_report(i).tx_queue_size();
   }
 
   if (total_buffer_bytes > 0) {
+    //std::cout << "Have something to transmit" << std::endl;
     if (mcs  == 0) {
       ue_sched_info->set_nb_rbs_required(cell_config.cell_id(), 4);
     } else {
@@ -284,6 +340,9 @@ void progran::app::scheduler::assign_rbs_required(::std::shared_ptr<ue_schedulin
     }
 
     TBS = get_TBS_DL(mcs, ue_sched_info->get_nb_rbs_required(cell_config.cell_id()));
+    
+    //std::cout << "MCS is " << (int) mcs << std::endl;
+    
 
     // Calculate the required number of RBs for the UE
     while (TBS < total_buffer_bytes) {
@@ -297,5 +356,6 @@ void progran::app::scheduler::assign_rbs_required(::std::shared_ptr<ue_schedulin
       }
       TBS = get_TBS_DL(mcs, ue_sched_info->get_nb_rbs_required(cell_config.cell_id()));
     }
+    //std::cout << "RNTI " << ue_config.rnti() << ": For this MCS, " << ue_sched_info->get_nb_rbs_required(cell_config.cell_id()) << " rbs are required and the TBS is " << (int) TBS <<  std::endl;
   }
 }

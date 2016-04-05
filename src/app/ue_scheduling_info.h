@@ -23,7 +23,7 @@ namespace progran {
 						   nb_rbs_required_remaining_{0},
 						     nb_rbs_required_remaining_1_{0},
 						     harq_round_{{{0}}},
-						       pucch_tpc_tx_frame_(0), pucch_tpc_tx_subframe_(0), new_ue_(true), high_priority_(true) {}
+						       pucch_tpc_tx_frame_(0), pucch_tpc_tx_subframe_(0), high_priority_(true) {}
 
        void decr_ta_timer() { ta_timer_--; }
 
@@ -130,10 +130,6 @@ namespace progran {
 	 pucch_tpc_tx_subframe_ = subframe;
        }
        
-       bool is_new_ue() const { return new_ue_; }
-
-       void is_new_ue(bool flag) { new_ue_ = flag; }
-
        bool is_high_priority() const { return high_priority_; }
 
        void is_high_priority(bool flag) { high_priority_ = flag; }
@@ -167,7 +163,6 @@ namespace progran {
        rib::frame_t pucch_tpc_tx_frame_;
        rib::subframe_t pucch_tpc_tx_subframe_;
       
-       bool new_ue_;
        bool high_priority_;
        //uint8_t current_harq_pid_;
        

@@ -18,7 +18,7 @@ namespace progran {
 #ifndef ABSTRACT_SIMULATION
       const static int target_dl_mcs_ = 28;
 #else
-      const static int target_dl_mcs_ = 23;
+      const static int target_dl_mcs_ = 15;
 #endif
 
       

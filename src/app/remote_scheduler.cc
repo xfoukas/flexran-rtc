@@ -108,13 +108,14 @@ void progran::app::scheduler::remote_scheduler::run_periodic_task() {
       enb_sched_info->start_new_scheduling_round(target_subframe, cell_config);
 
       // Run the preprocessor to make initial allocation of RBs to UEs (Need to do this over all scheduling_info of eNB)
-      run_dlsch_scheduler_preprocessor(cell_config, ue_configs, agent_config, enb_sched_info, target_subframe);
+      run_dlsch_scheduler_preprocessor(cell_config, ue_configs, lc_configs, agent_config, enb_sched_info, target_subframe);
     }
 
     // Go through the cells and schedule the UEs of this cell
     for (int i = 0; i < enb_config.cell_config_size(); i++) {
       const protocol::prp_cell_config cell_config = enb_config.cell_config(i);
       int cell_id = cell_config.cell_id();
+      
 
       for (int UE_id = 0; UE_id < ue_configs.ue_config_size(); UE_id++) {
 	const protocol::prp_ue_config ue_config = ue_configs.ue_config(UE_id);
@@ -131,7 +132,6 @@ void progran::app::scheduler::remote_scheduler::run_periodic_task() {
 	  //   enb_sched_info->create_ue_scheduling_info(ue_config.rnti());
 	  //   ue_sched_info = enb_sched_info->get_ue_scheduling_info(ue_config.rnti());
 	  // }
-	  
 	  // Check if we have stats for this UE
 	  if (!ue_mac_info) {
 	    continue;
@@ -171,7 +171,6 @@ void progran::app::scheduler::remote_scheduler::run_periodic_task() {
 	  protocol::prp_dl_data *dl_data = dl_mac_config_msg->add_dl_ue_data();
 
 	  int status = ue_mac_info->get_harq_stats(cell_id, harq_pid);
-
 	  if (status == protocol::PRHS_NACK) {
 	    // Use the MCS that was previously assigned to this HARQ process
 	    mcs = ue_sched_info->get_mcs(cell_id, harq_pid);
@@ -345,18 +344,15 @@ void progran::app::scheduler::remote_scheduler::run_periodic_task() {
 	      }
 
 	      // If we have decreased too much we don't have enough RBs, increase MCs
-	      while ((TBS < (sdu_length_total + header_len + ta_len)) &&
-		     (((ue_sched_info->get_dl_power_offset(cell_id) > 0) && (mcs_tmp < 28)) ||
-		      ((ue_sched_info->get_dl_power_offset(cell_id) == 0) && (mcs_tmp <= 15)))) {
+	      while ((TBS < (sdu_length_total + header_len + ta_len)) && (mcs_tmp < 28)) {
+		     // (((ue_sched_info->get_dl_power_offset(cell_id) > 0) && (mcs_tmp < 28)) ||
+		     // ((ue_sched_info->get_dl_power_offset(cell_id) == 0) && (mcs_tmp <= 15)))) {
 		mcs_tmp++;
 		TBS = get_TBS_DL(mcs_tmp, nb_rb);
 	      }
 
 	      dci_tbs = TBS;
 	      mcs = mcs_tmp;
-	      //if (mcs == 28) {
-	      //mcs = 27;
-	      //}
 	      
 	      //	      std::cout << "Decided MCS, nb_rb and TBS are " << mcs << " " << nb_rb << " " << dci_tbs << std::endl;
 	      // Update the mcs used for this harq process
@@ -409,6 +405,7 @@ void progran::app::scheduler::remote_scheduler::run_periodic_task() {
 	      }
 	      ue_sched_info->toggle_ndi(cell_id, harq_pid);
 	      ndi = ue_sched_info->get_ndi(cell_id, harq_pid);
+	      //std::cout << "Toggling NDI for harq " << (int) harq_pid << std::endl;
 	      ue_has_transmission = true;
 	    } else { // There is no data to transmit, so don't schedule
 	      ue_has_transmission = false;
@@ -436,8 +433,23 @@ void progran::app::scheduler::remote_scheduler::run_periodic_task() {
 	    dl_dci->set_aggr_level(aggregation);
 	    
 	    enb_sched_info->assign_CCE(cell_id, 1<<aggregation);
-	    ue_sched_info->is_new_ue(false);
-	    ue_sched_info->is_high_priority(false);
+	    
+	    //ue_sched_info->is_high_priority(false);
+
+	    //std::cout << "Rballoc for UE " << ue_config.rnti() << std::endl;
+	    //std::cout << "Allocated " << nb_rb << " RBs " << std::endl;
+	    //std::cout << "Harq pid/round: " << (int) harq_pid << "/" << (int) round << std::endl;
+	    //std::cout << "Ndi: " << (int) ndi << std::endl;
+	    //std::cout << "TPC: " << (int) tpc << std::endl;
+	    //std::cout << "MCS: " << (int) mcs << std::endl;
+	    //std::cout << "TBS: " << (int) dci_tbs << std::endl;
+	    //std::cout << "Frame: " << (int) target_frame << " Subframe: " << (int) target_subframe << std::endl;
+	    //std::cout << "Test: " << (int) get_TBS_DL(23, 2) << std::endl;
+	    
+	    //for (int j = 0; j <  get_nb_rbg(cell_config); j++) {
+	    //  std::cout << (int) ue_sched_info->get_rballoc_sub_scheduled(cell_id, harq_pid, j);
+	    //}
+	    //std::cout << std::endl;
 
 	    switch(ue_config.transmission_mode()) {
 	    case 1:
@@ -470,7 +482,7 @@ void progran::app::scheduler::remote_scheduler::run_periodic_task() {
     out_message.set_msg_dir(protocol::INITIATING_MESSAGE);
     out_message.set_allocated_dl_mac_config_msg(dl_mac_config_msg);
     if (dl_mac_config_msg->dl_ue_data_size() > 0) {
-      std::cout << "Scheduled " << dl_mac_config_msg->dl_ue_data_size() << "UEs in this round" << std::endl;
+      // std::cout << "Scheduled " << dl_mac_config_msg->dl_ue_data_size() << " UEs in this round\n" << std::endl;
       req_manager_.send_message(agent_id, out_message);
 
     }
