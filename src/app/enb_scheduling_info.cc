@@ -49,7 +49,7 @@ void progran::app::scheduler::enb_scheduling_info::start_new_scheduling_round(pr
   // Check if we have other things to schedule as well (OAI specific for the moment)
   if ((subframe == 0) || (subframe == 5)) {
     // We will need at least one symbol for the scheduling
-    num_pdcch_symbols_[cell_id] = 1;
+    num_pdcch_symbols_[cell_id] = 3;
     // Set the first 4 RBs for RA
     vrb_map_[cell_id][0] = 1;
     vrb_map_[cell_id][1] = 1;

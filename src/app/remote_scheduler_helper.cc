@@ -128,7 +128,7 @@ void progran::app::scheduler::run_dlsch_scheduler_preprocessor(const protocol::p
       }
   
       if (ue_sched_info->is_high_priority()) {
-	std::cout << "Is high-priority UE: " << ue_config.rnti() << std::endl;
+	//std::cout << "Is high-priority UE: " << ue_config.rnti() << std::endl;
 	ue_sched_info->set_nb_rbs_required_remaining1(cell_id, ue_sched_info->get_nb_rbs_required(cell_id));
       } else {
 	 ue_sched_info->set_nb_rbs_required_remaining1(cell_id, ::std::min(average_rbs_per_user,
@@ -165,6 +165,7 @@ void progran::app::scheduler::run_dlsch_scheduler_preprocessor(const protocol::p
 
     if (total_ue_count > 0) {
       // Go through all the UEs and allocate the resources in sched info first to high priority and then to rest
+      bool scheduled_hp = false;
 
       for (int i = 0; i < ue_configs.ue_config_size(); i++) {
 	const protocol::prp_ue_config ue_config = ue_configs.ue_config(i);
@@ -186,8 +187,9 @@ void progran::app::scheduler::run_dlsch_scheduler_preprocessor(const protocol::p
 	    continue;
 	  }
 
-	  std::cout << "Need to schedule a high priority UE:" << ue_config.rnti() << std::endl;
-	  std::cout << "Was allocated " << ue_sched_info->get_nb_rbs_required(cell_id) << " rbs" << std::endl;
+	  scheduled_hp = true;
+	  //std::cout << "Need to schedule a high priority UE:" << ue_config.rnti() << std::endl;
+	  //std::cout << "Was allocated " << ue_sched_info->get_nb_rbs_required(cell_id) << " rbs" << std::endl;
 
 	  perform_pre_processor_allocation(cell_config,
 					   ue_config,
@@ -197,31 +199,34 @@ void progran::app::scheduler::run_dlsch_scheduler_preprocessor(const protocol::p
 	}
       }
       
-      for (int i = 0; i < ue_configs.ue_config_size(); i++) {
-	const protocol::prp_ue_config ue_config = ue_configs.ue_config(i);
-	int cell_id = cell_config.cell_id();
-	// If this UE is assigned to this cell
-	if (ue_config.pcell_carrier_index() == cell_id) {
-	  // Get the MAC stats for this UE
-	  ::std::shared_ptr<const rib::ue_mac_rib_info> ue_mac_info = agent_config->get_ue_mac_info(ue_config.rnti());
-	  
-	  // Get the scheduling info
-	  ::std::shared_ptr<ue_scheduling_info> ue_sched_info = sched_info->get_ue_scheduling_info(ue_config.rnti());
-	  transmission_mode = ue_config.transmission_mode();
-	  
-	  if (ue_sched_info->is_high_priority()) {
-	    continue;
-	  }
+      if (!scheduled_hp) {
+      
+	for (int i = 0; i < ue_configs.ue_config_size(); i++) {
+	  const protocol::prp_ue_config ue_config = ue_configs.ue_config(i);
+	  int cell_id = cell_config.cell_id();
+	  // If this UE is assigned to this cell
+	  if (ue_config.pcell_carrier_index() == cell_id) {
+	    // Get the MAC stats for this UE
+	    ::std::shared_ptr<const rib::ue_mac_rib_info> ue_mac_info = agent_config->get_ue_mac_info(ue_config.rnti());
+	    
+	    // Get the scheduling info
+	    ::std::shared_ptr<ue_scheduling_info> ue_sched_info = sched_info->get_ue_scheduling_info(ue_config.rnti());
+	    transmission_mode = ue_config.transmission_mode();
+	    
+	    if (ue_sched_info->is_high_priority()) {
+	      continue;
+	    }
+	    
+	    if (ue_sched_info->get_nb_rbs_required(cell_id) <= 0) {
+	      continue;
+	    }
 
-	  if (ue_sched_info->get_nb_rbs_required(cell_id) <= 0) {
-	    continue;
+	    perform_pre_processor_allocation(cell_config,
+					     ue_config,
+					     sched_info,
+					     ue_sched_info,
+					     transmission_mode);
 	  }
-
-	  perform_pre_processor_allocation(cell_config,
-					   ue_config,
-					   sched_info,
-					   ue_sched_info,
-					   transmission_mode);
 	}
       }
     }
@@ -318,15 +323,16 @@ void progran::app::scheduler::assign_rbs_required(::std::shared_ptr<ue_schedulin
       if (ue_sched_info->is_high_priority()) {
 	//std::cout << "No longer high priority" << std::endl;
       }
-      	ue_sched_info->is_high_priority(false);
+      ue_sched_info->is_high_priority(false);
     }
 
+    
     // Workaround for RRC_CONNECTED
-    //    if ((mac_report.rlc_report(i).lc_id() == 3)) {
-    //  if (mac_report.rlc_report(i).tx_queue_size() > 0) {
-
-    //  }
-    //}
+    if ((mac_report.rlc_report(i).lc_id() == 1)) {
+      if (mac_report.rlc_report(i).tx_queue_size() > 0) {
+	ue_sched_info->is_high_priority(true);
+      }
+    }
 
     total_buffer_bytes += mac_report.rlc_report(i).tx_queue_size();
   }
