@@ -34,7 +34,7 @@ void delegate_control(int agent_id, const progran::core::requests_manager& req_m
   std::string test(ret, len);
   control_delegation_msg->set_payload(ret, len);
   std::string s = "schedule_ue_spec_default";
-  control_delegation_msg->add_name(s);
+  control_delegation_msg->set_name(s);
   // Create and send the progran message
   d_message.set_msg_dir(protocol::INITIATING_MESSAGE);
   d_message.set_allocated_control_delegation_msg(control_delegation_msg);
