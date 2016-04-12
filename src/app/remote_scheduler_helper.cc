@@ -47,7 +47,7 @@ void progran::app::scheduler::run_dlsch_scheduler_preprocessor(const protocol::p
 	ue_sched_info->start_new_scheduling_round(cell_id, ue_mac_info); // reset scheduling-related values 
       }
       
-      const protocol::prp_lc_ue_config *lc_conf;
+      const protocol::prp_lc_ue_config *lc_conf = nullptr;
 
       for (int k = 0; k < lc_configs.lc_ue_config_size(); k++) {
 	lc_conf = &(lc_configs.lc_ue_config(k));
@@ -55,8 +55,11 @@ void progran::app::scheduler::run_dlsch_scheduler_preprocessor(const protocol::p
 	  break;
 	}
       } 
-      //Calculate the number of RBs required by each UE based on their logical channels' buffer status
-      assign_rbs_required(ue_sched_info, ue_mac_info, cell_config, ue_config, *lc_conf);
+      
+      if (lc_conf != nullptr) {
+	//Calculate the number of RBs required by each UE based on their logical channels' buffer status
+	assign_rbs_required(ue_sched_info, ue_mac_info, cell_config, ue_config, *lc_conf);
+      }
     }
   }
 
