@@ -150,6 +150,7 @@ set(APP_SRC
   ${RT_CONTROLLER_APP_DIR}/enb_scheduling_info.cc
   ${RT_CONTROLLER_APP_DIR}/ue_scheduling_info.cc
   ${RT_CONTROLLER_APP_DIR}/remote_scheduler_delegation.cc
+  ${RT_CONTROLLER_APP_DIR}/delegation_manager.cc
 )
 
 add_library(RT_CONTROLLER_APP_LIB

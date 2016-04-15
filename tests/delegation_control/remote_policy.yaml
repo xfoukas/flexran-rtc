@@ -1,0 +1,6 @@
+mac:
+ - dl_scheduler:
+    behavior : schedule_ue_spec_remote
+    parameters:
+      period: !!int 20
+      sched : [!!int 2, !!int 3, !!int 4]

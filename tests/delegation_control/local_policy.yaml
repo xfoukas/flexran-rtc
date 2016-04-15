@@ -1,0 +1,5 @@
+mac:
+ - dl_scheduler:
+    behavior : schedule_ue_spec_default
+    parameters:
+      selected_subframe : !!int 9
