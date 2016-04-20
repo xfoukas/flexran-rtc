@@ -15,6 +15,7 @@
 #include "stats_manager.h"
 #include "remote_scheduler.h"
 #include "remote_scheduler_delegation.h"
+#include "remote_scheduler_eicic.h"
 #include "delegation_manager.h"
 #include "requests_manager.h"
 
@@ -47,13 +48,17 @@ int main(int argc, char *argv[]) {
   std::shared_ptr<progran::app::component> remote_sched(new progran::app::scheduler::remote_scheduler(rib, rm));
   tm.register_app(remote_sched);
 
+  // eICIC remote scheduler
+  //std::shared_ptr<progran::app::component> remote_sched_eicic(new progran::app::scheduler::remote_scheduler_eicic(rib, rm));
+  //tm.register_app(remote_sched_eicic);
+
   // Remote scheduler with delegation (TEST purposes)
   // std::shared_ptr<progran::app::component> remote_sched(new progran::app::scheduler::remote_scheduler_delegation(rib, rm));
   // tm.register_app(remote_sched);
   
   // Delegation manager (TEST purposes)
-  std::shared_ptr<progran::app::component> delegation_manager(new progran::app::management::delegation_manager(rib, rm));
-  tm.register_app(delegation_manager);
+  //std::shared_ptr<progran::app::component> delegation_manager(new progran::app::management::delegation_manager(rib, rm));
+  //tm.register_app(delegation_manager);
 
   // Start the network thread
   std::thread networkThread(&progran::network::async_xface::execute_task, &net_xface);
