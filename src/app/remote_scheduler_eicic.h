@@ -32,9 +32,11 @@ namespace progran {
 	
 	// Set these values internally for now
 	
-	const int schedule_ahead = 0;
+	const int schedule_ahead = 1;
 	
-	int abs_[10] = {0, 1, 0, 0, 1, 0, 0, 1, 0, 0};
+	int abs_[10] = {0, 1, 0, 1, 0, 0, 0, 1, 0, 1};
+
+	const int macro_agent_id_ = 0;
 
       };
 
