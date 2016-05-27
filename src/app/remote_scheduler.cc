@@ -73,7 +73,7 @@ void progran::app::scheduler::remote_scheduler::run_periodic_task() {
       target_frame = current_frame;
     }
     int additional_frames = schedule_ahead / 10;
-    target_frame = (current_frame + additional_frames) % 1024;
+    target_frame = (target_frame + additional_frames) % 1024;
 
     //if ((target_subframe != 1) && (target_subframe != 4) && (target_subframe != 6) && (target_subframe != 8)) {
     //  continue;
