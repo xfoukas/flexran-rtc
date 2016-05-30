@@ -35,12 +35,6 @@ void progran::app::scheduler::remote_scheduler::run_periodic_task() {
   for (const auto& agent_id : agent_ids) {
 
     protocol::progran_message out_message;
-
-    // Create dl_mac_config message header
-    protocol::prp_header *header(new protocol::prp_header);
-    header->set_type(protocol::PRPT_DL_MAC_CONFIG);
-    header->set_version(0);
-    header->set_xid(0);
     
     ::std::shared_ptr<const rib::enb_rib_info> agent_config = rib_.get_agent(agent_id);
     const protocol::prp_enb_config_reply& enb_config = agent_config->get_enb_config();
@@ -84,6 +78,12 @@ void progran::app::scheduler::remote_scheduler::run_periodic_task() {
       continue;
     }
     //std::cout << "Scheduling for frame " << target_frame << " and subframe " << target_subframe << std::endl;
+
+    // Create dl_mac_config message header
+    protocol::prp_header *header(new protocol::prp_header);
+    header->set_type(protocol::PRPT_DL_MAC_CONFIG);
+    header->set_version(0);
+    header->set_xid(0);
 
     // Create dl_mac_config message
     protocol::prp_dl_mac_config *dl_mac_config_msg(new protocol::prp_dl_mac_config);
