@@ -244,7 +244,8 @@ void progran::app::scheduler::remote_scheduler::run_periodic_task() {
 	    }
 
 	    header_len_dcch = 2; // 2 bytes DCCH SDU subheader
-	    
+
+	    // TODO: Need to make this prioritized
 	    // Loop through the UE logical channels
 	    for (int j = 1; j < mac_report.rlc_report_size() + 1; j++) {
 	      header_len += 3;
@@ -257,7 +258,7 @@ void progran::app::scheduler::remote_scheduler::run_periodic_task() {
 		  if (data_to_request < 128) { // The header will be one byte less
 		    header_len--;
 		  }
-		  if (j == 1) {
+		  if ((j == 1) || (j == 2)) {
 		    data_to_request++; // It is not correct but fixes some RLC bug for DCCH
 		  }
 		  
