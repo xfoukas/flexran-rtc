@@ -1,9 +1,9 @@
 #ifndef PROTOCOL_MESSAGE_H_
 #define PROTOCOL_MESSAGE_H_
 
-#include "progran.pb.h"
+#include "flexran.pb.h"
 
-namespace progran {
+namespace flexran {
 
   namespace network {
     

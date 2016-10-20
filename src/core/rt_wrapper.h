@@ -12,7 +12,7 @@
 #include <syscall.h>
 #include <math.h>
 
-namespace progran {
+namespace flexran {
 
   namespace core {
 

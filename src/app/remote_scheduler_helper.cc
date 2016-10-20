@@ -2,12 +2,12 @@
 #include "remote_scheduler.h"
 #include "remote_scheduler_primitives.h"
 
-void progran::app::scheduler::run_dlsch_scheduler_preprocessor(const protocol::prp_cell_config& cell_config,
-							       const protocol::prp_ue_config_reply& ue_configs,
-							       const protocol::prp_lc_config_reply& lc_configs,
-							       std::shared_ptr<const progran::rib::enb_rib_info> agent_config,
+void flexran::app::scheduler::run_dlsch_scheduler_preprocessor(const protocol::flex_cell_config& cell_config,
+							       const protocol::flex_ue_config_reply& ue_configs,
+							       const protocol::flex_lc_config_reply& lc_configs,
+							       std::shared_ptr<const flexran::rib::enb_rib_info> agent_config,
 							       std::shared_ptr<enb_scheduling_info> sched_info,
-							       progran::rib::subframe_t subframe) {
+							       flexran::rib::subframe_t subframe) {
 
   uint16_t total_nb_available_rb;
   uint16_t min_rb_unit;
@@ -31,7 +31,7 @@ void progran::app::scheduler::run_dlsch_scheduler_preprocessor(const protocol::p
 
   // Find the active UEs for this cell
   for (int i = 0; i < ue_configs.ue_config_size(); i++) {
-    const protocol::prp_ue_config ue_config = ue_configs.ue_config(i);
+    const protocol::flex_ue_config ue_config = ue_configs.ue_config(i);
     int cell_id = cell_config.cell_id();
     // If this UE is assigned to this cell
     if (ue_config.pcell_carrier_index() == cell_id) {
@@ -47,7 +47,7 @@ void progran::app::scheduler::run_dlsch_scheduler_preprocessor(const protocol::p
 	ue_sched_info->start_new_scheduling_round(cell_id, ue_mac_info); // reset scheduling-related values 
       }
       
-      const protocol::prp_lc_ue_config *lc_conf = nullptr;
+      const protocol::flex_lc_ue_config *lc_conf = nullptr;
 
       for (int k = 0; k < lc_configs.lc_ue_config_size(); k++) {
 	lc_conf = &(lc_configs.lc_ue_config(k));
@@ -68,7 +68,7 @@ void progran::app::scheduler::run_dlsch_scheduler_preprocessor(const protocol::p
   total_ue_count = 0;
 
   for (int i = 0; i < ue_configs.ue_config_size(); i++) {
-    const protocol::prp_ue_config ue_config = ue_configs.ue_config(i);
+    const protocol::flex_ue_config ue_config = ue_configs.ue_config(i);
     int cell_id = cell_config.cell_id();
     // If this UE is assigned to this cell
     if (ue_config.pcell_carrier_index() == cell_id) {
@@ -85,7 +85,7 @@ void progran::app::scheduler::run_dlsch_scheduler_preprocessor(const protocol::p
       int round = ue_sched_info->get_harq_round(cell_id, harq_pid);
       // Check if round needs to be increased
       int status = ue_mac_info->get_harq_stats(cell_id, harq_pid);
-      if (status == protocol::PRHS_ACK) {
+      if (status == protocol::FLHS_ACK) {
 	round = 0;
       } else {
 	round++;
@@ -93,7 +93,7 @@ void progran::app::scheduler::run_dlsch_scheduler_preprocessor(const protocol::p
       }
       ue_sched_info->set_harq_round(cell_id, harq_pid, round);
 
-      if (status == protocol::PRHS_NACK) {
+      if (status == protocol::FLHS_NACK) {
 	ue_sched_info->set_nb_rbs_required(cell_id, ue_sched_info->get_nb_scheduled_rbs(cell_id, harq_pid));
       } else {
 	ue_sched_info->set_nb_scheduled_rbs(cell_id, harq_pid, 0);
@@ -116,7 +116,7 @@ void progran::app::scheduler::run_dlsch_scheduler_preprocessor(const protocol::p
   }
 
   for (int i = 0; i < ue_configs.ue_config_size(); i++) {
-    const protocol::prp_ue_config ue_config = ue_configs.ue_config(i);
+    const protocol::flex_ue_config ue_config = ue_configs.ue_config(i);
     int cell_id = cell_config.cell_id();
     // If this UE is assigned to this cell
     if (ue_config.pcell_carrier_index() == cell_id) {
@@ -143,7 +143,7 @@ void progran::app::scheduler::run_dlsch_scheduler_preprocessor(const protocol::p
  for (int r1 = 0; r1 < 2; r1++) {
     // Go through each of the UEs that need to be scheduled
     for (int i = 0; i < ue_configs.ue_config_size(); i++) {
-      const protocol::prp_ue_config ue_config = ue_configs.ue_config(i);
+      const protocol::flex_ue_config ue_config = ue_configs.ue_config(i);
       int cell_id = cell_config.cell_id();
       // If this UE is assigned to this cell
       if (ue_config.pcell_carrier_index() == cell_id) {
@@ -171,7 +171,7 @@ void progran::app::scheduler::run_dlsch_scheduler_preprocessor(const protocol::p
       bool scheduled_hp = false;
 
       for (int i = 0; i < ue_configs.ue_config_size(); i++) {
-	const protocol::prp_ue_config ue_config = ue_configs.ue_config(i);
+	const protocol::flex_ue_config ue_config = ue_configs.ue_config(i);
 	int cell_id = cell_config.cell_id();
 	// If this UE is assigned to this cell
 	if (ue_config.pcell_carrier_index() == cell_id) {
@@ -205,7 +205,7 @@ void progran::app::scheduler::run_dlsch_scheduler_preprocessor(const protocol::p
       if (!scheduled_hp) {
       
 	for (int i = 0; i < ue_configs.ue_config_size(); i++) {
-	  const protocol::prp_ue_config ue_config = ue_configs.ue_config(i);
+	  const protocol::flex_ue_config ue_config = ue_configs.ue_config(i);
 	  int cell_id = cell_config.cell_id();
 	  // If this UE is assigned to this cell
 	  if (ue_config.pcell_carrier_index() == cell_id) {
@@ -235,7 +235,7 @@ void progran::app::scheduler::run_dlsch_scheduler_preprocessor(const protocol::p
     }
  }
  // for (int i = 0; i < ue_configs.ue_config_size(); i++) {
- //   const protocol::prp_ue_config ue_config = ue_configs.ue_config(i);
+ //   const protocol::flex_ue_config ue_config = ue_configs.ue_config(i);
  //   int cell_id = cell_config.cell_id();
  //   // If this UE is assigned to this cell
  //   if (ue_config.pcell_carrier_index() == cell_id) {
@@ -254,8 +254,8 @@ void progran::app::scheduler::run_dlsch_scheduler_preprocessor(const protocol::p
  // }
 }
 
-void progran::app::scheduler::perform_pre_processor_allocation(const protocol::prp_cell_config& cell_config,
-							       const protocol::prp_ue_config& ue_config,
+void flexran::app::scheduler::perform_pre_processor_allocation(const protocol::flex_cell_config& cell_config,
+							       const protocol::flex_ue_config& ue_config,
 							       std::shared_ptr<enb_scheduling_info> sched_info,
 							       std::shared_ptr<ue_scheduling_info> ue_sched_info,
 							       int transmission_mode) {
@@ -297,18 +297,18 @@ void progran::app::scheduler::perform_pre_processor_allocation(const protocol::p
   
 }
 
-void progran::app::scheduler::assign_rbs_required(::std::shared_ptr<ue_scheduling_info> ue_sched_info,
+void flexran::app::scheduler::assign_rbs_required(::std::shared_ptr<ue_scheduling_info> ue_sched_info,
 						  ::std::shared_ptr<const rib::ue_mac_rib_info> ue_mac_info,
-						  const protocol::prp_cell_config& cell_config,
-						  const protocol::prp_ue_config& ue_config,
-						  const protocol::prp_lc_ue_config& lc_ue_config) {
+						  const protocol::flex_cell_config& cell_config,
+						  const protocol::flex_ue_config& ue_config,
+						  const protocol::flex_lc_ue_config& lc_ue_config) {
   uint16_t TBS = 0;
   
   //std::cout << "Doing this for UE: " << ue_config.rnti() << std::endl;
 
   //Compute the mcs of the UE for this cell
   int mcs = 0;
-  const protocol::prp_ue_stats_report& mac_report = ue_mac_info->get_mac_stats_report();
+  const protocol::flex_ue_stats_report& mac_report = ue_mac_info->get_mac_stats_report();
   for (int i = 0; i < mac_report.dl_cqi_report().csi_report_size(); i++) {
     if (cell_config.cell_id() == mac_report.dl_cqi_report().csi_report(i).serv_cell_index()) {
       mcs = rib::cqi_to_mcs[mac_report.dl_cqi_report().csi_report(i).p10csi().wb_cqi()];

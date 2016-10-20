@@ -12,18 +12,18 @@
 
 #include <sys/timerfd.h>
 
-namespace progran {
+namespace flexran {
 
   namespace core {
 
     class task_manager : public rt::rt_task {
     public:
 
-      task_manager(progran::rib::rib_updater& r_updater);
+      task_manager(flexran::rib::rib_updater& r_updater);
 
       void manage_rt_tasks();
       
-      void register_app(const std::shared_ptr<progran::app::component>& app);
+      void register_app(const std::shared_ptr<flexran::app::component>& app);
       
     private:
       
@@ -31,9 +31,9 @@ namespace progran {
   
       void wait_for_cycle();
       
-      progran::rib::rib_updater& r_updater_;
+      flexran::rib::rib_updater& r_updater_;
       
-      std::vector<std::shared_ptr<progran::app::component>> apps_;
+      std::vector<std::shared_ptr<flexran::app::component>> apps_;
 
       int sfd;
 

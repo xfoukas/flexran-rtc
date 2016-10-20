@@ -7,7 +7,7 @@
 #include "enb_scheduling_info.h"
 #include "ue_scheduling_info.h"
 
-namespace progran {
+namespace flexran {
 
   namespace app {
 

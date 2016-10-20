@@ -4,7 +4,7 @@
 #include <cstring>
 #include <cstdlib>
 
-namespace progran {
+namespace flexran {
 
   namespace network {
 

@@ -43,7 +43,7 @@ find_package(Protobuf REQUIRED)
 set(PROTOBUF_IMPORT_DIR "src/MESSAGES/V2")
 
 set (msgs
-    ${PROTOBUF_IMPORT_DIR}/progran.proto
+    ${PROTOBUF_IMPORT_DIR}/flexran.proto
     ${PROTOBUF_IMPORT_DIR}/header.proto
     ${PROTOBUF_IMPORT_DIR}/controller_commands.proto
     ${PROTOBUF_IMPORT_DIR}/mac_primitives.proto
@@ -59,35 +59,35 @@ set(GENERATED_PROTO_DIR proto_messages)
 
 set(protoc_call "tools/generate_protobuf")
 set(protobuf_generated_dir ${RT_CONTROLLER_BIN_DIR})
-set(PRPT_CC_DIR ${protobuf_generated_dir}/${GENERATED_PROTO_DIR})
+set(FLPT_CC_DIR ${protobuf_generated_dir}/${GENERATED_PROTO_DIR})
 
-execute_process(COMMAND ${protoc_call} ${PRPT_CC_DIR} ${PROTOBUF_IMPORT_DIR} ${msgs})
-file(GLOB PRPT_source ${PRPT_CC_DIR}/*.cc)
+execute_process(COMMAND ${protoc_call} ${FLPT_CC_DIR} ${PROTOBUF_IMPORT_DIR} ${msgs})
+file(GLOB FLPT_source ${FLPT_CC_DIR}/*.cc)
 
-set(PRPT_RT_CONTROLLER_generated
-    ${PRPT_CC_DIR}/header.pb.cc
-    ${PRPT_CC_DIR}/progran.pb.cc
-    ${PRPT_CC_DIR}/stats_common.pb.cc
-    ${PRPT_CC_DIR}/stats_messages.pb.cc
-    ${PRPT_CC_DIR}/time_common.pb.cc
-    ${PRPT_CC_DIR}/controller_commands.pb.cc
-    ${PRPT_CC_DIR}/mac_primitives.pb.cc
-    ${PRPT_CC_DIR}/config_messages.pb.cc
-    ${PRPT_CC_DIR}/config_common.pb.cc
-    ${PRPT_CC_DIR}/control_delegation.pb.cc    
+set(FLPT_RT_CONTROLLER_generated
+    ${FLPT_CC_DIR}/header.pb.cc
+    ${FLPT_CC_DIR}/flexran.pb.cc
+    ${FLPT_CC_DIR}/stats_common.pb.cc
+    ${FLPT_CC_DIR}/stats_messages.pb.cc
+    ${FLPT_CC_DIR}/time_common.pb.cc
+    ${FLPT_CC_DIR}/controller_commands.pb.cc
+    ${FLPT_CC_DIR}/mac_primitives.pb.cc
+    ${FLPT_CC_DIR}/config_messages.pb.cc
+    ${FLPT_CC_DIR}/config_common.pb.cc
+    ${FLPT_CC_DIR}/control_delegation.pb.cc    
     )
   
-file(GLOB prpt_h ${PRPT_CC_DIR}/*.h)
-set(prpt_h ${prpt_h} )
+file(GLOB flpt_h ${FLPT_CC_DIR}/*.h)
+set(flpt_h ${flpt_h} )
  
-add_library(PRPT_MSG
-  ${PRPT_RT_CONTROLLER_generated}
-  ${PRPT_source}
+add_library(FLPT_MSG
+  ${FLPT_RT_CONTROLLER_generated}
+  ${FLPT_source}
   )
-set(PRPT_MSG_LIB PRPT_MSG)
+set(FLPT_MSG_LIB FLPT_MSG)
   
-message("prpt cpp dir is : ${PRPT_CC_DIR}")
-include_directories (${PRPT_CC_DIR})
+message("flpt cpp dir is : ${FLPT_CC_DIR}")
+include_directories (${FLPT_CC_DIR})
 
 # Boost support
 
@@ -183,7 +183,7 @@ target_link_libraries(rt_controller
   RT_CONTROLLER_CORE_LIB
   RT_CONTROLLER_RIB_LIB
   RT_CONTROLLER_NETWORK_LIB
-  ${PRPT_MSG_LIB}
+  ${FLPT_MSG_LIB}
   ${Boost_LIBRARIES}
   ${CMAKE_THREAD_LIBS_INIT}
   ${PROTOBUF_LIBRARY}

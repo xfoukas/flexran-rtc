@@ -8,7 +8,7 @@
 #include "rt_wrapper.h"
 
 #include "async_xface.h"
-#include "progran.pb.h"
+#include "flexran.pb.h"
 #include "rib_updater.h"
 #include "rib.h"
 #include "task_manager.h"
@@ -25,46 +25,46 @@
 
 int main(int argc, char *argv[]) {
 
-  progran::network::async_xface net_xface(2210);
+  flexran::network::async_xface net_xface(2210);
 
   // Create the rib
-  progran::rib::Rib rib;
+  flexran::rib::Rib rib;
 
   // Create the rib update manager
-  progran::rib::rib_updater r_updater(net_xface, rib);
+  flexran::rib::rib_updater r_updater(net_xface, rib);
 
   // Create the task manager
-  progran::core::task_manager tm(r_updater);
+  flexran::core::task_manager tm(r_updater);
 
   // Create the requests manager
-  progran::core::requests_manager rm(net_xface);
+  flexran::core::requests_manager rm(net_xface);
 
   // Register any applications that we might want to execute in the controller
   // Stats manager
-  std::shared_ptr<progran::app::component> stats_app(new progran::app::stats::stats_manager(rib, rm));
+  std::shared_ptr<flexran::app::component> stats_app(new flexran::app::stats::stats_manager(rib, rm));
   tm.register_app(stats_app);
 
   // Remote scheduler
-  std::shared_ptr<progran::app::component> remote_sched(new progran::app::scheduler::remote_scheduler(rib, rm));
+  std::shared_ptr<flexran::app::component> remote_sched(new flexran::app::scheduler::remote_scheduler(rib, rm));
   tm.register_app(remote_sched);
 
   // eICIC remote scheduler
-  //std::shared_ptr<progran::app::component> remote_sched_eicic(new progran::app::scheduler::remote_scheduler_eicic(rib, rm));
+  //std::shared_ptr<flexran::app::component> remote_sched_eicic(new flexran::app::scheduler::remote_scheduler_eicic(rib, rm));
   //tm.register_app(remote_sched_eicic);
 
   // Remote scheduler with delegation (TEST purposes)
-  // std::shared_ptr<progran::app::component> remote_sched(new progran::app::scheduler::remote_scheduler_delegation(rib, rm));
+  // std::shared_ptr<flexran::app::component> remote_sched(new flexran::app::scheduler::remote_scheduler_delegation(rib, rm));
   // tm.register_app(remote_sched);
   
   // Delegation manager (TEST purposes)
-  //std::shared_ptr<progran::app::component> delegation_manager(new progran::app::management::delegation_manager(rib, rm));
+  //std::shared_ptr<flexran::app::component> delegation_manager(new flexran::app::management::delegation_manager(rib, rm));
   //tm.register_app(delegation_manager);
 
   // Start the network thread
-  std::thread networkThread(&progran::network::async_xface::execute_task, &net_xface);
+  std::thread networkThread(&flexran::network::async_xface::execute_task, &net_xface);
 
   // Start the task manager thread
-  std::thread task_manager_thread(&progran::core::task_manager::execute_task, &tm);
+  std::thread task_manager_thread(&flexran::core::task_manager::execute_task, &tm);
   
   if (task_manager_thread.joinable())
     task_manager_thread.join();

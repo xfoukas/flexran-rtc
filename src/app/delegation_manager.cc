@@ -5,7 +5,7 @@
 #include "delegation_manager.h"
 
 // Example app for using control delegation
-void progran::app::management::delegation_manager::run_periodic_task() {
+void flexran::app::management::delegation_manager::run_periodic_task() {
   
 
   ::std::set<int> agent_ids = ::std::move(rib_.get_available_agents());
@@ -60,7 +60,7 @@ void progran::app::management::delegation_manager::run_periodic_task() {
   }
 }
 
-void progran::app::management::delegation_manager::reconfigure_agent(int agent_id, std::string policy_name) {
+void flexran::app::management::delegation_manager::reconfigure_agent(int agent_id, std::string policy_name) {
   std::ifstream policy_file(policy_name);
   std::string str_policy;
 
@@ -71,14 +71,14 @@ void progran::app::management::delegation_manager::reconfigure_agent(int agent_i
   str_policy.assign((std::istreambuf_iterator<char>(policy_file)),
 		    std::istreambuf_iterator<char>());
 
-  protocol::progran_message config_message;
+  protocol::flexran_message config_message;
   // Create control delegation message header
-  protocol::prp_header *config_header(new protocol::prp_header);
-  config_header->set_type(protocol::PRPT_RECONFIGURE_AGENT);
+  protocol::flex_header *config_header(new protocol::flex_header);
+  config_header->set_type(protocol::FLPT_RECONFIGURE_AGENT);
   config_header->set_version(0);
   config_header->set_xid(0);
   
-  protocol::prp_agent_reconfiguration *agent_reconfiguration_msg(new protocol::prp_agent_reconfiguration);
+  protocol::flex_agent_reconfiguration *agent_reconfiguration_msg(new protocol::flex_agent_reconfiguration);
   agent_reconfiguration_msg->set_allocated_header(config_header);
 
   agent_reconfiguration_msg->set_policy(str_policy);
@@ -88,17 +88,17 @@ void progran::app::management::delegation_manager::reconfigure_agent(int agent_i
   req_manager_.send_message(agent_id, config_message);
 }
 
-void progran::app::management::delegation_manager::push_code(int agent_id, std::string function_name, std::string lib_name) {
-  protocol::progran_message d_message;
+void flexran::app::management::delegation_manager::push_code(int agent_id, std::string function_name, std::string lib_name) {
+  protocol::flexran_message d_message;
   // Create control delegation message header
-  protocol::prp_header *delegation_header(new protocol::prp_header);
-  delegation_header->set_type(protocol::PRPT_DELEGATE_CONTROL);
+  protocol::flex_header *delegation_header(new protocol::flex_header);
+  delegation_header->set_type(protocol::FLPT_DELEGATE_CONTROL);
   delegation_header->set_version(0);
   delegation_header->set_xid(0);
   
-  protocol::prp_control_delegation *control_delegation_msg(new protocol::prp_control_delegation);
+  protocol::flex_control_delegation *control_delegation_msg(new protocol::flex_control_delegation);
   control_delegation_msg->set_allocated_header(delegation_header);
-  control_delegation_msg->set_delegation_type(protocol::PRCDT_MAC_DL_UE_SCHEDULER);
+  control_delegation_msg->set_delegation_type(protocol::FLCDT_MAC_DL_UE_SCHEDULER);
   
   ::std::ifstream fin(lib_name, std::ios::in | std::ios::binary);
   fin.seekg( 0, std::ios::end );  
@@ -110,7 +110,7 @@ void progran::app::management::delegation_manager::push_code(int agent_id, std::
   std::string test(ret, len);
   control_delegation_msg->set_payload(ret, len);
   control_delegation_msg->set_name(function_name);
-  // Create and send the progran message
+  // Create and send the flexran message
   d_message.set_msg_dir(protocol::INITIATING_MESSAGE);
   d_message.set_allocated_control_delegation_msg(control_delegation_msg);
   req_manager_.send_message(agent_id, d_message);

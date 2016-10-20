@@ -8,7 +8,7 @@
 #include <memory>
 #include <set>
 
-namespace progran {
+namespace flexran {
 
   namespace rib {
 
@@ -24,21 +24,21 @@ namespace progran {
       void new_eNB_config_entry(int agent_id);
       bool has_eNB_config_entry(int agent_id);
       void eNB_config_update(int agent_id,
-			     const protocol::prp_enb_config_reply& enb_config_update);
+			     const protocol::flex_enb_config_reply& enb_config_update);
       void ue_config_update(int agent_id,
-			    const protocol::prp_ue_config_reply& ue_config_update);
+			    const protocol::flex_ue_config_reply& ue_config_update);
       void ue_config_update(int agent_id,
-			    const protocol::prp_ue_state_change& ue_state_change);
+			    const protocol::flex_ue_state_change& ue_state_change);
       void lc_config_update(int agent_id,
-			    const protocol::prp_lc_config_reply& lc_config_update);
+			    const protocol::flex_lc_config_reply& lc_config_update);
       
       void update_liveness(int agent_id);
       
       void set_subframe_updates(int agent_id,
-				const protocol::prp_sf_trigger& sf_trigger_msg);
+				const protocol::flex_sf_trigger& sf_trigger_msg);
       
       void mac_stats_update(int agent_id,
-			    const protocol::prp_stats_reply& mac_stats_update);
+			    const protocol::flex_stats_reply& mac_stats_update);
       
       std::set<int> get_available_agents() const;
       

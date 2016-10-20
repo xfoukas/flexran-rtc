@@ -4,7 +4,7 @@
 #include "periodic_component.h"
 #include "rib_common.h"
 
-namespace progran {
+namespace flexran {
   
   namespace app {
 

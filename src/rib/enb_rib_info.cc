@@ -2,17 +2,17 @@
 
 #include "enb_rib_info.h"
 
-progran::rib::enb_rib_info::enb_rib_info(int agent_id)
+flexran::rib::enb_rib_info::enb_rib_info(int agent_id)
   : agent_id_(agent_id) {
   last_checked = clock();
 }
 
-void progran::rib::enb_rib_info::update_eNB_config(const protocol::prp_enb_config_reply& enb_config_update) {
+void flexran::rib::enb_rib_info::update_eNB_config(const protocol::flex_enb_config_reply& enb_config_update) {
   eNB_config_.CopyFrom(enb_config_update);
   update_liveness();
 }
 
-void progran::rib::enb_rib_info::update_UE_config(const protocol::prp_ue_config_reply& ue_config_update) {
+void flexran::rib::enb_rib_info::update_UE_config(const protocol::flex_ue_config_reply& ue_config_update) {
   ue_config_.CopyFrom(ue_config_update);
   rnti_t rnti;
   // Check if UE exists and if not create a ue_mac_rib_info entry
@@ -28,10 +28,10 @@ void progran::rib::enb_rib_info::update_UE_config(const protocol::prp_ue_config_
   update_liveness();
 }
 
-void progran::rib::enb_rib_info::update_UE_config(const protocol::prp_ue_state_change& ue_state_change) {
+void flexran::rib::enb_rib_info::update_UE_config(const protocol::flex_ue_state_change& ue_state_change) {
   rnti_t rnti;  
-  if (ue_state_change.type() == protocol::PRUESC_ACTIVATED) {
-    protocol::prp_ue_config *c = ue_config_.add_ue_config();
+  if (ue_state_change.type() == protocol::FLUESC_ACTIVATED) {
+    protocol::flex_ue_config *c = ue_config_.add_ue_config();
     c->CopyFrom(ue_state_change.config());
     rnti = ue_state_change.config().rnti();
     ue_mac_info_.insert(std::pair<int,
@@ -43,7 +43,7 @@ void progran::rib::enb_rib_info::update_UE_config(const protocol::prp_ue_state_c
     rnti = ue_config_.ue_config(i).rnti();
     if (rnti == ue_state_change.config().rnti()) {
       // Check if this was updated or removed
-      if (ue_state_change.type() == protocol::PRUESC_DEACTIVATED) {
+      if (ue_state_change.type() == protocol::FLUESC_DEACTIVATED) {
 	ue_config_.mutable_ue_config()->DeleteSubrange(i, i+1);
 	// Erase mac info
 	ue_mac_info_.erase(rnti);
@@ -54,19 +54,19 @@ void progran::rib::enb_rib_info::update_UE_config(const protocol::prp_ue_state_c
 	  }
 	}
 	return;
-      } else if (ue_state_change.type() == protocol::PRUESC_UPDATED) {
+      } else if (ue_state_change.type() == protocol::FLUESC_UPDATED) {
 	ue_config_.mutable_ue_config(i)->CopyFrom(ue_state_change.config());
       }
     }
   }
 }
 
-void progran::rib::enb_rib_info::update_LC_config(const protocol::prp_lc_config_reply& lc_config_update) {
+void flexran::rib::enb_rib_info::update_LC_config(const protocol::flex_lc_config_reply& lc_config_update) {
   lc_config_.CopyFrom(lc_config_update);
   update_liveness();
 }
 
-void progran::rib::enb_rib_info::update_subframe(const protocol::prp_sf_trigger& sf_trigger) {
+void flexran::rib::enb_rib_info::update_subframe(const protocol::flex_sf_trigger& sf_trigger) {
   rnti_t rnti;
   uint16_t sfn_sf = sf_trigger.sfn_sf();
   current_frame_ = get_frame(sfn_sf);
@@ -96,7 +96,7 @@ void progran::rib::enb_rib_info::update_subframe(const protocol::prp_sf_trigger&
   update_liveness();
 }
 
-void progran::rib::enb_rib_info::update_mac_stats(const protocol::prp_stats_reply& mac_stats) {
+void flexran::rib::enb_rib_info::update_mac_stats(const protocol::flex_stats_reply& mac_stats) {
   rnti_t rnti;
   // First make the UE updates
   for (int i = 0; i < mac_stats.ue_report_size(); i++) {
@@ -118,7 +118,7 @@ void progran::rib::enb_rib_info::update_mac_stats(const protocol::prp_stats_repl
   }
 }
 
-std::shared_ptr<const progran::rib::ue_mac_rib_info> progran::rib::enb_rib_info::get_ue_mac_info(rnti_t rnti) const {
+std::shared_ptr<const flexran::rib::ue_mac_rib_info> flexran::rib::enb_rib_info::get_ue_mac_info(rnti_t rnti) const {
   auto it = ue_mac_info_.find(rnti);
   if (it != ue_mac_info_.end()) {
     return it->second;
@@ -126,22 +126,22 @@ std::shared_ptr<const progran::rib::ue_mac_rib_info> progran::rib::enb_rib_info:
   return std::shared_ptr<ue_mac_rib_info>(nullptr);
 }
 
-bool progran::rib::enb_rib_info::need_to_query() {
+bool flexran::rib::enb_rib_info::need_to_query() {
   return ((clock() - last_checked) > time_to_query); 
 }
 
-void progran::rib::enb_rib_info::update_liveness() {
+void flexran::rib::enb_rib_info::update_liveness() {
   last_checked = clock();
 }
 
-void progran::rib::enb_rib_info::dump_mac_stats() const {
+void flexran::rib::enb_rib_info::dump_mac_stats() const {
   std::cout << "UE MAC stats for agent " << agent_id_ << std::endl;
   for (auto ue_stats : ue_mac_info_) {
     ue_stats.second->dump_stats();
   }
 }
 
-void progran::rib::enb_rib_info::dump_configs() const {
+void flexran::rib::enb_rib_info::dump_configs() const {
   std::cout << eNB_config_.DebugString() << std::endl;
   std::cout << ue_config_.DebugString() << std::endl;
   std::cout << lc_config_.DebugString() << std::endl;

@@ -1,16 +1,16 @@
 #include "rib_common.h"
 
-progran::rib::frame_t progran::rib::get_frame(uint32_t sfn_sf) {
+flexran::rib::frame_t flexran::rib::get_frame(uint32_t sfn_sf) {
   uint16_t frame_mask = ((1<<12) - 1);
   return (sfn_sf & (frame_mask << 4)) >> 4;
 }
 
-progran::rib::subframe_t progran::rib::get_subframe(uint32_t sfn_sf) {
+flexran::rib::subframe_t flexran::rib::get_subframe(uint32_t sfn_sf) {
   uint16_t sf_mask = ((1<<4) - 1);
   return (sfn_sf & sf_mask);
 }
 
-std::pair<progran::rib::frame_t, progran::rib::subframe_t> progran::rib::get_frame_subframe(uint32_t sfn_sf) {
+std::pair<flexran::rib::frame_t, flexran::rib::subframe_t> flexran::rib::get_frame_subframe(uint32_t sfn_sf) {
   uint32_t frame_mask =  ((1<<12) - 1);
   frame_t frame = (sfn_sf & (frame_mask << 4)) >> 4;
   uint32_t sf_mask = ((1<<4) - 1);
@@ -18,7 +18,7 @@ std::pair<progran::rib::frame_t, progran::rib::subframe_t> progran::rib::get_fra
   return std::pair<frame_t, subframe_t>(frame, subframe);
 }
 
-uint16_t progran::rib::get_sfn_sf(frame_t frame, subframe_t subframe) {
+uint16_t flexran::rib::get_sfn_sf(frame_t frame, subframe_t subframe) {
   uint16_t sfn_sf, frame_mask, sf_mask;
 
   frame_mask = ((1<<12) - 1);

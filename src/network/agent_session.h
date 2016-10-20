@@ -4,16 +4,16 @@
 #include <deque>
 #include <boost/asio.hpp>
 
-#include "progran.pb.h"
+#include "flexran.pb.h"
 #include "connection_manager.h"
 #include "protocol_message.h"
 #include "async_xface.h"
 
-namespace progran {
+namespace flexran {
 
   namespace network {
   
-    typedef std::deque<protocol_message> progran_protocol_queue;
+    typedef std::deque<protocol_message> flexran_protocol_queue;
 
     class async_xface;
     class connection_manager;
@@ -40,7 +40,7 @@ namespace progran {
       void do_write();
       
       boost::asio::ip::tcp::socket socket_;
-      progran_protocol_queue write_queue_;
+      flexran_protocol_queue write_queue_;
       
       
       protocol_message read_msg_;

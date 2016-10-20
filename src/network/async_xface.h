@@ -8,12 +8,12 @@
 #include "connection_manager.h"
 #include "rt_task.h"
 
-namespace progran {
+namespace flexran {
 
   namespace network {
     
     class connection_manager;
-    class async_xface : public progran::core::rt::rt_task {
+    class async_xface : public flexran::core::rt::rt_task {
     public:
     async_xface(int port):port_(port), endpoint_(boost::asio::ip::tcp::v4(), port), rt_task(Policy::FIFO) {}
       
@@ -25,7 +25,7 @@ namespace progran {
       
       bool get_msg_from_network(std::shared_ptr<tagged_message>& msg);
       
-      bool send_msg(const protocol::progran_message& msg, int agent_tag) const;
+      bool send_msg(const protocol::flexran_message& msg, int agent_tag) const;
       
       void forward_msg_to_agent();
 

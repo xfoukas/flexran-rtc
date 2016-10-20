@@ -1,8 +1,8 @@
 #include "enb_scheduling_info.h"
 #include "remote_scheduler_primitives.h"
 
-std::shared_ptr<progran::app::scheduler::ue_scheduling_info>
-progran::app::scheduler::enb_scheduling_info::get_ue_scheduling_info(progran::rib::rnti_t rnti) {
+std::shared_ptr<flexran::app::scheduler::ue_scheduling_info>
+flexran::app::scheduler::enb_scheduling_info::get_ue_scheduling_info(flexran::rib::rnti_t rnti) {
   auto it = scheduling_info_.find(rnti);
   if (it != scheduling_info_.end()) {
     return it->second;
@@ -11,15 +11,15 @@ progran::app::scheduler::enb_scheduling_info::get_ue_scheduling_info(progran::ri
   }
 }
 
-void progran::app::scheduler::enb_scheduling_info::create_ue_scheduling_info(progran::rib::rnti_t rnti) {
-  scheduling_info_.insert(std::pair<progran::rib::rnti_t,
+void flexran::app::scheduler::enb_scheduling_info::create_ue_scheduling_info(flexran::rib::rnti_t rnti) {
+  scheduling_info_.insert(std::pair<flexran::rib::rnti_t,
 			  std::shared_ptr<ue_scheduling_info>> (rnti,
 								std::shared_ptr<ue_scheduling_info>(new ue_scheduling_info(rnti))));
 }
 
 
-void progran::app::scheduler::enb_scheduling_info::increase_num_pdcch_symbols(const protocol::prp_cell_config& cell_config,
-									     progran::rib::subframe_t subframe) {
+void flexran::app::scheduler::enb_scheduling_info::increase_num_pdcch_symbols(const protocol::flex_cell_config& cell_config,
+									     flexran::rib::subframe_t subframe) {
   int cell_id = cell_config.cell_id();
   uint32_t prev_nCCE_max = get_nCCE_max(num_pdcch_symbols_[cell_id],
 					cell_config,
@@ -32,8 +32,8 @@ void progran::app::scheduler::enb_scheduling_info::increase_num_pdcch_symbols(co
 				   
 }
 
-void progran::app::scheduler::enb_scheduling_info::start_new_scheduling_round(progran::rib::subframe_t subframe,
-									     const protocol::prp_cell_config& cell_config) {
+void flexran::app::scheduler::enb_scheduling_info::start_new_scheduling_round(flexran::rib::subframe_t subframe,
+									     const protocol::flex_cell_config& cell_config) {
   
   int cell_id = cell_config.cell_id();
   

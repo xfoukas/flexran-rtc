@@ -3,7 +3,7 @@
 
 #include "component.h"
 
-namespace progran {
+namespace flexran {
 
   namespace app {
 

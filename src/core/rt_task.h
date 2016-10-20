@@ -4,7 +4,7 @@
 #include <linux/types.h>
 #include "rt_wrapper.h"
 
-namespace progran {
+namespace flexran {
 
   namespace core {
 

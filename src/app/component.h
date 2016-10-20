@@ -5,7 +5,7 @@
 #include "rib.h"
 #include "requests_manager.h"
 
-namespace progran {
+namespace flexran {
 
   namespace app {
 

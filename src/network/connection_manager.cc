@@ -1,6 +1,6 @@
 #include "connection_manager.h"
 
-progran::network::connection_manager::connection_manager(boost::asio::io_service& io_service,
+flexran::network::connection_manager::connection_manager(boost::asio::io_service& io_service,
 				       const boost::asio::ip::tcp::endpoint& endpoint,
 				       async_xface& xface)
   : acceptor_(io_service, endpoint), socket_(io_service), xface_(xface), next_id_(0) {
@@ -9,11 +9,11 @@ progran::network::connection_manager::connection_manager(boost::asio::io_service
 
 }
 
-void progran::network::connection_manager::send_msg_to_agent(std::shared_ptr<tagged_message> msg) {
+void flexran::network::connection_manager::send_msg_to_agent(std::shared_ptr<tagged_message> msg) {
   sessions_[msg->getTag()]->deliver(msg);
 }
 
-void progran::network::connection_manager::do_accept() {
+void flexran::network::connection_manager::do_accept() {
 
   acceptor_.async_accept(socket_,
 			 [this](boost::system::error_code ec) {
@@ -28,6 +28,6 @@ void progran::network::connection_manager::do_accept() {
 			 });
 }
 
-void progran::network::connection_manager::close_connection(int session_id) {
+void flexran::network::connection_manager::close_connection(int session_id) {
   sessions_.erase(session_id);
 }

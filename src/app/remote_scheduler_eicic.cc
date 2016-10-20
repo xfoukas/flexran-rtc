@@ -3,13 +3,13 @@
 #include "remote_scheduler_eicic.h"
 #include "remote_scheduler_helper.h"
 #include "remote_scheduler_primitives.h"
-#include "progran.pb.h"
+#include "flexran.pb.h"
 #include "rib_common.h"
 #include "cell_mac_rib_info.h"
 
-int32_t progran::app::scheduler::remote_scheduler_eicic::tpc_accumulated = 0;
+int32_t flexran::app::scheduler::remote_scheduler_eicic::tpc_accumulated = 0;
 
-void progran::app::scheduler::remote_scheduler_eicic::run_periodic_task() {
+void flexran::app::scheduler::remote_scheduler_eicic::run_periodic_task() {
 
   rib::frame_t target_frame;
   rib::subframe_t target_subframe;
@@ -39,9 +39,9 @@ void progran::app::scheduler::remote_scheduler_eicic::run_periodic_task() {
   // Check if scheduling needs to be performed and who needs to be scheduled (macro or pico cells)
   for (const auto& agent_id : agent_ids) {
     ::std::shared_ptr<const rib::enb_rib_info> agent_config = rib_.get_agent(agent_id);
-    const protocol::prp_enb_config_reply& enb_config = agent_config->get_enb_config();
-    const protocol::prp_ue_config_reply& ue_configs = agent_config->get_ue_configs();
-    const protocol::prp_lc_config_reply& lc_configs = agent_config->get_lc_configs();
+    const protocol::flex_enb_config_reply& enb_config = agent_config->get_enb_config();
+    const protocol::flex_ue_config_reply& ue_configs = agent_config->get_ue_configs();
+    const protocol::flex_lc_config_reply& lc_configs = agent_config->get_lc_configs();
 
     rib::frame_t current_frame = agent_config->get_current_frame();
     rib::subframe_t current_subframe = agent_config->get_current_subframe();
@@ -89,11 +89,11 @@ void progran::app::scheduler::remote_scheduler_eicic::run_periodic_task() {
    
     // Go through the cells and schedule the UEs of this cell
     for (int i = 0; i < enb_config.cell_config_size(); i++) {
-      const protocol::prp_cell_config cell_config = enb_config.cell_config(i);
+      const protocol::flex_cell_config cell_config = enb_config.cell_config(i);
       int cell_id = cell_config.cell_id();
 
       for (int UE_id = 0; UE_id < ue_configs.ue_config_size(); UE_id++) {
-	const protocol::prp_ue_config ue_config = ue_configs.ue_config(UE_id);
+	const protocol::flex_ue_config ue_config = ue_configs.ue_config(UE_id);
 
 	if (ue_config.pcell_carrier_index() == cell_id) {
 	  
@@ -106,7 +106,7 @@ void progran::app::scheduler::remote_scheduler_eicic::run_periodic_task() {
 	    continue;
 	  }
 	  
-	  const protocol::prp_ue_stats_report& mac_report = ue_mac_info->get_mac_stats_report();
+	  const protocol::flex_ue_stats_report& mac_report = ue_mac_info->get_mac_stats_report();
 	  
 	  for (int j = 0; j < mac_report.rlc_report_size(); j++) {
 	    // If there is something to transmit in one of the pico cells, set the macro cell scheduling flag to false
@@ -131,18 +131,18 @@ void progran::app::scheduler::remote_scheduler_eicic::run_periodic_task() {
 	((agent_id != macro_agent_id_) && (schedule_macro))) {
       continue;
     } else { //Simply send an empty dl_mac_config message to notify the permission to schedule
-      protocol::progran_message out_message;
+      protocol::flexran_message out_message;
 
       // Create dl_mac_config message header
-      protocol::prp_header *header(new protocol::prp_header);
-      header->set_type(protocol::PRPT_DL_MAC_CONFIG);
+      protocol::flex_header *header(new protocol::flex_header);
+      header->set_type(protocol::FLPT_DL_MAC_CONFIG);
       header->set_version(0);
       header->set_xid(0);
     
       ::std::shared_ptr<const rib::enb_rib_info> agent_config = rib_.get_agent(agent_id);
-      const protocol::prp_enb_config_reply& enb_config = agent_config->get_enb_config();
-      const protocol::prp_ue_config_reply& ue_configs = agent_config->get_ue_configs();
-      const protocol::prp_lc_config_reply& lc_configs = agent_config->get_lc_configs();
+      const protocol::flex_enb_config_reply& enb_config = agent_config->get_enb_config();
+      const protocol::flex_ue_config_reply& ue_configs = agent_config->get_ue_configs();
+      const protocol::flex_lc_config_reply& lc_configs = agent_config->get_lc_configs();
       
       rib::frame_t current_frame = agent_config->get_current_frame();
       rib::subframe_t current_subframe = agent_config->get_current_subframe();
@@ -169,11 +169,11 @@ void progran::app::scheduler::remote_scheduler_eicic::run_periodic_task() {
       target_frame = (current_frame + additional_frames) % 1024;
       
       // Create dl_mac_config message
-      protocol::prp_dl_mac_config *dl_mac_config_msg(new protocol::prp_dl_mac_config);
+      protocol::flex_dl_mac_config *dl_mac_config_msg(new protocol::flex_dl_mac_config);
       dl_mac_config_msg->set_allocated_header(header);
       dl_mac_config_msg->set_sfn_sf(rib::get_sfn_sf(target_frame, target_subframe));
       
-      // Create and send the progran message
+      // Create and send the flexran message
       out_message.set_msg_dir(protocol::INITIATING_MESSAGE);
       out_message.set_allocated_dl_mac_config_msg(dl_mac_config_msg);
       req_manager_.send_message(agent_id, out_message);
@@ -182,8 +182,8 @@ void progran::app::scheduler::remote_scheduler_eicic::run_periodic_task() {
   }
 }   
 
-std::shared_ptr<progran::app::scheduler::enb_scheduling_info>
-progran::app::scheduler::remote_scheduler_eicic::get_scheduling_info(int agent_id) {
+std::shared_ptr<flexran::app::scheduler::enb_scheduling_info>
+flexran::app::scheduler::remote_scheduler_eicic::get_scheduling_info(int agent_id) {
   auto it = scheduling_info_.find(agent_id);
   if (it != scheduling_info_.end()) {
     return it->second;

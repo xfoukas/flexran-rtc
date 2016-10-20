@@ -1,15 +1,15 @@
 #include "remote_scheduler_primitives.h"
 
-bool progran::app::scheduler::needs_scheduling(std::shared_ptr<enb_scheduling_info>& enb_sched_info,
-					       progran::rib::frame_t curr_frame,
-					       progran::rib::subframe_t curr_subframe) {
-  progran::rib::frame_t last_checked_frame = enb_sched_info->get_last_checked_frame();
-  progran::rib::subframe_t last_checked_subframe = enb_sched_info->get_last_checked_subframe();
+bool flexran::app::scheduler::needs_scheduling(std::shared_ptr<enb_scheduling_info>& enb_sched_info,
+					       flexran::rib::frame_t curr_frame,
+					       flexran::rib::subframe_t curr_subframe) {
+  flexran::rib::frame_t last_checked_frame = enb_sched_info->get_last_checked_frame();
+  flexran::rib::subframe_t last_checked_subframe = enb_sched_info->get_last_checked_subframe();
       
   return !(last_checked_frame == curr_frame && last_checked_subframe == curr_subframe);
 }
 
-uint16_t progran::app::scheduler::get_min_rb_unit(const protocol::prp_cell_config& cell_config) {
+uint16_t flexran::app::scheduler::get_min_rb_unit(const protocol::flex_cell_config& cell_config) {
   int min_rb_unit = 0;
   switch (cell_config.dl_bandwidth()) {
   case 6:
@@ -31,7 +31,7 @@ uint16_t progran::app::scheduler::get_min_rb_unit(const protocol::prp_cell_confi
   return min_rb_unit;
 }
 
-uint16_t progran::app::scheduler::get_nb_rbg(const protocol::prp_cell_config& cell_config) {
+uint16_t flexran::app::scheduler::get_nb_rbg(const protocol::flex_cell_config& cell_config) {
   uint16_t nb_rbg;
   // Get the number of dl RBs
   switch(cell_config.dl_bandwidth()) {
@@ -60,16 +60,16 @@ uint16_t progran::app::scheduler::get_nb_rbg(const protocol::prp_cell_config& ce
   return nb_rbg;
 }
 
-uint32_t progran::app::scheduler::get_TBS_DL(uint8_t mcs, uint16_t nb_rb) {
+uint32_t flexran::app::scheduler::get_TBS_DL(uint8_t mcs, uint16_t nb_rb) {
 
   uint32_t TBS;
 
   if ((nb_rb > 0) && (mcs < 29)) {
 #ifdef TBS_FIX
-    TBS = 3*progran::rib::TBStable[get_I_TBS(mcs)][nb_rb-1]/4;
+    TBS = 3*flexran::rib::TBStable[get_I_TBS(mcs)][nb_rb-1]/4;
     TBS = TBS>>3;
 #else
-    TBS = progran::rib::TBStable[get_I_TBS(mcs)][nb_rb-1];
+    TBS = flexran::rib::TBStable[get_I_TBS(mcs)][nb_rb-1];
     TBS = TBS>>3;
 #endif
     return(TBS);
@@ -78,7 +78,7 @@ uint32_t progran::app::scheduler::get_TBS_DL(uint8_t mcs, uint16_t nb_rb) {
   }
 }
 
-unsigned char progran::app::scheduler::get_I_TBS(unsigned char I_MCS) {
+unsigned char flexran::app::scheduler::get_I_TBS(unsigned char I_MCS) {
 
   if (I_MCS < 10)
     return(I_MCS);
@@ -92,11 +92,11 @@ unsigned char progran::app::scheduler::get_I_TBS(unsigned char I_MCS) {
 
 }
 
-bool progran::app::scheduler::CCE_allocation_infeasible(std::shared_ptr<enb_scheduling_info>& enb_sched_info,
-							const protocol::prp_cell_config& cell_config,
-							const protocol::prp_ue_config& ue_config,
+bool flexran::app::scheduler::CCE_allocation_infeasible(std::shared_ptr<enb_scheduling_info>& enb_sched_info,
+							const protocol::flex_cell_config& cell_config,
+							const protocol::flex_ue_config& ue_config,
 							uint8_t aggregation,
-							progran::rib::subframe_t subframe) {
+							flexran::rib::subframe_t subframe) {
   int allocation_is_feasible = 1;
   int nCCE_rem, nCCE_max;
   uint16_t cell_id = cell_config.cell_id();
@@ -158,11 +158,11 @@ bool progran::app::scheduler::CCE_allocation_infeasible(std::shared_ptr<enb_sche
   return true;
 }
 
-int progran::app::scheduler::get_nCCE_offset(const uint8_t aggregation,
+int flexran::app::scheduler::get_nCCE_offset(const uint8_t aggregation,
 					     const int nCCE,
 					     const int common_dci,
-					     const progran::rib::rnti_t rnti,
-					     const progran::rib::subframe_t subframe) {
+					     const flexran::rib::rnti_t rnti,
+					     const flexran::rib::subframe_t subframe) {
   int search_space_free, nb_candidates = 0;
   unsigned int Yk;
 
@@ -211,25 +211,25 @@ int progran::app::scheduler::get_nCCE_offset(const uint8_t aggregation,
 }
 
 
-uint16_t progran::app::scheduler::get_nCCE_max(uint8_t num_pdcch_symbols,
-					       const protocol::prp_cell_config& cell_config,
-					       progran::rib::subframe_t subframe) {
+uint16_t flexran::app::scheduler::get_nCCE_max(uint8_t num_pdcch_symbols,
+					       const protocol::flex_cell_config& cell_config,
+					       flexran::rib::subframe_t subframe) {
   uint8_t mi = get_mi(cell_config, subframe);
   return (get_nquad(num_pdcch_symbols, cell_config, mi)/9);
 }
 
-uint8_t progran::app::scheduler::get_phich_resource(const protocol::prp_cell_config& cell_config) {
+uint8_t flexran::app::scheduler::get_phich_resource(const protocol::flex_cell_config& cell_config) {
   switch (cell_config.phich_resource()) {
-    case protocol::PRPR_ONE_SIXTH:
+    case protocol::FLPR_ONE_SIXTH:
       return 1;
       break;
-    case protocol::PRPR_HALF:
+    case protocol::FLPR_HALF:
       return 3;
       break;
-    case protocol::PRPR_ONE:
+    case protocol::FLPR_ONE:
       return 6;
       break;
-    case protocol::PRPR_TWO:
+    case protocol::FLPR_TWO:
       return 12;
       break;
     default:
@@ -237,8 +237,8 @@ uint8_t progran::app::scheduler::get_phich_resource(const protocol::prp_cell_con
   }
 }
 
-uint16_t progran::app::scheduler::get_nquad(uint8_t num_pdcch_symbols,
-					    const protocol::prp_cell_config& cell_config,
+uint16_t flexran::app::scheduler::get_nquad(uint8_t num_pdcch_symbols,
+					    const protocol::flex_cell_config& cell_config,
 					    uint8_t mi) {
 
   uint16_t n_reg = 0;
@@ -250,7 +250,7 @@ uint16_t progran::app::scheduler::get_nquad(uint8_t num_pdcch_symbols,
     n_group_PHICH++;
   }
 
-  if (cell_config.dl_cyclic_prefix_length() == protocol::PRDCPL_EXTENDED) {
+  if (cell_config.dl_cyclic_prefix_length() == protocol::FLDCPL_EXTENDED) {
     n_group_PHICH<<=1;
   }
 
@@ -278,19 +278,19 @@ uint16_t progran::app::scheduler::get_nquad(uint8_t num_pdcch_symbols,
   return (n_reg - 4 - (3 * n_group_PHICH));
 }
 
-uint8_t progran::app::scheduler::get_mi(const protocol::prp_cell_config& cell_config,
-					progran::rib::subframe_t subframe) {
+uint8_t flexran::app::scheduler::get_mi(const protocol::flex_cell_config& cell_config,
+					flexran::rib::subframe_t subframe) {
 
-  if (cell_config.duplex_mode() == protocol::PRDM_FDD) {
+  if (cell_config.duplex_mode() == protocol::FLDM_FDD) {
     return 1;
   }
 
   /* TODO implement for TDD */
 }
 
-uint32_t progran::app::scheduler::allocate_prbs_sub(int nb_rb,
+uint32_t flexran::app::scheduler::allocate_prbs_sub(int nb_rb,
 						    uint8_t *rballoc,
-						    const protocol::prp_cell_config& cell_config) {
+						    const protocol::flex_cell_config& cell_config) {
   int check=0;//check1=0,check2=0;
   uint32_t rballoc_dci=0;
   //uint8_t number_of_subbands=13;

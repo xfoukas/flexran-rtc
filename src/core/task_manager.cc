@@ -4,7 +4,7 @@
 
 #include "task_manager.h"
 
-progran::core::task_manager::task_manager(progran::rib::rib_updater& r_updater)
+flexran::core::task_manager::task_manager(flexran::rib::rib_updater& r_updater)
   : r_updater_(r_updater), rt_task(Policy::FIFO) {
   struct itimerspec its;
   
@@ -21,16 +21,16 @@ progran::core::task_manager::task_manager(progran::rib::rib_updater& r_updater)
   }
 }
 
-void progran::core::task_manager::run() {
+void flexran::core::task_manager::run() {
   manage_rt_tasks();
 }
 
-void progran::core::task_manager::manage_rt_tasks() {
+void flexran::core::task_manager::manage_rt_tasks() {
   std::thread running_apps[100];
   
   while (true) {
     // First run the RIB updater for 0.2 ms and wait to finish
-    std::thread rib_updater_thread(&progran::rib::rib_updater::execute_task, &r_updater_);
+    std::thread rib_updater_thread(&flexran::rib::rib_updater::execute_task, &r_updater_);
     if (rib_updater_thread.joinable()) {
       rib_updater_thread.join();
     }
@@ -38,7 +38,7 @@ void progran::core::task_manager::manage_rt_tasks() {
     // Then spawn any registered application and wait for them to finish
     int i = 0;
     for(auto app : apps_) {
-      running_apps[i] = std::thread(&progran::app::component::execute_task, app);
+      running_apps[i] = std::thread(&flexran::app::component::execute_task, app);
       i++;
     }
     for (int j = 0; j < i; j++) {
@@ -49,11 +49,11 @@ void progran::core::task_manager::manage_rt_tasks() {
 }
 
 // Warning: Not thread safe for the moment
-void progran::core::task_manager::register_app(const std::shared_ptr<progran::app::component>& app) {
+void flexran::core::task_manager::register_app(const std::shared_ptr<flexran::app::component>& app) {
   apps_.emplace_back(app);
 }
 
-void progran::core::task_manager::wait_for_cycle() {
+void flexran::core::task_manager::wait_for_cycle() {
   uint64_t exp;
   ssize_t res;
 

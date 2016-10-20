@@ -6,7 +6,7 @@
 
 #include <memory>
 
-namespace progran {
+namespace flexran {
 
   namespace app {
 
@@ -134,7 +134,7 @@ namespace progran {
 
        void is_high_priority(bool flag) { high_priority_ = flag; }
 
-       progran::rib::subframe_t get_pucch_tpc_tx_subframe() const {
+       flexran::rib::subframe_t get_pucch_tpc_tx_subframe() const {
 	 return pucch_tpc_tx_subframe_;
        }
        

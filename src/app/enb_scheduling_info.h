@@ -6,9 +6,9 @@
 
 #include "ue_scheduling_info.h"
 #include "rib_common.h"
-#include "progran.pb.h"
+#include "flexran.pb.h"
 
-namespace progran {
+namespace flexran {
 
   namespace app {
 
@@ -44,11 +44,11 @@ namespace progran {
 
 	void remove_CCE(uint16_t cell_id, int nCCE) {nCCE_rem_[cell_id] += nCCE; }
 	
-	void increase_num_pdcch_symbols(const protocol::prp_cell_config& cell_config,
-					progran::rib::subframe_t subframe);
+	void increase_num_pdcch_symbols(const protocol::flex_cell_config& cell_config,
+					flexran::rib::subframe_t subframe);
 	
 	void start_new_scheduling_round(rib::subframe_t subframe,
-					const protocol::prp_cell_config& cell_config);
+					const protocol::flex_cell_config& cell_config);
 	
 	::std::shared_ptr<ue_scheduling_info> get_ue_scheduling_info(rib::rnti_t rnti);
 	

@@ -1,7 +1,7 @@
 #include "remote_scheduler_delegation.h"
 #include "remote_scheduler_helper.h"
 #include "remote_scheduler_primitives.h"
-#include "progran.pb.h"
+#include "flexran.pb.h"
 #include "rib_common.h"
 #include "cell_mac_rib_info.h"
 
@@ -9,20 +9,20 @@
 #include <fstream>
 #include <sstream>
 
-int32_t progran::app::scheduler::remote_scheduler_delegation::tpc_accumulated = 0;
+int32_t flexran::app::scheduler::remote_scheduler_delegation::tpc_accumulated = 0;
 
 
-void delegate_control(int agent_id, const progran::core::requests_manager& req_manager_) {
-  protocol::progran_message d_message;
+void delegate_control(int agent_id, const flexran::core::requests_manager& req_manager_) {
+  protocol::flexran_message d_message;
   // Create control delegation message header
-  protocol::prp_header *delegation_header(new protocol::prp_header);
-  delegation_header->set_type(protocol::PRPT_DELEGATE_CONTROL);
+  protocol::flex_header *delegation_header(new protocol::flex_header);
+  delegation_header->set_type(protocol::FLPT_DELEGATE_CONTROL);
   delegation_header->set_version(0);
   delegation_header->set_xid(0);
   
-  protocol::prp_control_delegation *control_delegation_msg(new protocol::prp_control_delegation);
+  protocol::flex_control_delegation *control_delegation_msg(new protocol::flex_control_delegation);
   control_delegation_msg->set_allocated_header(delegation_header);
-  control_delegation_msg->set_delegation_type(protocol::PRCDT_MAC_DL_UE_SCHEDULER);
+  control_delegation_msg->set_delegation_type(protocol::FLCDT_MAC_DL_UE_SCHEDULER);
   
   ::std::ifstream fin("./libdefault_sched.so", std::ios::in | std::ios::binary);
   fin.seekg( 0, std::ios::end );  
@@ -35,13 +35,13 @@ void delegate_control(int agent_id, const progran::core::requests_manager& req_m
   control_delegation_msg->set_payload(ret, len);
   std::string s = "schedule_ue_spec_default";
   control_delegation_msg->set_name(s);
-  // Create and send the progran message
+  // Create and send the flexran message
   d_message.set_msg_dir(protocol::INITIATING_MESSAGE);
   d_message.set_allocated_control_delegation_msg(control_delegation_msg);
   req_manager_.send_message(agent_id, d_message);
 }
 
-void progran::app::scheduler::remote_scheduler_delegation::run_periodic_task() {
+void flexran::app::scheduler::remote_scheduler_delegation::run_periodic_task() {
 
   rib::frame_t target_frame;
   rib::subframe_t target_subframe;
@@ -70,18 +70,18 @@ void progran::app::scheduler::remote_scheduler_delegation::run_periodic_task() {
   
   for (const auto& agent_id : agent_ids) {
 
-    protocol::progran_message out_message;
+    protocol::flexran_message out_message;
 
     // Create dl_mac_config message header
-    protocol::prp_header *header(new protocol::prp_header);
-    header->set_type(protocol::PRPT_DL_MAC_CONFIG);
+    protocol::flex_header *header(new protocol::flex_header);
+    header->set_type(protocol::FLPT_DL_MAC_CONFIG);
     header->set_version(0);
     header->set_xid(0);
     
     ::std::shared_ptr<const rib::enb_rib_info> agent_config = rib_.get_agent(agent_id);
-    const protocol::prp_enb_config_reply& enb_config = agent_config->get_enb_config();
-    const protocol::prp_ue_config_reply& ue_configs = agent_config->get_ue_configs();
-    const protocol::prp_lc_config_reply& lc_configs = agent_config->get_lc_configs();
+    const protocol::flex_enb_config_reply& enb_config = agent_config->get_enb_config();
+    const protocol::flex_ue_config_reply& ue_configs = agent_config->get_ue_configs();
+    const protocol::flex_lc_config_reply& lc_configs = agent_config->get_lc_configs();
 
     rib::frame_t current_frame = agent_config->get_current_frame();
     rib::subframe_t current_subframe = agent_config->get_current_subframe();
@@ -110,7 +110,7 @@ void progran::app::scheduler::remote_scheduler_delegation::run_periodic_task() {
     }
     
     // Create dl_mac_config message
-    protocol::prp_dl_mac_config *dl_mac_config_msg(new protocol::prp_dl_mac_config);
+    protocol::flex_dl_mac_config *dl_mac_config_msg(new protocol::flex_dl_mac_config);
     dl_mac_config_msg->set_allocated_header(header);
     dl_mac_config_msg->set_sfn_sf(rib::get_sfn_sf(target_frame, target_subframe));
     
@@ -118,7 +118,7 @@ void progran::app::scheduler::remote_scheduler_delegation::run_periodic_task() {
     
     // Go through the cell configs and set the variables
     for (int i = 0; i < enb_config.cell_config_size(); i++) {
-      const protocol::prp_cell_config cell_config = enb_config.cell_config(i);
+      const protocol::flex_cell_config cell_config = enb_config.cell_config(i);
       total_nb_available_rb[i] = cell_config.dl_bandwidth();
       //Remove the RBs used by common channels
       //TODO: For now we will do this manually based on OAI config and scheduling sf. Important to fix it later.
@@ -139,11 +139,11 @@ void progran::app::scheduler::remote_scheduler_delegation::run_periodic_task() {
 
     // Go through the cells and schedule the UEs of this cell
     for (int i = 0; i < enb_config.cell_config_size(); i++) {
-      const protocol::prp_cell_config cell_config = enb_config.cell_config(i);
+      const protocol::flex_cell_config cell_config = enb_config.cell_config(i);
       int cell_id = cell_config.cell_id();
 
       for (int UE_id = 0; UE_id < ue_configs.ue_config_size(); UE_id++) {
-	const protocol::prp_ue_config ue_config = ue_configs.ue_config(UE_id);
+	const protocol::flex_ue_config ue_config = ue_configs.ue_config(UE_id);
 	if (ue_config.pcell_carrier_index() == cell_id) {
 
 	  // Get the MAC stats for this UE
@@ -163,7 +163,7 @@ void progran::app::scheduler::remote_scheduler_delegation::run_periodic_task() {
 	    continue;
 	  }
 	  
-	  const protocol::prp_ue_stats_report& mac_report = ue_mac_info->get_mac_stats_report();
+	  const protocol::flex_ue_stats_report& mac_report = ue_mac_info->get_mac_stats_report();
 
 	  for (int j = 0; j < mac_report.dl_cqi_report().csi_report_size(); j++) {
 	    if (cell_config.cell_id() == mac_report.dl_cqi_report().csi_report(j).serv_cell_index()) {
@@ -206,11 +206,11 @@ void progran::app::scheduler::remote_scheduler_delegation::run_periodic_task() {
 	  mcs = ::std::min(mcs, target_dl_mcs_);
 
 	  // Create a dl_data message
-	  protocol::prp_dl_data *dl_data = dl_mac_config_msg->add_dl_ue_data();
+	  protocol::flex_dl_data *dl_data = dl_mac_config_msg->add_dl_ue_data();
 
 	  int status = ue_mac_info->get_harq_stats(cell_id, harq_pid);
 
-	  if (status == protocol::PRHS_NACK) {
+	  if (status == protocol::FLHS_NACK) {
 	    // Use the MCS that was previously assigned to this HARQ process
 	    mcs = ue_sched_info->get_mcs(cell_id, harq_pid);
 	    nb_rb = ue_sched_info->get_nb_rbs_required(cell_id);
@@ -266,7 +266,7 @@ void progran::app::scheduler::remote_scheduler_delegation::run_periodic_task() {
 	    if (ue_sched_info->get_ta_timer() == 0) {
 	      // Check if we need to update
 	      ue_sched_info->set_ta_timer(20);
-	      if (mac_report.pending_mac_ces() & protocol::PRPCET_TA) {
+	      if (mac_report.pending_mac_ces() & protocol::FLPCET_TA) {
 		ta_len = 2;
 	      } else {
 		ta_len = 0;
@@ -277,7 +277,7 @@ void progran::app::scheduler::remote_scheduler_delegation::run_periodic_task() {
 	    }
 
 	    if (ta_len > 0) {
-	      ce_flags |= protocol::PRPCET_TA;
+	      ce_flags |= protocol::FLPCET_TA;
 	    }
 
 	    header_len_dcch = 2; // 2 bytes DCCH SDU subheader
@@ -285,7 +285,7 @@ void progran::app::scheduler::remote_scheduler_delegation::run_periodic_task() {
 	    // Loop through the UE logical channels
 	    for (int j = 1; j < mac_report.rlc_report_size() + 1; j++) {
 	      header_len += 3;
-	      const protocol::prp_rlc_bsr& rlc_report = mac_report.rlc_report(j-1);
+	      const protocol::flex_rlc_bsr& rlc_report = mac_report.rlc_report(j-1);
 
 	      if (dci_tbs - ta_len - header_len > 0) {
 		if (rlc_report.tx_queue_size() > 0) {
@@ -297,9 +297,9 @@ void progran::app::scheduler::remote_scheduler_delegation::run_periodic_task() {
 		    data_to_request++; // It is not correct but fixes some RLC bug for DCCH
 		  }
 		  
-		  protocol::prp_rlc_pdu *rlc_pdu = dl_data->add_rlc_pdu();
-		  protocol::prp_rlc_pdu_tb *tb1 = rlc_pdu->add_rlc_pdu_tb();
-		  protocol::prp_rlc_pdu_tb *tb2 = rlc_pdu->add_rlc_pdu_tb();
+		  protocol::flex_rlc_pdu *rlc_pdu = dl_data->add_rlc_pdu();
+		  protocol::flex_rlc_pdu_tb *tb1 = rlc_pdu->add_rlc_pdu_tb();
+		  protocol::flex_rlc_pdu_tb *tb2 = rlc_pdu->add_rlc_pdu_tb();
 		  tb1->set_logical_channel_id(rlc_report.lc_id());
 		  tb2->set_logical_channel_id(rlc_report.lc_id());
 		  tb1->set_size(data_to_request);
@@ -405,7 +405,7 @@ void progran::app::scheduler::remote_scheduler_delegation::run_periodic_task() {
 	      // do PUCCH power control
 	      // This is the normalized RX power
 	      const rib::cell_mac_rib_info& cell_rib_info = agent_config->get_cell_mac_rib_info(cell_id);
-	      const protocol::prp_cell_stats_report& cell_report = cell_rib_info.get_cell_stats_report();
+	      const protocol::flex_cell_stats_report& cell_report = cell_rib_info.get_cell_stats_report();
 
 	      int16_t normalized_rx_power;
 	      bool has_normalized_rx_power = false;
@@ -459,11 +459,11 @@ void progran::app::scheduler::remote_scheduler_delegation::run_periodic_task() {
 	    dl_data->set_rnti(ue_config.rnti());
 	    dl_data->set_serv_cell_index(cell_id);
 
-	    // Add the control element flags to the progran message
+	    // Add the control element flags to the flexran message
 	    dl_data->add_ce_bitmap(ce_flags);
 	    dl_data->add_ce_bitmap(ce_flags);
 
-	    protocol::prp_dl_dci *dl_dci(new protocol::prp_dl_dci);
+	    protocol::flex_dl_dci *dl_dci(new protocol::flex_dl_dci);
 	    dl_data->set_allocated_dl_dci(dl_dci);
 	    
 	    dl_dci->set_rnti(ue_config.rnti());
@@ -478,8 +478,8 @@ void progran::app::scheduler::remote_scheduler_delegation::run_periodic_task() {
 	    case 2:
 	    default:
 	      dl_dci->set_res_alloc(0);
-	      dl_dci->set_vrb_format(protocol::PRVRBF_LOCALIZED);
-	      dl_dci->set_format(protocol::PRDCIF_1);
+	      dl_dci->set_vrb_format(protocol::FLVRBF_LOCALIZED);
+	      dl_dci->set_format(protocol::FLDCIF_1);
 	      dl_dci->set_rb_shift(0);
 	      dl_dci->add_ndi(ndi);
 	      dl_dci->add_rv(round);
@@ -500,7 +500,7 @@ void progran::app::scheduler::remote_scheduler_delegation::run_periodic_task() {
     enb_sched_info->set_last_checked_frame(current_frame);
     enb_sched_info->set_last_checked_subframe(current_subframe);
 
-    // Create and send the progran message
+    // Create and send the flexran message
     out_message.set_msg_dir(protocol::INITIATING_MESSAGE);
     out_message.set_allocated_dl_mac_config_msg(dl_mac_config_msg);
     if (dl_mac_config_msg->dl_ue_data_size() > 0) {
@@ -510,8 +510,8 @@ void progran::app::scheduler::remote_scheduler_delegation::run_periodic_task() {
   }
 }
 
-std::shared_ptr<progran::app::scheduler::enb_scheduling_info>
-progran::app::scheduler::remote_scheduler_delegation::get_scheduling_info(int agent_id) {
+std::shared_ptr<flexran::app::scheduler::enb_scheduling_info>
+flexran::app::scheduler::remote_scheduler_delegation::get_scheduling_info(int agent_id) {
   auto it = scheduling_info_.find(agent_id);
   if (it != scheduling_info_.end()) {
     return it->second;

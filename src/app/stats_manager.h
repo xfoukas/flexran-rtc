@@ -5,7 +5,7 @@
 
 #include "periodic_component.h"
 
-namespace progran {
+namespace flexran {
 
   namespace app {
 
@@ -15,7 +15,7 @@ namespace progran {
 	
       public:
 	
-      stats_manager(const progran::rib::Rib& rib, const progran::core::requests_manager& rm)
+      stats_manager(const flexran::rib::Rib& rib, const flexran::core::requests_manager& rm)
 	: periodic_component(rib, rm), times_executed_(0) {}
 	
 	void run_periodic_task();

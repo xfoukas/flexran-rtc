@@ -1,11 +1,11 @@
 #include "agent_session.h"
 #include "tagged_message.h"
 
-void progran::network::agent_session::start() {
+void flexran::network::agent_session::start() {
   do_read_header();
 }
 
-void progran::network::agent_session::deliver(std::shared_ptr<tagged_message> msg) {
+void flexran::network::agent_session::deliver(std::shared_ptr<tagged_message> msg) {
   bool write_in_progress = !write_queue_.empty();
   protocol_message data;
   std::size_t size = msg->getSize();
@@ -16,7 +16,7 @@ void progran::network::agent_session::deliver(std::shared_ptr<tagged_message> ms
   }
 }
 
-void progran::network::agent_session::do_read_header() {
+void flexran::network::agent_session::do_read_header() {
   boost::asio::async_read(socket_,
 			  boost::asio::buffer(read_msg_.data(), protocol_message::header_length),
 			  [this](boost::system::error_code ec, std::size_t /*length*/) {
@@ -29,7 +29,7 @@ void progran::network::agent_session::do_read_header() {
 			  });
 }
 
-void progran::network::agent_session::do_read_body() {
+void flexran::network::agent_session::do_read_body() {
   boost::asio::async_read(socket_,
 			  boost::asio::buffer(read_msg_.body(), read_msg_.body_length()),
 			  [this](boost::system::error_code ec, std::size_t /*length*/) {
@@ -45,7 +45,7 @@ void progran::network::agent_session::do_read_body() {
 			  });
 }
 
-void progran::network::agent_session::do_write() {
+void flexran::network::agent_session::do_write() {
   auto self(shared_from_this());
 
   boost::asio::async_write(socket_,
