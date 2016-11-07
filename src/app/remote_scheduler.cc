@@ -258,9 +258,9 @@ void flexran::app::scheduler::remote_scheduler::run_periodic_task() {
 		  if (data_to_request < 128) { // The header will be one byte less
 		    header_len--;
 		  }
-		  if ((j == 1) || (j == 2)) {
-		    data_to_request++; // It is not correct but fixes some RLC bug for DCCH
-		  }
+		  // if ((j == 1) || (j == 2)) {
+		  //   data_to_request++; // It is not correct but fixes some RLC bug for DCCH
+		  // }
 		  
 		  protocol::flex_rlc_pdu *rlc_pdu = dl_data->add_rlc_pdu();
 		  protocol::flex_rlc_pdu_tb *tb1 = rlc_pdu->add_rlc_pdu_tb();
