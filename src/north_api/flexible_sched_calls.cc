@@ -21,45 +21,28 @@
    SOFTWARE.
 */
 
-#ifndef STATS_MANAGER_H_
-#define STATS_MANAGER_H_
+#include <pistache/http.h>
 
-#include <set>
+#include "flexible_sched_calls.h"
 
-#include "periodic_component.h"
+void flexran::north_api::flexible_sched_calls::register_calls(Net::Rest::Router& router) {
 
-namespace flexran {
-
-  namespace app {
-
-    namespace stats {
-
-      class stats_manager : public periodic_component {
-	
-      public:
-	
-      stats_manager(const flexran::rib::Rib& rib, const flexran::core::requests_manager& rm)
-	: periodic_component(rib, rm) {}
-	
-	void run_periodic_task();
-
-	std::string all_stats_to_string();
-
-	std::string enb_config_to_string();
-
-	std::string mac_config_to_string();
-	
-	
-      private:
-	
-	std::set<int> agent_list_;
+  Net::Rest::Routes::Post(router, "/dl_sched/:sched_type", Net::Rest::Routes::bind(&flexran::north_api::flexible_sched_calls::change_scheduler, this));
   
-      };
-
-    }
-
-  }
-
 }
 
-#endif
+void flexran::north_api::flexible_sched_calls::change_scheduler(const Net::Rest::Request& request, Net::Http::ResponseWriter response) {
+
+  auto sched_type = request.param(":sched_type").as<int>();
+  
+  if (sched_type == 0) { // Local scheduler
+    sched_app->enable_central_scheduling(false);
+    response.send(Net::Http::Code::Ok, "Loaded Local Scheduler");
+  } else if (sched_type == 1) { //Remote scheduler 
+    sched_app->enable_central_scheduling(true);
+    response.send(Net::Http::Code::Ok, "Loaded Remote Scheduler");
+  } else { // Scheduler type not supported
+    response.send(Net::Http::Code::Not_Found, "Scheduler type does not exist");
+  }
+  
+}

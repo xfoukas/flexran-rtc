@@ -21,45 +21,33 @@
    SOFTWARE.
 */
 
-#ifndef STATS_MANAGER_H_
-#define STATS_MANAGER_H_
+#include <pistache/http.h>
+#include <string>
 
-#include <set>
+#include "stats_manager_calls.h"
 
-#include "periodic_component.h"
+void flexran::north_api::stats_manager_calls::register_calls(Net::Rest::Router& router) {
 
-namespace flexran {
-
-  namespace app {
-
-    namespace stats {
-
-      class stats_manager : public periodic_component {
-	
-      public:
-	
-      stats_manager(const flexran::rib::Rib& rib, const flexran::core::requests_manager& rm)
-	: periodic_component(rib, rm) {}
-	
-	void run_periodic_task();
-
-	std::string all_stats_to_string();
-
-	std::string enb_config_to_string();
-
-	std::string mac_config_to_string();
-	
-	
-      private:
-	
-	std::set<int> agent_list_;
+  Net::Rest::Routes::Get(router, "/stats_manager/:stats_type", Net::Rest::Routes::bind(&flexran::north_api::stats_manager_calls::obtain_stats, this));
   
-      };
-
-    }
-
-  }
-
 }
 
-#endif
+void flexran::north_api::stats_manager_calls::obtain_stats(const Net::Rest::Request& request, Net::Http::ResponseWriter response) {
+
+  auto stats_type = request.param(":stats_type").as<std::string>();
+  
+  std::string resp;
+  
+  if (stats_type.compare("all") == 0) {
+    resp = stats_app->all_stats_to_string();
+    response.send(Net::Http::Code::Ok, resp);
+  } else if (stats_type.compare("enb_config") == 0) {
+    resp = stats_app->enb_config_to_string();
+    response.send(Net::Http::Code::Ok, resp);
+  } else if (stats_type.compare("mac_stats") == 0) {
+    resp = stats_app->mac_config_to_string();
+    response.send(Net::Http::Code::Ok, resp);
+  } else {
+    response.send(Net::Http::Code::Not_Found, "Statistics type does not exist");
+  }
+}

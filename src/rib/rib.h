@@ -70,6 +70,10 @@ namespace flexran {
       void dump_mac_stats() const;
       
       void dump_enb_configurations() const;
+
+      std::string dump_mac_stats_to_string() const;
+      
+      std::string dump_enb_configurations_to_string() const;
       
     private:
       

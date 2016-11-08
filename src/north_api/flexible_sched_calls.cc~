@@ -21,45 +21,5 @@
    SOFTWARE.
 */
 
-#ifndef STATS_MANAGER_H_
-#define STATS_MANAGER_H_
+#include "flexible_sched_calls.h"
 
-#include <set>
-
-#include "periodic_component.h"
-
-namespace flexran {
-
-  namespace app {
-
-    namespace stats {
-
-      class stats_manager : public periodic_component {
-	
-      public:
-	
-      stats_manager(const flexran::rib::Rib& rib, const flexran::core::requests_manager& rm)
-	: periodic_component(rib, rm) {}
-	
-	void run_periodic_task();
-
-	std::string all_stats_to_string();
-
-	std::string enb_config_to_string();
-
-	std::string mac_config_to_string();
-	
-	
-      private:
-	
-	std::set<int> agent_list_;
-  
-      };
-
-    }
-
-  }
-
-}
-
-#endif

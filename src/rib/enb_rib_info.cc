@@ -164,8 +164,34 @@ void flexran::rib::enb_rib_info::dump_mac_stats() const {
   }
 }
 
+std::string flexran::rib::enb_rib_info::dump_mac_stats_to_string() const {
+  std::string str;
+
+  str += "UE MAC stats for agent ";
+  str += agent_id_;
+  str += "\n";
+  for (auto ue_stats : ue_mac_info_) {
+    str += ue_stats.second->dump_stats_to_string();
+    str += "\n";
+  }
+
+  return str;
+}
+
 void flexran::rib::enb_rib_info::dump_configs() const {
   std::cout << eNB_config_.DebugString() << std::endl;
   std::cout << ue_config_.DebugString() << std::endl;
   std::cout << lc_config_.DebugString() << std::endl;
+}
+
+std::string flexran::rib::enb_rib_info::dump_configs_to_string() const {
+  std::string str;
+  str += eNB_config_.DebugString();
+  str += "\n";
+  str += ue_config_.DebugString();
+  str += "\n";
+  str += lc_config_.DebugString();
+  str += "\n";
+
+  return str;
 }

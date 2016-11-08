@@ -145,8 +145,34 @@ void flexran::rib::Rib::dump_mac_stats() const {
   }
 }
 
+std::string flexran::rib::Rib::dump_mac_stats_to_string() const {
+
+  std::string str;
+  
+  for (auto enb_config : eNB_configs_) {
+    str += enb_config.second->dump_mac_stats_to_string();
+    str += "\n";
+  }
+
+  return str;
+}
+
 void flexran::rib::Rib::dump_enb_configurations() const {
   for (auto eNB_config : eNB_configs_) {
     eNB_config.second->dump_configs();
   }
 }
+
+std::string flexran::rib::Rib::dump_enb_configurations_to_string() const {
+
+  std::string str;
+
+  for (auto eNB_config : eNB_configs_) {
+    str += eNB_config.second->dump_configs_to_string();
+    str += "\n";
+  }
+
+  return str;
+}
+
+

@@ -13,7 +13,7 @@ endmacro(use_cxx11)
 use_cxx11()
 
 # Enable low-latency kernel (for kernel 3.14 and above)
-option(LOWLATENCY "Enable soft-real time scheduling (for Linux kernel 3.14 and above)")
+option(LOWLATENCY "Enable soft-real time scheduling (for Linux kernel 3.14 and above)" ON)
 
 if(LOWLATENCY)
 add_definitions(-DLOWLATENCY)
@@ -23,6 +23,13 @@ endif()
 # Set constants for abstract simulation mode
 if(ABSTRACT_SIMULATION)
 add_definitions(-DABSTRACT_SIMULATION)
+endif()
+
+# Enable RESTful northbound API
+option(REST_NORTHBOUND "Enable RESTful northbound API for the management of the controller" ON)
+
+if(REST_NORTHBOUND)
+add_definitions(-DREST_NORTHBOUND)
 endif()
 
 # Base directories
@@ -99,6 +106,17 @@ if(Boost_FOUND)
   link_directories(${Boost_LIBRARY_DIRS})
 endif(Boost_FOUND)
 
+if(REST_NORTHBOUND)
+
+# Pistache support
+
+set(PISTACHE_INCLUDE_DIRS /usr/local/include/pistache)
+set(PISTACHE_LIB /usr/local/lib/libnet_static.a)
+
+include_directories(${PISTACHE_INCLUDE_DIRS})
+
+endif()
+
 # Network component
 
 set (RT_CONTROLLER_NETWORK_DIR ${RT_CONTROLLER_DIR}/network)
@@ -152,12 +170,32 @@ set(APP_SRC
   ${RT_CONTROLLER_APP_DIR}/remote_scheduler_delegation.cc
   ${RT_CONTROLLER_APP_DIR}/delegation_manager.cc
   ${RT_CONTROLLER_APP_DIR}/remote_scheduler_eicic.cc
+  ${RT_CONTROLLER_APP_DIR}/flexible_scheduler.cc	
 )
 
 add_library(RT_CONTROLLER_APP_LIB
   ${APP_SRC}
 )
 
+if(REST_NORTHBOUND)
+
+# North_API component
+
+set (RT_CONTROLLER_NORTH_API_DIR ${RT_CONTROLLER_DIR}/north_api)
+
+include_directories(${RT_CONTROLLER_NORTH_API_DIR})
+
+set(NORTH_API_SRC
+  ${RT_CONTROLLER_NORTH_API_DIR}/call_manager.cc
+  ${RT_CONTROLLER_NORTH_API_DIR}/flexible_sched_calls.cc
+  ${RT_CONTROLLER_NORTH_API_DIR}/stats_manager_calls.cc
+)
+
+add_library(RT_CONTROLLER_NORTH_API_LIB
+  ${NORTH_API_SRC}
+)
+
+endif()
 
 # Core controller
 
@@ -188,3 +226,12 @@ target_link_libraries(rt_controller
   ${CMAKE_THREAD_LIBS_INIT}
   ${PROTOBUF_LIBRARY}
 )
+
+if(REST_NORTHBOUND)
+
+target_link_libraries(rt_controller
+  RT_CONTROLLER_NORTH_API_LIB
+  ${PISTACHE_LIB}
+)
+
+endif()

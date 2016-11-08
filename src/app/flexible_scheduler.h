@@ -21,45 +21,66 @@
    SOFTWARE.
 */
 
-#ifndef STATS_MANAGER_H_
-#define STATS_MANAGER_H_
-
-#include <set>
+#ifndef FLEXIBLE_SCHEDULER_H_
+#define FLEXIBLE_SCHEDULER_H_
 
 #include "periodic_component.h"
+#include "enb_scheduling_info.h"
+#include "ue_scheduling_info.h"
+#include "rib_common.h"
+
+#include <atomic>
 
 namespace flexran {
 
   namespace app {
 
-    namespace stats {
+    namespace scheduler {
 
-      class stats_manager : public periodic_component {
-	
+      class flexible_scheduler : public periodic_component {
+
       public:
-	
-      stats_manager(const flexran::rib::Rib& rib, const flexran::core::requests_manager& rm)
-	: periodic_component(rib, rm) {}
-	
+
+	flexible_scheduler(const rib::Rib& rib, const core::requests_manager& rm)
+	  : periodic_component(rib, rm), code_pushed_(false) {
+
+	  central_scheduling.store(false);
+	  
+	}
+
 	void run_periodic_task();
 
-	std::string all_stats_to_string();
+	void push_code(int agent_id, std::string function_name, std::string lib_name);
 
-	std::string enb_config_to_string();
+	void reconfigure_agent(int agent_id, std::string policy_name);
 
-	std::string mac_config_to_string();
+	void enable_central_scheduling(bool central_sch);
 	
-	
+	static int32_t tpc_accumulated;
+
       private:
+
+	void run_central_scheduler();
 	
-	std::set<int> agent_list_;
-  
+	::std::shared_ptr<enb_scheduling_info> get_scheduling_info(int agent_id);
+	
+	::std::map<int, ::std::shared_ptr<enb_scheduling_info>> scheduling_info_;
+	
+	// Set these values internally for now
+
+	std::atomic<bool> central_scheduling;
+	const int schedule_ahead = 0;
+	bool code_pushed_;
+	int prev_val_, current_val;
+	
       };
-
+      
     }
-
+    
   }
 
 }
 
-#endif
+
+#endif /* FLEXIBLE_SCHEDULER_H_ */
+

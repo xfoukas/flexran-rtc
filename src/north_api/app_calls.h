@@ -21,45 +21,23 @@
    SOFTWARE.
 */
 
-#ifndef STATS_MANAGER_H_
-#define STATS_MANAGER_H_
+#ifndef APP_CALLS_H_
+#define APP_CALLS_H_
 
-#include <set>
-
-#include "periodic_component.h"
+#include <pistache/router.h>
 
 namespace flexran {
 
-  namespace app {
+  namespace north_api {
 
-    namespace stats {
+    class app_calls {
 
-      class stats_manager : public periodic_component {
-	
-      public:
-	
-      stats_manager(const flexran::rib::Rib& rib, const flexran::core::requests_manager& rm)
-	: periodic_component(rib, rm) {}
-	
-	void run_periodic_task();
+    public:
 
-	std::string all_stats_to_string();
+      virtual void register_calls(Net::Rest::Router& router) = 0;
 
-	std::string enb_config_to_string();
-
-	std::string mac_config_to_string();
-	
-	
-      private:
-	
-	std::set<int> agent_list_;
-  
-      };
-
-    }
-
+    };
   }
-
 }
 
-#endif
+#endif /* APP_CALLS_H_ */

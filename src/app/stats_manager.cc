@@ -66,19 +66,30 @@ void flexran::app::stats::stats_manager::run_periodic_task() {
       std::cout << "Time to make a new request for stats" << std::endl;
     }
   }
-  
-  times_executed_++;
-
-  if (times_executed_ == 100000) {
-    // Dump all the stats
-    std::cout << "***************" << std::endl;
-    std::cout << "Configurations" << std::endl;
-    std::cout << "***************" << std::endl;
-    rib_.dump_enb_configurations();
-    std::cout << "***************" << std::endl;
-    std::cout << "MAC stats" << std::endl;
-    std::cout << "***************" << std::endl;
-    rib_.dump_mac_stats();
-    times_executed_ = 0;
-  }
 }
+
+std::string flexran::app::stats::stats_manager::all_stats_to_string() {
+  return enb_config_to_string() + "\n\n\n" + mac_config_to_string() + "\n";
+}
+
+std::string flexran::app::stats::stats_manager::enb_config_to_string() {
+  std::string str;
+  str += "*********************\n";
+  str += "Agent Configurations\n";
+  str += "*********************\n";
+  str += rib_.dump_enb_configurations_to_string();
+
+  return str;
+}
+
+std::string flexran::app::stats::stats_manager::mac_config_to_string() {
+
+  std::string str;
+  str += "***************\n";
+  str += "MAC statistics\n";
+  str += "****************\n";
+  str += rib_.dump_mac_stats_to_string();
+
+  return str;
+}
+	

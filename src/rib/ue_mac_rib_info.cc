@@ -22,6 +22,7 @@
 */
 
 #include <iostream>
+#include <string>
 
 #include "ue_mac_rib_info.h"
 
@@ -104,5 +105,41 @@ void flexran::rib::ue_mac_rib_info::dump_stats() const {
     }
   }
   std::cout << "  |" << std::endl;
+
+}
+
+std::string flexran::rib::ue_mac_rib_info::dump_stats_to_string() const {
+
+  std::string str;
+
+  str += "Rnti: ";
+  str += std::to_string(rnti_);
+  str += "\n";
+  str += mac_stats_report_.DebugString();
+  str += "\n";
+  str += "Harq status";
+  str += "\n";
+  
+  for (int i = 0; i < 8; i++) {
+    str +=  "  |   ";
+    str += i;
+  }
+
+  str += "   |   ";
+  str += "\n";
+  str += " ";
+  for (int i = 0; i < 8; i++) {
+    if (harq_stats_[0][i][0] == protocol::FLHS_ACK) {
+      str += " | ";
+      str += "ACK";
+    } else {
+      str += " | ";
+      str += "NACK";
+    }
+  }
+  str += "  |";
+  str += "\n";
+
+  return str;
 
 }

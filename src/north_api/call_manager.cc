@@ -21,45 +21,29 @@
    SOFTWARE.
 */
 
-#ifndef STATS_MANAGER_H_
-#define STATS_MANAGER_H_
+#include "call_manager.h"
 
-#include <set>
+#include <iostream>
 
-#include "periodic_component.h"
 
-namespace flexran {
-
-  namespace app {
-
-    namespace stats {
-
-      class stats_manager : public periodic_component {
-	
-      public:
-	
-      stats_manager(const flexran::rib::Rib& rib, const flexran::core::requests_manager& rm)
-	: periodic_component(rib, rm) {}
-	
-	void run_periodic_task();
-
-	std::string all_stats_to_string();
-
-	std::string enb_config_to_string();
-
-	std::string mac_config_to_string();
-	
-	
-      private:
-	
-	std::set<int> agent_list_;
-  
-      };
-
-    }
-
-  }
-
+void flexran::north_api::manager::call_manager::init(size_t thr) {
+  auto opts = Net::Http::Endpoint::options()
+    .threads(thr)
+    .flags(Net::Tcp::Options::InstallSignalHandler);
+  httpEndpoint->init(opts);
 }
 
-#endif
+void flexran::north_api::manager::call_manager::start() {
+  httpEndpoint->setHandler(router_.handler());
+  httpEndpoint->serve();
+}
+
+void flexran::north_api::manager::call_manager::shutdown() {
+  httpEndpoint->shutdown();
+}
+
+void flexran::north_api::manager::call_manager::register_calls(flexran::north_api::app_calls& calls) {
+
+  calls.register_calls(router_);
+  
+}
