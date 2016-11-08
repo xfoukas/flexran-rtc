@@ -1,0 +1,49 @@
+#!/bin/bash
+
+function install_pistache {
+    echo "Installing pistache"
+    git clone https://github.com/oktal/pistache.git
+    git submodule update --init
+    cd pistache
+    mkdir build
+    cd build
+    cmake -G "Unix Makefiles" -DCMAKE_BUILD_TYPE=Release ..
+    make
+    sudo make install
+}
+
+function install_protobuf {
+    echo "Downloading protobuf"
+    wget https://github.com/google/protobuf/releases/download/v2.6.1/protobuf-2.6.1.tar.gz
+    tar -xzvf protobuf-2.6.1.tar.gz
+    cd protobuf-2.6.1/
+    ./configure
+    echo "Compiling protobuf"
+    make -j`nproc`
+    sudo make install
+    sudo ldconfig
+}
+
+#Check if running in Ubuntu or Arch Linux
+os_version=`gawk -F= '/^NAME/{print $2}' /etc/os-release`
+
+if [[ $os_version == *"Arch Linux"* ]]
+then
+    echo "Detected Arch Linux"
+    echo "Installing required packages"
+    sudo pacman -Syu
+    sudo pacman --noconfirm -S base-devel cmake protobuf boost boost-libs git
+    install_pistache
+elif [[ $os_version == *"Ubuntu"* ]]
+then
+    echo "Detected Ubuntu"
+    echo "Installing required packages"
+    sudo apt-get update -y
+    sudo apt-get install build-essential g++ -y
+    sudo apt-get install git -y
+    sudo apt-get install cmake -y
+    sudo apt-get install libboost-all-dev -y
+    install_protobuf
+    install_pistache
+fi
+
