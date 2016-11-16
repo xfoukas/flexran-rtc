@@ -344,6 +344,8 @@ void flexran::app::scheduler::flexible_scheduler::run_central_scheduler() {
 	  } else { /* This is potentially a new SDU opportunity */	    
 	    TBS = get_TBS_DL(mcs, nb_available_rb);
 	    dci_tbs = TBS;
+
+	    sdu_length_total = 0;
 	    
 	    if (ue_sched_info->get_ta_timer() == 0) {
 	      // Check if we need to update
@@ -370,7 +372,7 @@ void flexran::app::scheduler::flexible_scheduler::run_central_scheduler() {
 	      header_len += 3;
 	      const protocol::flex_rlc_bsr& rlc_report = mac_report.rlc_report(j-1);
 
-	      if (dci_tbs - ta_len - header_len > 0) {
+	      if (dci_tbs - ta_len - header_len - sdu_length_total > 0) {
 		//std::cout << "Need to request " << rlc_report.tx_queue_size() << " from channel " << j << std::endl;
 		if (rlc_report.tx_queue_size() > 0) {
 		  data_to_request = ::std::min(dci_tbs - ta_len - header_len, rlc_report.tx_queue_size());
@@ -389,7 +391,7 @@ void flexran::app::scheduler::flexible_scheduler::run_central_scheduler() {
 		  tb1->set_size(data_to_request);
 		  tb2->set_size(data_to_request);
 		  //Set this to the max value that we might request
-		  sdu_length_total = data_to_request;
+		  sdu_length_total += data_to_request;
 		} else {
 		  header_len -= 3;
 		} //End tx_queue_size == 0
