@@ -1,4 +1,4 @@
-# rt-controller
+# FlexRAN-rtc
 A real-time controller for SD-RAN
 
 Requirements:
