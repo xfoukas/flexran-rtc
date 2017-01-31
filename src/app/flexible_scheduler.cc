@@ -490,32 +490,36 @@ void flexran::app::scheduler::flexible_scheduler::run_central_scheduler() {
 	      const protocol::flex_cell_stats_report& cell_report = cell_rib_info.get_cell_stats_report();
 
 	      int16_t normalized_rx_power;
-	      bool has_normalized_rx_power = false;
+	      bool rx_power_needs_update = false;
 	      
 	      for (int k = 0; k < mac_report.ul_cqi_report().pucch_dbm_size(); k++) {
 		if (mac_report.ul_cqi_report().pucch_dbm(k).serv_cell_index() == cell_id) {
 		  if (mac_report.ul_cqi_report().pucch_dbm(k).has_p0_pucch_dbm()) {
 		    normalized_rx_power = mac_report.ul_cqi_report().pucch_dbm(k).p0_pucch_dbm();
-		    has_normalized_rx_power = true;
+		    if (mac_report.ul_cqi_report().pucch_dbm(k).p0_pucch_updated() == 1) {
+		      rx_power_needs_update = true;
+		    }
 		    break;
 		  }
 		}
 	      }
 	      
-	      int16_t target_rx_power = cell_report.noise_inter_report().p0_nominal_pucch() + 10;
+	      int16_t target_rx_power = cell_report.noise_inter_report().p0_nominal_pucch() + 20;
 
 	      int32_t framex10psubframe = ue_sched_info->get_pucch_tpc_tx_frame()*10 + ue_sched_info->get_pucch_tpc_tx_subframe();
 
 	      if (((framex10psubframe+10) <= (target_frame*10 + target_subframe)) || // normal case
 		  ((framex10psubframe > (target_frame*10 + target_subframe)) && (((10240 - framex10psubframe + target_frame*10+target_subframe) >= 10 )))) {// Frame wrap-around
 
-		if (has_normalized_rx_power) {
-		  ue_sched_info->set_pucch_tpc_tx_frame(target_frame);
-		  ue_sched_info->set_pucch_tpc_tx_subframe(target_subframe);
+		if (rx_power_needs_update) {
 		  if (normalized_rx_power > (target_rx_power+1)) {
+		    ue_sched_info->set_pucch_tpc_tx_frame(target_frame);
+		    ue_sched_info->set_pucch_tpc_tx_subframe(target_subframe);
 		    tpc = 0; //-1
 		    tpc_accumulated--;
 		  } else if (normalized_rx_power < (target_rx_power - 1)) {
+		    ue_sched_info->set_pucch_tpc_tx_frame(target_frame);
+		    ue_sched_info->set_pucch_tpc_tx_subframe(target_subframe);
 		    tpc = 2; //+1
 		    tpc_accumulated++;
 		  } else {
