@@ -69,15 +69,15 @@ namespace flexran {
 
       subframe_t get_current_subframe() const { return current_subframe_; }
 
-      const protocol::flex_enb_config_reply& get_enb_config() const { return eNB_config_;}
+      protocol::flex_enb_config_reply& get_enb_config() {return eNB_config_;}
 
-      const protocol::flex_ue_config_reply& get_ue_configs() const {return ue_config_;}
+      protocol::flex_ue_config_reply& get_ue_configs() {return ue_config_;}
 
-      const protocol::flex_lc_config_reply& get_lc_configs() const {return lc_config_;}
+      protocol::flex_lc_config_reply& get_lc_configs() {return lc_config_;}
 
-      std::shared_ptr<const ue_mac_rib_info> get_ue_mac_info(rnti_t rnti) const;
+      std::shared_ptr<ue_mac_rib_info> get_ue_mac_info(rnti_t rnti);
 
-      const cell_mac_rib_info& get_cell_mac_rib_info(uint16_t cell_id) const {
+      cell_mac_rib_info& get_cell_mac_rib_info(uint16_t cell_id) {
 	return cell_mac_info_[cell_id];
       }
       

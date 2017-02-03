@@ -38,7 +38,7 @@ namespace flexran {
 	
       public:
 	
-      stats_manager(const flexran::rib::Rib& rib, const flexran::core::requests_manager& rm)
+      stats_manager(flexran::rib::Rib& rib, const flexran::core::requests_manager& rm)
 	: periodic_component(rib, rm) {}
 	
 	void run_periodic_task();

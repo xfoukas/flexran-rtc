@@ -41,7 +41,7 @@ void flexran::app::scheduler::remote_scheduler::run_periodic_task() {
   uint16_t total_nb_available_rb[rib::MAX_NUM_CC];
 
   uint16_t nb_available_rb, nb_rb, nb_rb_tmp, TBS, sdu_length_total = 0;
-  uint8_t harq_pid, round, ta_len = 0;
+  int harq_pid, round, ta_len = 0;
 
   uint32_t dci_tbs;
   int mcs, ndi, tpc = 1, mcs_tmp;
@@ -55,14 +55,14 @@ void flexran::app::scheduler::remote_scheduler::run_periodic_task() {
   
   ::std::set<int> agent_ids = ::std::move(rib_.get_available_agents());
 
-  for (const auto& agent_id : agent_ids) {
+  for (auto& agent_id : agent_ids) {
 
     protocol::flexran_message out_message;
     
-    ::std::shared_ptr<const rib::enb_rib_info> agent_config = rib_.get_agent(agent_id);
-    const protocol::flex_enb_config_reply& enb_config = agent_config->get_enb_config();
-    const protocol::flex_ue_config_reply& ue_configs = agent_config->get_ue_configs();
-    const protocol::flex_lc_config_reply& lc_configs = agent_config->get_lc_configs();
+    ::std::shared_ptr<rib::enb_rib_info> agent_config = rib_.get_agent(agent_id);
+    protocol::flex_enb_config_reply& enb_config = agent_config->get_enb_config();
+    protocol::flex_ue_config_reply& ue_configs = agent_config->get_ue_configs();
+    protocol::flex_lc_config_reply& lc_configs = agent_config->get_lc_configs();
 
     rib::frame_t current_frame = agent_config->get_current_frame();
     rib::subframe_t current_subframe = agent_config->get_current_subframe();
@@ -117,7 +117,7 @@ void flexran::app::scheduler::remote_scheduler::run_periodic_task() {
     
     // Go through the cell configs and set the variables
     for (int i = 0; i < enb_config.cell_config_size(); i++) {
-      const protocol::flex_cell_config cell_config = enb_config.cell_config(i);
+      protocol::flex_cell_config cell_config = enb_config.cell_config(i);
       total_nb_available_rb[i] = cell_config.dl_bandwidth();
       //Remove the RBs used by common channels
       //TODO: For now we will do this manually based on OAI config and scheduling sf. Important to fix it later.
@@ -133,21 +133,21 @@ void flexran::app::scheduler::remote_scheduler::run_periodic_task() {
       enb_sched_info->start_new_scheduling_round(target_subframe, cell_config);
 
       // Run the preprocessor to make initial allocation of RBs to UEs (Need to do this over all scheduling_info of eNB)
-      run_dlsch_scheduler_preprocessor(cell_config, ue_configs, lc_configs, agent_config, enb_sched_info, target_subframe);
+      run_dlsch_scheduler_preprocessor(cell_config, ue_configs, lc_configs, agent_config, enb_sched_info, target_frame, target_subframe);
     }
 
     // Go through the cells and schedule the UEs of this cell
     for (int i = 0; i < enb_config.cell_config_size(); i++) {
-      const protocol::flex_cell_config cell_config = enb_config.cell_config(i);
+      protocol::flex_cell_config cell_config = enb_config.cell_config(i);
       int cell_id = cell_config.cell_id();
       
 
       for (int UE_id = 0; UE_id < ue_configs.ue_config_size(); UE_id++) {
-	const protocol::flex_ue_config ue_config = ue_configs.ue_config(UE_id);
+	protocol::flex_ue_config ue_config = ue_configs.ue_config(UE_id);
 	if (ue_config.pcell_carrier_index() == cell_id) {
 
 	  // Get the MAC stats for this UE
-	  ::std::shared_ptr<const rib::ue_mac_rib_info> ue_mac_info = agent_config->get_ue_mac_info(ue_config.rnti());
+	  ::std::shared_ptr<rib::ue_mac_rib_info> ue_mac_info = agent_config->get_ue_mac_info(ue_config.rnti());
 	  
 	  // Get the scheduling info
 	  ::std::shared_ptr<ue_scheduling_info> ue_sched_info = enb_sched_info->get_ue_scheduling_info(ue_config.rnti());
@@ -162,7 +162,7 @@ void flexran::app::scheduler::remote_scheduler::run_periodic_task() {
 	    continue;
 	  }
 	  
-	  const protocol::flex_ue_stats_report& mac_report = ue_mac_info->get_mac_stats_report();
+	  protocol::flex_ue_stats_report& mac_report = ue_mac_info->get_mac_stats_report();
 
 	  // Schedule this UE
 	  // Check if the preprocessor allocated rbs for this and if
@@ -172,9 +172,12 @@ void flexran::app::scheduler::remote_scheduler::run_periodic_task() {
 	    continue;
 	  }
 
-
+	  if (!ue_mac_info->has_available_harq(cell_id)) {
+	    continue;
+	  }
+	  
 	  nb_available_rb = ue_sched_info->get_pre_nb_rbs_available(cell_id);
-	  harq_pid = ue_mac_info->get_currently_active_harq(cell_id);
+	  harq_pid = ue_mac_info->get_next_available_harq(cell_id);
 	  //harq_pid = ue_sched_info->get_active_harq_pid();
 	  
 	  //std::cout << "The current harq_pid is " << (int) harq_pid << std::endl;
@@ -388,8 +391,8 @@ void flexran::app::scheduler::remote_scheduler::run_periodic_task() {
 
 	      // do PUCCH power control
 	      // This is the normalized RX power
-	      const rib::cell_mac_rib_info& cell_rib_info = agent_config->get_cell_mac_rib_info(cell_id);
-	      const protocol::flex_cell_stats_report& cell_report = cell_rib_info.get_cell_stats_report();
+	      rib::cell_mac_rib_info& cell_rib_info = agent_config->get_cell_mac_rib_info(cell_id);
+	      protocol::flex_cell_stats_report& cell_report = cell_rib_info.get_cell_stats_report();
 
 	      int16_t normalized_rx_power;
 	      bool has_normalized_rx_power = false;

@@ -29,11 +29,10 @@
 void flexran::rib::ue_mac_rib_info::update_dl_sf_info(const protocol::flex_dl_info& dl_info) {
   uint8_t CC_id = dl_info.serv_cell_index();
   uint8_t harq_id = dl_info.harq_process_id();
-
-  currently_active_harq_[CC_id] = harq_id;
   
   for (int i = 0; i < dl_info.harq_status_size(); i++) {
     harq_stats_[CC_id][harq_id][i] = dl_info.harq_status(i);
+    active_harq_[CC_id][harq_id][i] = true;
   }
 }
 

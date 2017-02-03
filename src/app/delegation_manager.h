@@ -37,7 +37,7 @@ namespace flexran {
 	
       public:
 
-	delegation_manager(const rib::Rib& rib, const core::requests_manager& rm)
+	delegation_manager(rib::Rib& rib, const core::requests_manager& rm)
 	  : periodic_component(rib, rm), delegation_steps_{false} {}
 
 	void run_periodic_task();

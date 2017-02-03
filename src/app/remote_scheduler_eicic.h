@@ -40,7 +40,7 @@ namespace flexran {
   
       public:
 	
-      remote_scheduler_eicic(const rib::Rib& rib, const core::requests_manager& rm)
+      remote_scheduler_eicic(rib::Rib& rib, const core::requests_manager& rm)
 	: periodic_component(rib, rm) {}
 	
 	void run_periodic_task();

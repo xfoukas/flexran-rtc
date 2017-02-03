@@ -40,7 +40,7 @@ void flexran::app::scheduler::flexible_scheduler::run_periodic_task() {
 
   ::std::set<int> agent_ids = ::std::move(rib_.get_available_agents());
 
-  for (const auto& agent_id : agent_ids) {
+  for (auto& agent_id : agent_ids) {
     
     if (!code_pushed_) {
       push_code(agent_id, "flexran_schedule_ue_spec_remote", "../tests/delegation_control/libremote_sched.so");
@@ -119,7 +119,7 @@ void flexran::app::scheduler::flexible_scheduler::enable_central_scheduling(bool
 
   ::std::set<int> agent_ids = ::std::move(rib_.get_available_agents());
   
-  for (const auto& agent_id : agent_ids) {
+  for (auto& agent_id : agent_ids) {
 
     if (central_sch) {
       reconfigure_agent(agent_id, "../tests/delegation_control/remote_policy.yaml");
@@ -137,28 +137,28 @@ void flexran::app::scheduler::flexible_scheduler::run_central_scheduler() {
   uint16_t total_nb_available_rb[rib::MAX_NUM_CC];
 
   uint16_t nb_available_rb, nb_rb, nb_rb_tmp, TBS, sdu_length_total = 0;
-  uint8_t harq_pid, round, ta_len = 0;
+  uint8_t harq_pid, round;
 
   uint32_t dci_tbs;
-  int mcs, ndi, tpc = 1, mcs_tmp;
+  int mcs, tpc = 1, mcs_tmp;
+  uint32_t ndi;
   uint32_t ce_flags = 0;
   uint32_t data_to_request;
 
-  uint8_t header_len_dcch = 0, header_len_dcch_tmp = 0, header_len_dtch = 0, header_len_dtch_tmp = 0;
-  uint8_t header_len = 0, header_len_tmp = 0;
-
+  uint8_t header_len = 0, header_len_last = 0, ta_len = 0;
+  
   bool ue_has_transmission = false;
   
   ::std::set<int> agent_ids = ::std::move(rib_.get_available_agents());
-
-  for (const auto& agent_id : agent_ids) {
-
+  
+  for (auto& agent_id : agent_ids) {
+    
     protocol::flexran_message out_message;
     
-    ::std::shared_ptr<const rib::enb_rib_info> agent_config = rib_.get_agent(agent_id);
-    const protocol::flex_enb_config_reply& enb_config = agent_config->get_enb_config();
-    const protocol::flex_ue_config_reply& ue_configs = agent_config->get_ue_configs();
-    const protocol::flex_lc_config_reply& lc_configs = agent_config->get_lc_configs();
+    ::std::shared_ptr<rib::enb_rib_info> agent_config = rib_.get_agent(agent_id);
+    protocol::flex_enb_config_reply& enb_config = agent_config->get_enb_config();
+    protocol::flex_ue_config_reply& ue_configs = agent_config->get_ue_configs();
+    protocol::flex_lc_config_reply& lc_configs = agent_config->get_lc_configs();
 
     rib::frame_t current_frame = agent_config->get_current_frame();
     rib::subframe_t current_subframe = agent_config->get_current_subframe();
@@ -188,11 +188,10 @@ void flexran::app::scheduler::flexible_scheduler::run_central_scheduler() {
     int additional_frames = schedule_ahead / 10;
     target_frame = (target_frame + additional_frames) % 1024;
 
-    //if ((target_subframe != 1) && (target_subframe != 4) && (target_subframe != 6) && (target_subframe != 8)) {
+    ///if ((target_subframe != 1) && (target_subframe != 4) && (target_subframe != 6) && (target_subframe != 8)) {
     //  continue;
     //}
     
-
     if ((target_subframe  == 0) || (target_subframe == 5)) {
       continue;
     }
@@ -209,11 +208,11 @@ void flexran::app::scheduler::flexible_scheduler::run_central_scheduler() {
     dl_mac_config_msg->set_allocated_header(header);
     dl_mac_config_msg->set_sfn_sf(rib::get_sfn_sf(target_frame, target_subframe));
     
-    aggregation = 2;
+    aggregation = 1;
     
     // Go through the cell configs and set the variables
     for (int i = 0; i < enb_config.cell_config_size(); i++) {
-      const protocol::flex_cell_config cell_config = enb_config.cell_config(i);
+      protocol::flex_cell_config cell_config = enb_config.cell_config(i);
       total_nb_available_rb[i] = cell_config.dl_bandwidth();
       //Remove the RBs used by common channels
       //TODO: For now we will do this manually based on OAI config and scheduling sf. Important to fix it later.
@@ -229,21 +228,21 @@ void flexran::app::scheduler::flexible_scheduler::run_central_scheduler() {
       enb_sched_info->start_new_scheduling_round(target_subframe, cell_config);
 
       // Run the preprocessor to make initial allocation of RBs to UEs (Need to do this over all scheduling_info of eNB)
-      run_dlsch_scheduler_preprocessor(cell_config, ue_configs, lc_configs, agent_config, enb_sched_info, target_subframe);
+      run_dlsch_scheduler_preprocessor(cell_config, ue_configs, lc_configs, agent_config, enb_sched_info, target_frame, target_subframe);
     }
 
     // Go through the cells and schedule the UEs of this cell
     for (int i = 0; i < enb_config.cell_config_size(); i++) {
-      const protocol::flex_cell_config cell_config = enb_config.cell_config(i);
+      protocol::flex_cell_config cell_config = enb_config.cell_config(i);
       int cell_id = cell_config.cell_id();
       
 
       for (int UE_id = 0; UE_id < ue_configs.ue_config_size(); UE_id++) {
-	const protocol::flex_ue_config ue_config = ue_configs.ue_config(UE_id);
+	protocol::flex_ue_config ue_config = ue_configs.ue_config(UE_id);
 	if (ue_config.pcell_carrier_index() == cell_id) {
 
 	  // Get the MAC stats for this UE
-	  ::std::shared_ptr<const rib::ue_mac_rib_info> ue_mac_info = agent_config->get_ue_mac_info(ue_config.rnti());
+	  ::std::shared_ptr<rib::ue_mac_rib_info> ue_mac_info = agent_config->get_ue_mac_info(ue_config.rnti());
 	  
 	  // Get the scheduling info
 	  ::std::shared_ptr<ue_scheduling_info> ue_sched_info = enb_sched_info->get_ue_scheduling_info(ue_config.rnti());
@@ -257,26 +256,32 @@ void flexran::app::scheduler::flexible_scheduler::run_central_scheduler() {
 	  if (!ue_mac_info) {
 	    continue;
 	  }
-	  
-	  const protocol::flex_ue_stats_report& mac_report = ue_mac_info->get_mac_stats_report();
 
+	  protocol::flex_ue_stats_report& mac_report = ue_mac_info->get_mac_stats_report();
+	  
 	  // Schedule this UE
 	  // Check if the preprocessor allocated rbs for this and if
 	  // CCE allocation is feasible
-	  if ((ue_sched_info->get_pre_nb_rbs_available(cell_id) == 0) ||
-	      CCE_allocation_infeasible(enb_sched_info, cell_config, ue_config, aggregation, target_subframe)) {
+	  if (CCE_allocation_infeasible(enb_sched_info, cell_config, ue_config, aggregation, target_subframe)) {
+	    std::cout << "CCE allocation was infeasible" << std::endl;
 	    continue;
 	  }
 
+	  if (!ue_mac_info->has_available_harq(cell_id)) {
+	    continue;
+	  }
+	  
+	  
+	  if ((ue_sched_info->get_pre_nb_rbs_available(cell_id) == 0)) {
+	    continue;
+	  }
+	  
 
 	  nb_available_rb = ue_sched_info->get_pre_nb_rbs_available(cell_id);
-	  harq_pid = ue_mac_info->get_currently_active_harq(cell_id);
-	  //harq_pid = ue_sched_info->get_active_harq_pid();
-	  
-	  //std::cout << "The current harq_pid is " << (int) harq_pid << std::endl;
 
-	  round = ue_sched_info->get_harq_round(cell_id, harq_pid);
-	  
+	  harq_pid = ue_mac_info->get_next_available_harq(cell_id);
+	  round = ue_mac_info->get_harq_stats(cell_id, harq_pid);//ue_sched_info->get_harq_round(cell_id, harq_pid);
+
 	  sdu_length_total = 0;
 
 	  for (int j = 0; j < mac_report.dl_cqi_report().csi_report_size(); j++) {
@@ -286,13 +291,11 @@ void flexran::app::scheduler::flexible_scheduler::run_central_scheduler() {
 	    }
 	  }
 
-	  mcs = ::std::min(mcs, target_dl_mcs_);
-
 	  // Create a dl_data message
 	  protocol::flex_dl_data *dl_data = dl_mac_config_msg->add_dl_ue_data();
 
-	  int status = ue_mac_info->get_harq_stats(cell_id, harq_pid);
-	  if (status == protocol::FLHS_NACK) {
+	  if (round > 0) {
+	    
 	    // Use the MCS that was previously assigned to this HARQ process
 	    mcs = ue_sched_info->get_mcs(cell_id, harq_pid);
 	    nb_rb = ue_sched_info->get_nb_rbs_required(cell_id);
@@ -333,7 +336,7 @@ void flexran::app::scheduler::flexible_scheduler::run_central_scheduler() {
 	      nb_available_rb -= nb_rb;
 
 	      // TODO: Set this statically for now
-	      aggregation = 2;
+	      aggregation = 1;
 	      ndi = ue_sched_info->get_ndi(cell_id, harq_pid);
 	      tpc = 1;
 	      ue_has_transmission = true;
@@ -344,17 +347,15 @@ void flexran::app::scheduler::flexible_scheduler::run_central_scheduler() {
 	  } else { /* This is potentially a new SDU opportunity */	    
 	    TBS = get_TBS_DL(mcs, nb_available_rb);
 	    dci_tbs = TBS;
-
-	    sdu_length_total = 0;
 	    
 	    if (ue_sched_info->get_ta_timer() == 0) {
-	      // Check if we need to update
-	      ue_sched_info->set_ta_timer(20);
 	      if (mac_report.pending_mac_ces() & protocol::FLPCET_TA) {
-		ta_len = 2;
-	      } else {
-		ta_len = 0;
-	      }
+ 		ta_len = 2;
+		// Check if we need to update
+		ue_sched_info->set_ta_timer(20);
+ 	      } else {
+ 		ta_len = 0;
+ 	      }
 	    } else {
 	      ue_sched_info->decr_ta_timer();
 	      ta_len = 0;
@@ -364,20 +365,23 @@ void flexran::app::scheduler::flexible_scheduler::run_central_scheduler() {
 	      ce_flags |= protocol::FLPCET_TA;
 	    }
 
-	    header_len_dcch = 2; // 2 bytes DCCH SDU subheader
-
+	    header_len = 0; // 2 bytes DCCH SDU subheader
+	    header_len_last = 0;
+	    sdu_length_total = 0;
 	    // TODO: Need to make this prioritized
 	    // Loop through the UE logical channels
 	    for (int j = 1; j < mac_report.rlc_report_size() + 1; j++) {
 	      header_len += 3;
-	      const protocol::flex_rlc_bsr& rlc_report = mac_report.rlc_report(j-1);
+	      protocol::flex_rlc_bsr *rlc_report = mac_report.mutable_rlc_report(j-1);
 
 	      if (dci_tbs - ta_len - header_len - sdu_length_total > 0) {
-		//std::cout << "Need to request " << rlc_report.tx_queue_size() << " from channel " << j << std::endl;
-		if (rlc_report.tx_queue_size() > 0) {
-		  data_to_request = ::std::min(dci_tbs - ta_len - header_len, rlc_report.tx_queue_size());
+		if (rlc_report->tx_queue_size() > 0) {
+		  data_to_request = ::std::min(dci_tbs - ta_len - header_len - sdu_length_total, rlc_report->tx_queue_size());
 		  if (data_to_request < 128) { // The header will be one byte less
 		    header_len--;
+		    header_len_last = 2;
+		  } else {
+		    header_len_last = 3;
 		  }
 		  // if ((j == 1) || (j == 2)) {
 		  //   data_to_request++; // It is not correct but fixes some RLC bug for DCCH
@@ -386,10 +390,11 @@ void flexran::app::scheduler::flexible_scheduler::run_central_scheduler() {
 		  protocol::flex_rlc_pdu *rlc_pdu = dl_data->add_rlc_pdu();
 		  protocol::flex_rlc_pdu_tb *tb1 = rlc_pdu->add_rlc_pdu_tb();
 		  protocol::flex_rlc_pdu_tb *tb2 = rlc_pdu->add_rlc_pdu_tb();
-		  tb1->set_logical_channel_id(rlc_report.lc_id());
-		  tb2->set_logical_channel_id(rlc_report.lc_id());
+		  tb1->set_logical_channel_id(rlc_report->lc_id());
+		  tb2->set_logical_channel_id(rlc_report->lc_id());
 		  tb1->set_size(data_to_request);
 		  tb2->set_size(data_to_request);
+		  rlc_report->set_tx_queue_size(rlc_report->tx_queue_size() - data_to_request);
 		  //Set this to the max value that we might request
 		  sdu_length_total += data_to_request;
 		} else {
@@ -399,19 +404,22 @@ void flexran::app::scheduler::flexible_scheduler::run_central_scheduler() {
 	      
 	    } // End of iterating the logical channels
 
+	    if (header_len == 0) {
+	      header_len_last = 0;
+	    }
+	    
 	    // There is a payload
 	    if ( dl_data->rlc_pdu_size() > 0) {
 	      // Now compute the number of required RBs for total sdu length
 	      // Assume RAH format 2
 	      //Adjust header lengths
-	      header_len_tmp = header_len;
+	      //	      header_len_tmp = header_len;
 
-	      if (header_len == 2 || header_len == 3) { // Only one SDU, remove length field
-		header_len = 1;
-	      } else { //Remove length field from the last SDU
-		header_len--;
+	      if (header_len != 0) {
+		header_len_last--;
+		header_len -= header_len_last;
 	      }
-
+	      
 	      mcs_tmp = mcs;
 
 	      if (mcs_tmp == 0) {
@@ -486,8 +494,8 @@ void flexran::app::scheduler::flexible_scheduler::run_central_scheduler() {
 
 	      // do PUCCH power control
 	      // This is the normalized RX power
-	      const rib::cell_mac_rib_info& cell_rib_info = agent_config->get_cell_mac_rib_info(cell_id);
-	      const protocol::flex_cell_stats_report& cell_report = cell_rib_info.get_cell_stats_report();
+	      rib::cell_mac_rib_info& cell_rib_info = agent_config->get_cell_mac_rib_info(cell_id);
+	      protocol::flex_cell_stats_report& cell_report = cell_rib_info.get_cell_stats_report();
 
 	      int16_t normalized_rx_power;
 	      bool rx_power_needs_update = false;
@@ -505,7 +513,7 @@ void flexran::app::scheduler::flexible_scheduler::run_central_scheduler() {
 	      }
 	      
 	      int16_t target_rx_power = cell_report.noise_inter_report().p0_nominal_pucch() + 20;
-
+	      
 	      int32_t framex10psubframe = ue_sched_info->get_pucch_tpc_tx_frame()*10 + ue_sched_info->get_pucch_tpc_tx_subframe();
 
 	      if (((framex10psubframe+10) <= (target_frame*10 + target_subframe)) || // normal case
@@ -533,7 +541,6 @@ void flexran::app::scheduler::flexible_scheduler::run_central_scheduler() {
 	      }
 	      ue_sched_info->toggle_ndi(cell_id, harq_pid);
 	      ndi = ue_sched_info->get_ndi(cell_id, harq_pid);
-	      //std::cout << "Toggling NDI for harq " << (int) harq_pid << std::endl;
 	      ue_has_transmission = true;
 	    } else { // There is no data to transmit, so don't schedule
 	      ue_has_transmission = false;
@@ -555,9 +562,10 @@ void flexran::app::scheduler::flexible_scheduler::run_central_scheduler() {
 	    
 	    dl_dci->set_rnti(ue_config.rnti());
 	    dl_dci->set_harq_process(harq_pid);
+	    ue_mac_info->harq_scheduled(cell_id, harq_pid);
 
 	    // TODO: Currently set to static value. Need to create a function to obtain this
-	    aggregation = 2;
+	    aggregation = 1;
 	    dl_dci->set_aggr_level(aggregation);
 	    
 	    enb_sched_info->assign_CCE(cell_id, 1<<aggregation);
@@ -571,12 +579,12 @@ void flexran::app::scheduler::flexible_scheduler::run_central_scheduler() {
 	      dl_dci->set_format(protocol::FLDCIF_1);
 	      dl_dci->set_rb_shift(0);
 	      dl_dci->add_ndi(ndi);
-	      dl_dci->add_rv(round);
+	      dl_dci->add_rv((round % 4));
 	      dl_dci->set_tpc(tpc);
 	      dl_dci->add_mcs(mcs);
 	      dl_dci->add_tbs_size(dci_tbs);
 	      dl_dci->set_rb_bitmap(allocate_prbs_sub(nb_rb,
-						      ue_sched_info->get_rballoc_sub_scheduled(cell_id,harq_pid),
+						      ue_sched_info->get_rballoc_sub_scheduled(cell_id, harq_pid),
 						      cell_config));
 	    }
 	  } else {
@@ -593,9 +601,8 @@ void flexran::app::scheduler::flexible_scheduler::run_central_scheduler() {
     out_message.set_msg_dir(protocol::INITIATING_MESSAGE);
     out_message.set_allocated_dl_mac_config_msg(dl_mac_config_msg);
     if (dl_mac_config_msg->dl_ue_data_size() > 0) {
-      // std::cout << "Scheduled " << dl_mac_config_msg->dl_ue_data_size() << " UEs in this round\n" << std::endl;
-      req_manager_.send_message(agent_id, out_message);
-
+      //   std::cout << "Scheduled " << dl_mac_config_msg->dl_ue_data_size() << " UEs in this round\n" << std::endl;
+    req_manager_.send_message(agent_id, out_message);
     }
   }
 }

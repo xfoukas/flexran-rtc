@@ -127,7 +127,7 @@ namespace flexran {
 	 return mcs_[cell_id][harq_pid];
        }
        
-       int get_ndi(uint16_t cell_id, uint8_t harq_pid) const { return ndi_[cell_id][harq_pid];}
+       uint8_t get_ndi(uint16_t cell_id, uint8_t harq_pid) const { return ndi_[cell_id][harq_pid];}
        
        void toggle_ndi(uint16_t cell_id, uint8_t harq_pid) {
 	 ndi_[cell_id][harq_pid] = 1 - ndi_[cell_id][harq_pid];
@@ -166,7 +166,7 @@ namespace flexran {
        int ta_timer_;
        
        rib::rnti_t rnti_;
-       int ndi_[rib::MAX_NUM_CC][rib::MAX_NUM_HARQ];
+       uint8_t ndi_[rib::MAX_NUM_CC][rib::MAX_NUM_HARQ];
        
        uint16_t nb_scheduled_rbs_[rib::MAX_NUM_CC][rib::MAX_NUM_HARQ];
        uint16_t mcs_[rib::MAX_NUM_CC][rib::MAX_NUM_HARQ];

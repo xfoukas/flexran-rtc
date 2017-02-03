@@ -43,8 +43,8 @@ void flexran::app::stats::stats_manager::run_periodic_task() {
       header->set_xid(0);
 
       protocol::flex_complete_stats_request *complete_stats_request(new protocol::flex_complete_stats_request);
-      complete_stats_request->set_report_frequency(protocol::FLSRF_CONTINUOUS);
-      complete_stats_request->set_sf(2);
+      complete_stats_request->set_report_frequency(protocol::FLSRF_PERIODICAL);
+      complete_stats_request->set_sf(4);
       int ue_flags = 0;
       ue_flags |= protocol::FLUST_PRH;                                                                            
       ue_flags |= protocol::FLUST_DL_CQI;

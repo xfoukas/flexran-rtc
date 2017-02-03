@@ -41,7 +41,7 @@ namespace flexran {
 
       public:
 
-	flexible_scheduler(const rib::Rib& rib, const core::requests_manager& rm)
+	flexible_scheduler(rib::Rib& rib, const core::requests_manager& rm)
 	  : periodic_component(rib, rm), code_pushed_(false) {
 
 	  central_scheduling.store(false);

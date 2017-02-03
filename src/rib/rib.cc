@@ -131,7 +131,7 @@ std::set<int> flexran::rib::Rib::get_available_agents() const {
   return agents;
 }
 
-std::shared_ptr<const flexran::rib::enb_rib_info> flexran::rib::Rib::get_agent(int agent_id) const {
+std::shared_ptr<flexran::rib::enb_rib_info> flexran::rib::Rib::get_agent(int agent_id) const {
   auto it = eNB_configs_.find(agent_id);
   if (it != eNB_configs_.end()) {
     return it->second;

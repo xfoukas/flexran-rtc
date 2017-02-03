@@ -141,7 +141,7 @@ void flexran::rib::enb_rib_info::update_mac_stats(const protocol::flex_stats_rep
   }
 }
 
-std::shared_ptr<const flexran::rib::ue_mac_rib_info> flexran::rib::enb_rib_info::get_ue_mac_info(rnti_t rnti) const {
+std::shared_ptr<flexran::rib::ue_mac_rib_info> flexran::rib::enb_rib_info::get_ue_mac_info(rnti_t rnti) {
   auto it = ue_mac_info_.find(rnti);
   if (it != ue_mac_info_.end()) {
     return it->second;

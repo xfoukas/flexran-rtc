@@ -39,8 +39,16 @@ namespace flexran {
       
     ue_mac_rib_info(rnti_t rnti)
       : rnti_(rnti), harq_stats_{{{protocol::FLHS_ACK}}},
-	uplink_reception_stats_{0}, ul_reception_data_{{0}},
-				  currently_active_harq_{0} {}
+	uplink_reception_stats_{0}, ul_reception_data_{{0}} {
+
+	  for (int i = 0; i < MAX_NUM_CC; i++) {
+	    for (int j = 0; j < MAX_NUM_HARQ; j++) {
+	      for (int k = 0; k < MAX_NUM_TB; k++) {
+		active_harq_[i][j][k] = true;
+	      }
+	    }
+	  }
+	}
 
      void update_dl_sf_info(const protocol::flex_dl_info& dl_info);
 
@@ -52,14 +60,33 @@ namespace flexran {
 
      std::string dump_stats_to_string() const;
      
-     const protocol::flex_ue_stats_report& get_mac_stats_report() const { return mac_stats_report_; }
+     protocol::flex_ue_stats_report& get_mac_stats_report() { return mac_stats_report_; }
      
-     uint8_t get_harq_stats(uint16_t cell_id, int harq_pid) const {
+     uint8_t get_harq_stats(uint16_t cell_id, int harq_pid) {
        return harq_stats_[cell_id][harq_pid][0];
      }
      
-     uint8_t get_currently_active_harq(uint16_t cell_id) const {
-       return currently_active_harq_[cell_id];
+     int get_next_available_harq(uint16_t cell_id) const {
+       for (int i = 0; i < MAX_NUM_HARQ; i++) {
+	 if (active_harq_[cell_id][i][0] == true) {
+	   return i;
+	 }
+       }
+       return -1;
+     }
+
+     bool has_available_harq(uint16_t cell_id) const {
+       for (int i = 0; i < MAX_NUM_HARQ; i++) {
+	 if (active_harq_[cell_id][i][0] == true) {
+	   return true;
+	 }
+       }
+       return false;
+     }
+     
+     void harq_scheduled(uint16_t cell_id, uint8_t harq_pid) {
+       active_harq_[cell_id][harq_pid][0] = false;
+       active_harq_[cell_id][harq_pid][1] = false;
      }
      
     private:
@@ -70,11 +97,10 @@ namespace flexran {
      
      // SF info
      uint8_t harq_stats_[MAX_NUM_CC][MAX_NUM_HARQ][MAX_NUM_TB];
-     uint8_t currently_active_harq_[MAX_NUM_CC];
+     bool active_harq_[MAX_NUM_CC][MAX_NUM_HARQ][MAX_NUM_TB];
      uint8_t uplink_reception_stats_[MAX_NUM_CC];
      uint8_t ul_reception_data_[MAX_NUM_CC][MAX_NUM_LC];
      uint8_t tpc_;
-     
     };
 
   }
