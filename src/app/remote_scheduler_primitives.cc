@@ -304,10 +304,13 @@ uint16_t flexran::app::scheduler::get_nquad(uint8_t num_pdcch_symbols,
 uint8_t flexran::app::scheduler::get_mi(const protocol::flex_cell_config& cell_config,
 					flexran::rib::subframe_t subframe) {
 
+  _unused(subframe);
+  
   if (cell_config.duplex_mode() == protocol::FLDM_FDD) {
     return 1;
   }
 
+  return 1;
   /* TODO implement for TDD */
 }
 

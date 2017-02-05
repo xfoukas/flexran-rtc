@@ -139,7 +139,7 @@ void flexran::app::scheduler::remote_scheduler::run_periodic_task() {
     // Go through the cells and schedule the UEs of this cell
     for (int i = 0; i < enb_config.cell_config_size(); i++) {
       protocol::flex_cell_config cell_config = enb_config.cell_config(i);
-      int cell_id = cell_config.cell_id();
+      uint16_t cell_id = cell_config.cell_id();
       
 
       for (int UE_id = 0; UE_id < ue_configs.ue_config_size(); UE_id++) {

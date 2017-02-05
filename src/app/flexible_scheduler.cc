@@ -134,7 +134,7 @@ void flexran::app::scheduler::flexible_scheduler::run_central_scheduler() {
   rib::subframe_t target_subframe;
   
   unsigned char aggregation;
-  uint16_t total_nb_available_rb[rib::MAX_NUM_CC];
+  //  uint16_t total_nb_available_rb[rib::MAX_NUM_CC];
 
   uint16_t nb_available_rb, nb_rb, nb_rb_tmp, TBS, sdu_length_total = 0;
   uint8_t harq_pid, round;
@@ -213,7 +213,7 @@ void flexran::app::scheduler::flexible_scheduler::run_central_scheduler() {
     // Go through the cell configs and set the variables
     for (int i = 0; i < enb_config.cell_config_size(); i++) {
       protocol::flex_cell_config cell_config = enb_config.cell_config(i);
-      total_nb_available_rb[i] = cell_config.dl_bandwidth();
+      //total_nb_available_rb[i] = cell_config.dl_bandwidth();
       //Remove the RBs used by common channels
       //TODO: For now we will do this manually based on OAI config and scheduling sf. Important to fix it later.
       // Assume an FDD scheduler
@@ -234,7 +234,7 @@ void flexran::app::scheduler::flexible_scheduler::run_central_scheduler() {
     // Go through the cells and schedule the UEs of this cell
     for (int i = 0; i < enb_config.cell_config_size(); i++) {
       protocol::flex_cell_config cell_config = enb_config.cell_config(i);
-      int cell_id = cell_config.cell_id();
+      uint16_t cell_id = cell_config.cell_id();
       
 
       for (int UE_id = 0; UE_id < ue_configs.ue_config_size(); UE_id++) {

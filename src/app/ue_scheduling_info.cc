@@ -26,7 +26,7 @@
 
 #include "ue_scheduling_info.h"
 
-void flexran::app::scheduler::ue_scheduling_info::start_new_scheduling_round(uint16_t cell_id, std::shared_ptr<const flexran::rib::ue_mac_rib_info> ue_mac_info) {
+void flexran::app::scheduler::ue_scheduling_info::start_new_scheduling_round() {
   std::fill( &rballoc_sub_[0][0], &rballoc_sub_[0][0] + sizeof(rballoc_sub_) /* / sizeof(flags[0][0]) */, 0 );
   std::fill(nb_rbs_required_, nb_rbs_required_ + rib::MAX_NUM_CC, 0);
   std::fill(nb_rbs_required_remaining_, nb_rbs_required_remaining_ + rib::MAX_NUM_CC, 0);

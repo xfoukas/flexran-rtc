@@ -36,12 +36,11 @@ void flexran::app::scheduler::remote_scheduler_helper::run_dlsch_scheduler_prepr
 											flexran::rib::subframe_t subframe) {
 
   uint16_t total_nb_available_rb;
-  uint16_t min_rb_unit;
-  uint16_t nb_rbs_required[rib::MAX_NUM_UE];
   int total_ue_count;
   uint16_t average_rbs_per_user = 0;
   int transmission_mode;
 
+  _unused(frame);
 
   total_nb_available_rb = cell_config.dl_bandwidth();
   //Remove the RBs used by common channels
@@ -52,13 +51,11 @@ void flexran::app::scheduler::remote_scheduler_helper::run_dlsch_scheduler_prepr
   } else if (subframe == 5) {
     total_nb_available_rb -=8;
   }
-  
-  min_rb_unit = get_min_rb_unit(cell_config);
 
   // Find the active UEs for this cell
   for (int i = 0; i < ue_configs.ue_config_size(); i++) {
     protocol::flex_ue_config ue_config = ue_configs.ue_config(i);
-    int cell_id = cell_config.cell_id();
+    uint16_t cell_id = cell_config.cell_id();
     // If this UE is assigned to this cell
     if (ue_config.pcell_carrier_index() == cell_id) {
       // Get the MAC stats for this UE
@@ -70,14 +67,14 @@ void flexran::app::scheduler::remote_scheduler_helper::run_dlsch_scheduler_prepr
 	sched_info->create_ue_scheduling_info(ue_config.rnti());
 	ue_sched_info = sched_info->get_ue_scheduling_info(ue_config.rnti());
       } else {
-	ue_sched_info->start_new_scheduling_round(cell_id, ue_mac_info); // reset scheduling-related values 
+	ue_sched_info->start_new_scheduling_round(); // reset scheduling-related values 
       }
      
 
       for (int k = 0; k < lc_configs.lc_ue_config_size(); k++) {
 	const protocol::flex_lc_ue_config *lc_conf = &(lc_configs.lc_ue_config(k));
 	if (lc_conf->rnti() == ue_config.rnti()) {
-	  assign_rbs_required(ue_sched_info, ue_mac_info, cell_config, ue_config, *lc_conf);
+	  assign_rbs_required(ue_sched_info, ue_mac_info, cell_config, *lc_conf);
 	  break;
 	}
       }       
@@ -88,11 +85,11 @@ void flexran::app::scheduler::remote_scheduler_helper::run_dlsch_scheduler_prepr
   total_ue_count = 0;
 
   //Sort the scheduled UEs based on their buffer size
-  const std::shared_ptr<std::vector<int>> sorted_ues = sort_UEs(cell_config, ue_configs, lc_configs, agent_config);
+  const std::shared_ptr<std::vector<int>> sorted_ues = sort_UEs(cell_config, ue_configs, agent_config);
 
   for (int& i : *sorted_ues) {
     protocol::flex_ue_config ue_config = ue_configs.ue_config(i);
-    int cell_id = cell_config.cell_id();
+    uint16_t cell_id = cell_config.cell_id();
     // If this UE is assigned to this cell
     if (ue_config.pcell_carrier_index() == cell_id) {
       // Get the MAC stats for this UE
@@ -132,7 +129,7 @@ void flexran::app::scheduler::remote_scheduler_helper::run_dlsch_scheduler_prepr
   
   for (int& i : *sorted_ues) {
     protocol::flex_ue_config ue_config = ue_configs.ue_config(i);
-    int cell_id = cell_config.cell_id();
+    uint16_t cell_id = cell_config.cell_id();
     // If this UE is assigned to this cell
     if (ue_config.pcell_carrier_index() == cell_id) {
       // Get the MAC stats for this UE
@@ -158,7 +155,7 @@ void flexran::app::scheduler::remote_scheduler_helper::run_dlsch_scheduler_prepr
     // Go through each of the UEs that need to be scheduled
    for (int& i : *sorted_ues) {
       protocol::flex_ue_config ue_config = ue_configs.ue_config(i);
-      int cell_id = cell_config.cell_id();
+      uint16_t cell_id = cell_config.cell_id();
       // If this UE is assigned to this cell
       if (ue_config.pcell_carrier_index() == cell_id) {
 	// Get the MAC stats for this UE
@@ -185,7 +182,7 @@ void flexran::app::scheduler::remote_scheduler_helper::run_dlsch_scheduler_prepr
 
       for (int& i : *sorted_ues) {
 	protocol::flex_ue_config ue_config = ue_configs.ue_config(i);
-	int cell_id = cell_config.cell_id();
+	uint16_t cell_id = cell_config.cell_id();
 	// If this UE is assigned to this cell
 	if (ue_config.pcell_carrier_index() == cell_id) {
 	  // Get the MAC stats for this UE
@@ -204,7 +201,6 @@ void flexran::app::scheduler::remote_scheduler_helper::run_dlsch_scheduler_prepr
 	  }
 
 	  perform_pre_processor_allocation(cell_config,
-					   ue_config,
 					   sched_info,
 					   ue_sched_info,
 					   transmission_mode);
@@ -217,7 +213,7 @@ void flexran::app::scheduler::remote_scheduler_helper::run_dlsch_scheduler_prepr
       for (int& i : *sorted_ues) {
 	//	for (int i = 0; i < ue_configs.ue_config_size(); i++) {
 	protocol::flex_ue_config ue_config = ue_configs.ue_config(i);
-	int cell_id = cell_config.cell_id();
+	uint16_t cell_id = cell_config.cell_id();
 	// If this UE is assigned to this cell
 	if (ue_config.pcell_carrier_index() == cell_id) {
 	  // Get the MAC stats for this UE
@@ -236,7 +232,6 @@ void flexran::app::scheduler::remote_scheduler_helper::run_dlsch_scheduler_prepr
 	  }
 	  
 	  perform_pre_processor_allocation(cell_config,
-					   ue_config,
 					   sched_info,
 					   ue_sched_info,
 					   transmission_mode);
@@ -267,11 +262,12 @@ void flexran::app::scheduler::remote_scheduler_helper::run_dlsch_scheduler_prepr
 }
 
 void flexran::app::scheduler::remote_scheduler_helper::perform_pre_processor_allocation(protocol::flex_cell_config& cell_config,
-											protocol::flex_ue_config& ue_config,
 											std::shared_ptr<enb_scheduling_info> sched_info,
 											std::shared_ptr<ue_scheduling_info> ue_sched_info,
 											int transmission_mode) {
 
+  _unused(transmission_mode);
+  
   int n_rbg = get_nb_rbg(cell_config);
   int min_rb_unit = get_min_rb_unit(cell_config);
   uint16_t cell_id = cell_config.cell_id();
@@ -312,7 +308,6 @@ void flexran::app::scheduler::remote_scheduler_helper::perform_pre_processor_all
 void flexran::app::scheduler::remote_scheduler_helper::assign_rbs_required(::std::shared_ptr<ue_scheduling_info> ue_sched_info,
 									   ::std::shared_ptr<rib::ue_mac_rib_info> ue_mac_info,
 									   protocol::flex_cell_config& cell_config,
-									   protocol::flex_ue_config& ue_config,
 									   const protocol::flex_lc_ue_config& lc_ue_config) {
   uint16_t TBS = 0;
   
@@ -374,7 +369,6 @@ void flexran::app::scheduler::remote_scheduler_helper::assign_rbs_required(::std
 
 const std::shared_ptr<std::vector<int>> flexran::app::scheduler::remote_scheduler_helper::sort_UEs(const protocol::flex_cell_config& cell_config,
 											     const protocol::flex_ue_config_reply& ue_configs,
-											     const protocol::flex_lc_config_reply& lc_configs,
 											     const ::std::shared_ptr<rib::enb_rib_info> agent_config) {
 
   int num_ues;
@@ -389,7 +383,7 @@ const std::shared_ptr<std::vector<int>> flexran::app::scheduler::remote_schedule
     const protocol::flex_ue_config ue_config = ue_configs.ue_config(i);
     ue_list[i].ue_id = i;
 
-    int cell_id = cell_config.cell_id();
+    uint16_t cell_id = cell_config.cell_id();
     // If this UE is assigned to this cell
     if (ue_config.pcell_carrier_index() == cell_id) {
       // Get the MAC stats for this UE

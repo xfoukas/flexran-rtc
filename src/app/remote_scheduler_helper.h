@@ -69,11 +69,9 @@ namespace flexran {
 	static void assign_rbs_required(::std::shared_ptr<ue_scheduling_info> ue_sched_info,
 					::std::shared_ptr<rib::ue_mac_rib_info> ue_mac_info,
 					protocol::flex_cell_config& cell_config,
-					protocol::flex_ue_config& ue_config,
 					const protocol::flex_lc_ue_config& lc_ue_config);
 	
 	static void perform_pre_processor_allocation(protocol::flex_cell_config& cell_config,
-						     protocol::flex_ue_config& ue_config,
 						     std::shared_ptr<enb_scheduling_info> sched_info,
 						     std::shared_ptr<ue_scheduling_info> ue_sched_info,
 						     int transmission_mode);
@@ -81,7 +79,6 @@ namespace flexran {
 
 	static const std::shared_ptr<std::vector<int>> sort_UEs(const protocol::flex_cell_config& cell_config,
 								const protocol::flex_ue_config_reply& ue_configs,
-								const protocol::flex_lc_config_reply& lc_configs,
 								const ::std::shared_ptr<rib::enb_rib_info> agent_config); 
 	  	
       };

@@ -48,7 +48,7 @@ namespace flexran {
 		  connection_manager& manager,
 		  async_xface& xface,
 		  int session_id)
-      : socket_(std::move(socket)), manager_(manager), xface_(xface), session_id_(session_id) {
+      : socket_(std::move(socket)), session_id_(session_id), manager_(manager), xface_(xface) {
 	socket_.set_option(boost::asio::ip::tcp::no_delay(true));
       }
       

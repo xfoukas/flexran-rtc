@@ -40,13 +40,11 @@ namespace flexran {
       public:
 	
       ue_scheduling_info(rib::rnti_t rnti)
-	: ta_timer_(20), nb_scheduled_rbs_{0},
-	  dl_pow_off_{2}, nb_rbs_required_{0}, ndi_{{0}}, 
-						 rnti_(rnti), rballoc_sub_{{0}},
-						   nb_rbs_required_remaining_{0},
-						     nb_rbs_required_remaining_1_{0},
-						     harq_round_{{{0}}},
-						       pucch_tpc_tx_frame_(0), pucch_tpc_tx_subframe_(0), high_priority_(true) {}
+	: ta_timer_(20), rnti_(rnti), ndi_{{0}}, nb_scheduled_rbs_{{0}}, mcs_{{0}}, rballoc_sub_scheduled_{{{0}}},
+						dl_pow_off_{2}, nb_rbs_required_{0}, harq_round_{{{0}}}, rballoc_sub_{{0}},
+						    nb_rbs_required_remaining_{0}, nb_rbs_required_remaining_1_{0},
+						    pre_nb_rbs_available_{0}, pucch_tpc_tx_frame_(0), pucch_tpc_tx_subframe_(0),
+										high_priority_(true) {}
 
        void decr_ta_timer() { ta_timer_--; }
 
@@ -54,7 +52,7 @@ namespace flexran {
        
        void set_ta_timer(int val) { ta_timer_ = val; }
 
-       void start_new_scheduling_round(uint16_t cell_id, ::std::shared_ptr<const rib::ue_mac_rib_info> ue_mac_info);
+       void start_new_scheduling_round();
        
        //uint8_t get_active_harq_pid() const { return current_harq_; }
        
@@ -181,7 +179,7 @@ namespace flexran {
        uint8_t rballoc_sub_[rib::MAX_NUM_CC][rib::N_RBG_MAX];
        uint16_t nb_rbs_required_remaining_[rib::MAX_NUM_CC];
        uint16_t nb_rbs_required_remaining_1_[rib::MAX_NUM_CC];
-       uint16_t pre_nb_rbs_available_[rib::MAX_NUM_CC] = {0};
+       uint16_t pre_nb_rbs_available_[rib::MAX_NUM_CC];
        
        rib::frame_t pucch_tpc_tx_frame_;
        rib::subframe_t pucch_tpc_tx_subframe_;

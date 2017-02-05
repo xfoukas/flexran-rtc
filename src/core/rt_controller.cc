@@ -58,7 +58,7 @@
 #include <string.h>
 #include <stdio.h>
 
-int main(int argc, char *argv[]) {
+int main() {
 
   std::shared_ptr<flexran::app::scheduler::flexible_scheduler> flex_sched_app;
   

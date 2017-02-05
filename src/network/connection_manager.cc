@@ -26,7 +26,7 @@
 flexran::network::connection_manager::connection_manager(boost::asio::io_service& io_service,
 				       const boost::asio::ip::tcp::endpoint& endpoint,
 				       async_xface& xface)
-  : acceptor_(io_service, endpoint), socket_(io_service), xface_(xface), next_id_(0) {
+  : acceptor_(io_service, endpoint), socket_(io_service), next_id_(0), xface_(xface) {
 
   do_accept();
 

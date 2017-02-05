@@ -28,7 +28,7 @@
 #include "task_manager.h"
 
 flexran::core::task_manager::task_manager(flexran::rib::rib_updater& r_updater)
-  : r_updater_(r_updater), rt_task(Policy::FIFO) {
+  : rt_task(Policy::FIFO), r_updater_(r_updater) {
   struct itimerspec its;
   
   sfd = timerfd_create(CLOCK_MONOTONIC, 0);

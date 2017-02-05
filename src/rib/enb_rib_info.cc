@@ -135,7 +135,6 @@ void flexran::rib::enb_rib_info::update_mac_stats(const protocol::flex_stats_rep
     }
   }
   // Then work on the Cell updates
-  uint32_t cell_id;
   for (int i = 0; i < mac_stats.cell_report_size(); i++) {
     cell_mac_info_[i].update_cell_stats_report(mac_stats.cell_report(i));
   }

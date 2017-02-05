@@ -30,6 +30,7 @@
 #include "periodic_component.h"
 #include "enb_scheduling_info.h"
 #include "ue_scheduling_info.h"
+#include "rt_controller_common.h"
 
 
 namespace flexran {

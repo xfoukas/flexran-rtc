@@ -1,6 +1,6 @@
 /* The MIT License (MIT)
 
-   Copyright (c) 2016 Xenofon Foukas
+   Copyright (c) 2017 Xenofon Foukas
 
    Permission is hereby granted, free of charge, to any person obtaining a copy
    of this software and associated documentation files (the "Software"), to deal
@@ -21,44 +21,9 @@
    SOFTWARE.
 */
 
-#ifndef RIB_COMMON_H_
-#define RIB_COMMON_H_
+#ifndef RT_CONTROLLER_COMMON_H_
+#define RT_CONTROLLER_COMMON_H_
 
-#include <cstdint>
-#include <utility>
+#define _unused(x) ((void)(x))
 
-namespace flexran {
-
-  namespace rib {
-
-    typedef uint16_t frame_t;
-    typedef uint16_t subframe_t;
-
-    typedef uint32_t rnti_t;
-    
-    static int const MAX_NUM_HARQ = 8;
-    static int const MAX_NUM_TB = 2;
-    static int const MAX_NUM_CC = 2;
-    static int const MAX_NUM_LC = 11;
-    static int const MAX_NUM_UE = 1024;
-    
-    static int const N_RBG_MAX = 25; // for 20MHz channel BW
-    
-#define TBStable_rowCnt 27
-    
-    extern const int cqi_to_mcs[16]; 
-
-    extern const unsigned int TBStable[TBStable_rowCnt][110];
-    
-    frame_t get_frame(uint32_t sfn_sf);
-    
-    subframe_t get_subframe(uint32_t sfn_sf);
-    
-    uint16_t get_sfn_sf(frame_t frame, subframe_t subframe);
-    
-    std::pair<frame_t, subframe_t> get_frame_subframe(uint32_t sfn_sf);
-
-  }
-  
-}
 #endif

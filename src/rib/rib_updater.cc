@@ -27,6 +27,8 @@
 #include "tagged_message.h"
 #include "rt_wrapper.h"
 
+#include "rt_controller_common.h"
+
 void flexran::rib::rib_updater::run() {
   update_rib();
 }
@@ -93,6 +95,9 @@ void flexran::rib::rib_updater::update_rib() {
 void flexran::rib::rib_updater::handle_message(int agent_id,
 					       const protocol::flex_hello& hello_msg,
 					       protocol::flexran_direction dir) {
+
+  _unused(hello_msg);
+  
   if (dir == protocol::SUCCESSFUL_OUTCOME) {
     // Agent is alive. Request info about its configuration
     // eNB config first
@@ -135,6 +140,7 @@ void flexran::rib::rib_updater::handle_message(int agent_id,
 
 void flexran::rib::rib_updater::handle_message(int agent_id,
 					       const protocol::flex_echo_request& echo_request_msg) {
+
   // Need to send an echo reply
   protocol::flex_header *header(new protocol::flex_header);
   header->set_type(protocol::FLPT_ECHO_REPLY);
@@ -152,6 +158,8 @@ void flexran::rib::rib_updater::handle_message(int agent_id,
 
 void flexran::rib::rib_updater::handle_message(int agent_id,
 					       const protocol::flex_echo_reply& echo_reply_msg) {
+  _unused(echo_reply_msg);  
+
   if (rib_.has_eNB_config_entry(agent_id)) {
     rib_.update_liveness(agent_id);
   } else {
