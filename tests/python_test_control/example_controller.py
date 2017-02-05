@@ -3,7 +3,7 @@ import select
 import Queue
 import threading
 
-import progran_pb2
+import flexran_pb2
 import header_pb2
 import stats_messages_pb2
 import control_delegation_pb2
@@ -63,7 +63,7 @@ controller = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 controller.setblocking(0)
 
 #Bind it to listening address
-controller_address = ('localhost', controller_port)
+controller_address = ('0.0.0.0', controller_port)
 print 'Starting controller'
 controller.bind(controller_address)
 
@@ -100,62 +100,62 @@ while inputs:
             outputs.append(connection)
 
             # Create a hello message
-            msg = progran_pb2.progran_message()
+            msg = flexran_pb2.flexran_message()
             header = msg.hello_msg.header
             header.version = 0
-            header.type = header_pb2.PRPT_HELLO
+            header.type = header_pb2.FLPT_HELLO
             header.xid = 1
-            msg.msg_dir = progran_pb2.INITIATING_MESSAGE
-            print 'Sending: '+header_pb2.prp_type.Name(msg.hello_msg.header.type)
+            msg.msg_dir = flexran_pb2.INITIATING_MESSAGE
+            print 'Sending: '+header_pb2.flex_type.Name(msg.hello_msg.header.type)
             with lock:
                 outgoing[connection] = Queue.Queue()
                 outgoing[connection].put_nowait(msg)
         #If s is an agent
         else:
             #print 'Something is coming'
-            msg = get_message(s, progran_pb2.progran_message)
+            msg = get_message(s, flexran_pb2.flexran_message)
             #print 'Received message'
             if (msg.HasField("hello_msg")):
-                print 'Received: '+header_pb2.prp_type.Name(msg.hello_msg.header.type)
+                print 'Received: '+header_pb2.flex_type.Name(msg.hello_msg.header.type)
                 # Create an echo request message
-                msg = progran_pb2.progran_message()
+                msg = flexran_pb2.flexran_message()
                 header = msg.echo_request_msg.header
                 header.version = 0
-                header.type = header_pb2.PRPT_ECHO_REQUEST
+                header.type = header_pb2.FLPT_ECHO_REQUEST
                 header.xid = 1
-                msg.msg_dir = progran_pb2.INITIATING_MESSAGE
-                print 'Sedning: '+header_pb2.prp_type.Name(msg.echo_request_msg.header.type)
+                msg.msg_dir = flexran_pb2.INITIATING_MESSAGE
+                print 'Sedning: '+header_pb2.flex_type.Name(msg.echo_request_msg.header.type)
                 with lock:
                     outgoing[connection].put_nowait(msg)
             elif (msg.HasField("echo_reply_msg")):
-                print 'Received: '+header_pb2.prp_type.Name(msg.echo_reply_msg.header.type)
+                print 'Received: '+header_pb2.flex_type.Name(msg.echo_reply_msg.header.type)
                 # Create a stats request message
-                msg = progran_pb2.progran_message()
-                msg.msg_dir = progran_pb2.INITIATING_MESSAGE
+                msg = flexran_pb2.flexran_message()
+                msg.msg_dir = flexran_pb2.INITIATING_MESSAGE
                 header = msg.stats_request_msg.header
                 header.version = 0
-                header.type = header_pb2.PRPT_STATS_REQUEST
+                header.type = header_pb2.FLPT_STATS_REQUEST
                 header.xid = 2
                 payload = msg.stats_request_msg
-                payload.type = stats_messages_pb2.PRST_COMPLETE_STATS
-                payload.complete_stats_request.report_frequency = stats_messages_pb2.PRSRF_PERIODICAL
+                payload.type = stats_messages_pb2.FLST_COMPLETE_STATS
+                payload.complete_stats_request.report_frequency = stats_messages_pb2.FLSRF_PERIODICAL
                 payload.complete_stats_request.sf = 100;
                 # Request power headroom and DL CQI reports
                 ue_flags = 0
-                ue_flags |= stats_messages_pb2.PRUST_PRH
-                ue_flags |= stats_messages_pb2.PRUST_DL_CQI
-                ue_flags |= stats_messages_pb2.PRUST_RLC_BS
-                ue_flags |= stats_messages_pb2.PRUST_MAC_CE_BS
+                ue_flags |= stats_messages_pb2.FLUST_PRH
+                ue_flags |= stats_messages_pb2.FLUST_DL_CQI
+                ue_flags |= stats_messages_pb2.FLUST_RLC_BS
+                ue_flags |= stats_messages_pb2.FLUST_MAC_CE_BS
                 payload.complete_stats_request.ue_report_flags = ue_flags
                 cell_flags = 0
-                cell_flags |= stats_messages_pb2.PRCST_NOISE_INTERFERENCE
+                cell_flags |= stats_messages_pb2.FLCST_NOISE_INTERFERENCE
                 payload.complete_stats_request.cell_report_flags = cell_flags
-                print 'Seding: '+header_pb2.prp_type.Name(msg.stats_request_msg.header.type)
+                print 'Seding: '+header_pb2.flex_type.Name(msg.stats_request_msg.header.type)
                 print msg
                 with lock:
                     outgoing[connection].put_nowait(msg)
             elif (msg.HasField("stats_reply_msg")):
-                print 'Received: '+header_pb2.prp_type.Name(msg.stats_reply_msg.header.type)
+                print 'Received: '+header_pb2.flex_type.Name(msg.stats_reply_msg.header.type)
                 if len(msg.stats_reply_msg.ue_report)>0:
                     list = get_frame_subframe(msg.stats_reply_msg.ue_report[0].dl_cqi_report.sfn_sn)
                 print list
@@ -163,25 +163,25 @@ while inputs:
                     list = get_frame_subframe(msg.stats_reply_msg.cell_report[0].noise_inter_report.sfn_sf)
                 print list
                 print msg
-                rounds = rounds + 1
-                if rounds == 100:
-                    msg = progran_pb2.progran_message()
-                    msg.msg_dir = progran_pb2.INITIATING_MESSAGE
-                    header = msg.control_delegation_msg.header
-                    header.version = 0
-                    header.xid = 100
-                    payload = msg.control_delegation_msg
-                    payload.delegation_type = control_delegation_pb2.PRCDT_MAC_DL_UE_SCHEDULER
-                    payload.name.append("schedule_ue_spec_alt");
-                    with open("/home/openair2/oai/openairinterface5g/cmake_targets/oaisim_noS1_build_oai/build/libalt_sched.so", "rb") as sharedLib:
-                        f = sharedLib.read()
-                        b = bytearray(f)
-                    bytesfield = ''.join(chr(item) for item in b)
-                    payload.payload = bytesfield
-                    print 'Seding: '+header_pb2.prp_type.Name(msg.control_delegation_msg.header.type)
-                    print msg
-                    with lock:
-                        outgoing[connection].put_nowait(msg)
+                #rounds = rounds + 1
+                #if rounds == 100:
+                #    msg = flexran_pb2.flexran_message()
+                #    msg.msg_dir = flexran_pb2.INITIATING_MESSAGE
+                #    header = msg.control_delegation_msg.header
+                #    header.version = 0
+                #    header.xid = 100
+                #    payload = msg.control_delegation_msg
+                #    payload.delegation_type = control_delegation_pb2.FLCDT_MAC_DL_UE_SCHEDULER
+                #    payload.name.append("schedule_ue_spec_alt");
+                #    with open("/home/openair2/oai/openairinterface5g/cmake_targets/oaisim_noS1_build_oai/build/libalt_sched.so", "rb") as sharedLib:
+                #        f = sharedLib.read()
+                #        b = bytearray(f)
+                #    bytesfield = ''.join(chr(item) for item in b)
+                #    payload.payload = bytesfield
+                #    print 'Seding: '+header_pb2.flex_type.Name(msg.control_delegation_msg.header.type)
+                #    print msg
+                #    with lock:
+                #        outgoing[connection].put_nowait(msg)
                 # Create a stats request message to turn the periodical info off
                 #msg = progran_pb2.progran_message()
                 #msg.msg_dir = progran_pb2.INITIATING_MESSAGE
