@@ -28,6 +28,8 @@
 #include <sched.h>
 #include <linux/sched.h>
 
+#include <boost/program_options.hpp>
+
 #include "rt_wrapper.h"
 
 #include "async_xface.h"
@@ -58,11 +60,40 @@
 #include <string.h>
 #include <stdio.h>
 
-int main() {
+namespace po = boost::program_options;
 
+int main(int argc, char* argv[]) {
+
+  int cport = 2210;
+  
+  try {
+    po::options_description desc("Help");
+    desc.add_options()
+      ("port,p", po::value<int>()->default_value(2210), 
+       "Port for incoming agent connections")
+      ("help,h", "Prints this help message");
+    
+    po::variables_map opts;
+    po::store(po::parse_command_line(argc, argv, desc), opts);
+    
+    try {
+      po::notify(opts);
+    } catch (po::error& e) {
+      std::cerr << "Error: Unrecognized parameter\n";
+      return 1;
+    }
+    
+    cport = opts["port"].as<int>(); 
+
+  } catch(std::exception& e) {
+    std::cerr << "Error: Unrecognized parameter\n";
+    return 2;
+  } 
+  
   std::shared_ptr<flexran::app::scheduler::flexible_scheduler> flex_sched_app;
   
-  flexran::network::async_xface net_xface(2210);
+  std::cout << "Listening on port " << cport << " for incoming agent connections" << std::endl;
+  flexran::network::async_xface net_xface(cport);
   
   // Create the rib
   flexran::rib::Rib rib;

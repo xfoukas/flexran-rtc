@@ -102,7 +102,7 @@ include_directories (${FLPT_CC_DIR})
 
 set(Boost_USE_STATIC_LIBS OFF)
 
-find_package(Boost 1.54.0 REQUIRED COMPONENTS system thread)
+find_package(Boost 1.54.0 REQUIRED COMPONENTS system thread program_options)
 if(Boost_FOUND)
   include_directories(${Boost_INCLUDE_DIRS})
   link_directories(${Boost_LIBRARY_DIRS})
