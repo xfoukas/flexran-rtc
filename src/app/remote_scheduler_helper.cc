@@ -437,7 +437,7 @@ const std::shared_ptr<std::vector<int>> flexran::app::scheduler::remote_schedule
   std::sort(ue_list, ue_list+num_ues, &compare_stats);
 
   //we now need to return the sorted ids of the UEs
-  auto sorted_ue_ids = std::make_shared<std::vector<int>>(num_ues);
+  auto sorted_ue_ids = std::make_shared<std::vector<int>>();
 
   for (int i = 0; i < num_ues; i++) {
     sorted_ue_ids->push_back(ue_list[i].ue_id);
