@@ -208,8 +208,6 @@ void flexran::app::scheduler::flexible_scheduler::run_central_scheduler() {
     dl_mac_config_msg->set_allocated_header(header);
     dl_mac_config_msg->set_sfn_sf(rib::get_sfn_sf(target_frame, target_subframe));
     
-    aggregation = 1;
-    
     // Go through the cell configs and set the variables
     for (int i = 0; i < enb_config.cell_config_size(); i++) {
       protocol::flex_cell_config cell_config = enb_config.cell_config(i);
@@ -258,6 +256,15 @@ void flexran::app::scheduler::flexible_scheduler::run_central_scheduler() {
 	  }
 
 	  protocol::flex_ue_stats_report& mac_report = ue_mac_info->get_mac_stats_report();
+
+	  for (int j = 0; j < mac_report.dl_cqi_report().csi_report_size(); j++) {
+	    if (cell_config.cell_id() == mac_report.dl_cqi_report().csi_report(j).serv_cell_index()) {
+	      aggregation = get_aggregation(get_bw_index(cell_config.dl_bandwidth()),
+					    mac_report.dl_cqi_report().csi_report(j).p10csi().wb_cqi(),
+					    protocol::FLDCIF_1);
+	      break;
+	    }
+	  }	 
 	  
 	  // Schedule this UE
 	  // Check if the preprocessor allocated rbs for this and if
@@ -335,8 +342,15 @@ void flexran::app::scheduler::flexible_scheduler::run_central_scheduler() {
 
 	      nb_available_rb -= nb_rb;
 
-	      // TODO: Set this statically for now
-	      aggregation = 1;
+
+	      for (int j = 0; j < mac_report.dl_cqi_report().csi_report_size(); j++) {
+		if (cell_config.cell_id() == mac_report.dl_cqi_report().csi_report(j).serv_cell_index()) {
+		  aggregation = get_aggregation(get_bw_index(cell_config.dl_bandwidth()),
+						mac_report.dl_cqi_report().csi_report(j).p10csi().wb_cqi(),
+						protocol::FLDCIF_1);
+		  break;
+		}
+	      }
 	      ndi = ue_sched_info->get_ndi(cell_id, harq_pid);
 	      tpc = 1;
 	      ue_has_transmission = true;
@@ -565,7 +579,7 @@ void flexran::app::scheduler::flexible_scheduler::run_central_scheduler() {
 	    ue_mac_info->harq_scheduled(cell_id, harq_pid);
 
 	    // TODO: Currently set to static value. Need to create a function to obtain this
-	    aggregation = 1;
+	    //	    aggregation = 1;
 	    dl_dci->set_aggr_level(aggregation);
 	    
 	    enb_sched_info->assign_CCE(cell_id, 1<<aggregation);

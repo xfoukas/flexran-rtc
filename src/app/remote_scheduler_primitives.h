@@ -87,6 +87,10 @@ namespace flexran {
 				 uint8_t *rballoc,
 				 const protocol::flex_cell_config& cell_config);
 
+      uint8_t get_aggregation(uint8_t bw_index, uint8_t cqi, protocol::flex_dci_format dci_fmt);
+
+      int get_bw_index(int n_rb_dl);
+      
     }
 
   }

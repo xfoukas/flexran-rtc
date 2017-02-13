@@ -45,10 +45,20 @@ namespace flexran {
     static int const N_RBG_MAX = 25; // for 20MHz channel BW
     
 #define TBStable_rowCnt 27
+
+#define MAX_SUPPORTED_BW 16
+
+#define CQI_VALUE_RANGE 16
     
     extern const int cqi_to_mcs[16]; 
 
     extern const unsigned int TBStable[TBStable_rowCnt][110];
+
+    extern const uint8_t cqi2fmt0_agg[MAX_SUPPORTED_BW][CQI_VALUE_RANGE];
+
+    extern const uint8_t cqi2fmt1x_agg[MAX_SUPPORTED_BW][CQI_VALUE_RANGE];
+
+    extern const uint8_t cqi2fmt2x_agg[MAX_SUPPORTED_BW][CQI_VALUE_RANGE];
     
     frame_t get_frame(uint32_t sfn_sf);
     
