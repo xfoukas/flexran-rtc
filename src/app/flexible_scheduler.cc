@@ -133,7 +133,7 @@ void flexran::app::scheduler::flexible_scheduler::run_central_scheduler() {
   rib::frame_t target_frame;
   rib::subframe_t target_subframe;
   
-  unsigned char aggregation;
+  unsigned char aggregation = 1;
   //  uint16_t total_nb_available_rb[rib::MAX_NUM_CC];
 
   uint16_t nb_available_rb, nb_rb, nb_rb_tmp, TBS, sdu_length_total = 0;
