@@ -67,13 +67,13 @@ void flexran::rib::enb_rib_info::update_UE_config(const protocol::flex_ue_state_
     if (rnti == ue_state_change.config().rnti()) {
       // Check if this was updated or removed
       if (ue_state_change.type() == protocol::FLUESC_DEACTIVATED) {
-	ue_config_.mutable_ue_config()->DeleteSubrange(i, i+1);
+	ue_config_.mutable_ue_config()->DeleteSubrange(i, 1);
 	// Erase mac info
 	ue_mac_info_.erase(rnti);
 	// Erase lc info as well
 	for (int j = 0; j < lc_config_.lc_ue_config_size(); j++) {
 	  if (rnti == lc_config_.lc_ue_config(j).rnti()) {
-	    lc_config_.mutable_lc_ue_config()->DeleteSubrange(j, j+i);
+	    lc_config_.mutable_lc_ue_config()->DeleteSubrange(j, 1);
 	  }
 	}
 	return;
