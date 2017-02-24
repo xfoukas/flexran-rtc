@@ -1,0 +1,2 @@
+export FLEXRAN_RTC_HOME=$(pwd)
+export FLEXRAN_RTC_EXEC=$(pwd)/build

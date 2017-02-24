@@ -39,12 +39,25 @@ int32_t flexran::app::scheduler::flexible_scheduler::tpc_accumulated = 0;
 void flexran::app::scheduler::flexible_scheduler::run_periodic_task() {
 
   ::std::set<int> agent_ids = ::std::move(rib_.get_available_agents());
-
+  
   for (auto& agent_id : agent_ids) {
     
     if (!code_pushed_) {
-      push_code(agent_id, "flexran_schedule_ue_spec_remote", "../tests/delegation_control/libremote_sched.so");
-      push_code(agent_id, "flexran_schedule_ue_spec_default", "../tests/delegation_control/libdefault_sched.so"); 
+      std::string path = "";
+      std::string remote_sched = "";
+      std::string default_sched = "";
+      
+      if(const char* env_p = std::getenv("FLEXRAN_RTC_HOME")) {
+	path = path + env_p + "/tests/delegation_control/";
+      } else {
+	path = "../tests/delegation_control/";
+      }
+
+      remote_sched = path + "libremote_sched.so";
+      default_sched = path + "libdefault_sched.so";
+      
+      push_code(agent_id, "flexran_schedule_ue_spec_remote", remote_sched);
+      push_code(agent_id, "flexran_schedule_ue_spec_default", default_sched); 
       
       code_pushed_ = true;
     }
