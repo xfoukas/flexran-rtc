@@ -55,7 +55,7 @@ void flexran::rib::ue_mac_rib_info::update_mac_stats_report(const protocol::flex
       mac_stats_report_.add_bsr(stats_report.bsr(i));
     }
   }
-  if (protocol::FLUST_PHR & flags) {
+  if (protocol::FLUST_PRH & flags) {
     mac_stats_report_.set_phr(stats_report.phr());
   }
   if (protocol::FLUST_RLC_BS & flags) {
@@ -85,12 +85,8 @@ void flexran::rib::ue_mac_rib_info::update_mac_stats_report(const protocol::flex
   if (protocol::FLUST_UL_CQI & flags) {
     mac_stats_report_.mutable_ul_cqi_report()->CopyFrom(stats_report.ul_cqi_report());
   }
-
-  if (protocol::FLUST_RRC_MEASUREMENTS & flags) {
-   mac_stats_report_.mutable_rrc_measurements()->CopyFrom(stats_report.rrc_measurements());
-  }
-
 }
+
 void flexran::rib::ue_mac_rib_info::dump_stats() const {
   std::cout << "Rnti: " << rnti_ << std::endl;
   std::cout << mac_stats_report_.DebugString() << std::endl;
@@ -125,7 +121,7 @@ std::string flexran::rib::ue_mac_rib_info::dump_stats_to_string() const {
   
   for (int i = 0; i < 8; i++) {
     str +=  "  |   ";
-    str += std::to_string(i);
+    str += i;
   }
 
   str += "   |   ";
