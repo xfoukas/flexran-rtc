@@ -134,10 +134,24 @@ void flexran::app::scheduler::flexible_scheduler::enable_central_scheduling(bool
   
   for (auto& agent_id : agent_ids) {
 
-    if (central_sch) {
-      reconfigure_agent(agent_id, "../tests/delegation_control/remote_policy.yaml");
+    std::string path = "";
+    std::string remote_policy = "";
+    std::string local_policy = "";
+      
+    if(const char* env_p = std::getenv("FLEXRAN_RTC_HOME")) {
+      path = path + env_p + "/tests/delegation_control/";
     } else {
-      reconfigure_agent(agent_id, "../tests/delegation_control/local_policy.yaml");
+      path = "../tests/delegation_control/";
+    }
+    
+    remote_policy = path + "remote_policy.yaml";
+    local_policy = path + "local_policy.yaml";
+    
+    
+    if (central_sch) {
+      reconfigure_agent(agent_id, remote_policy);
+    } else {
+      reconfigure_agent(agent_id, local_policy);
     }
   }
 }
