@@ -60,12 +60,26 @@
 #include <string.h>
 #include <stdio.h>
 
+#include "flexran_log.h"
+
 namespace po = boost::program_options;
 
 int main(int argc, char* argv[]) {
 
   int cport = 2210;
   int north_port = 9999;
+  
+  bool debug = false;
+
+  // Find the root directory
+  std::string path = "";
+
+  if(const char* env_p = std::getenv("FLEXRAN_RTC_HOME")) {
+    path = env_p;
+  } else {
+    path = "../";
+  }
+  
   
   try {
     po::options_description desc("Help");
@@ -74,7 +88,8 @@ int main(int argc, char* argv[]) {
        "Port for incoming agent connections")
       ("nport,n", po::value<int>()->default_value(9999),
        "Port for northbound API calls")
-      ("help,h", "Prints this help message");
+      ("help,h", "Prints this help message")
+      ("debug,d", "Enables debugging messages to be displayed and logged");
     
     po::variables_map opts;
     po::store(po::parse_command_line(argc, argv, desc), opts);
@@ -84,6 +99,11 @@ int main(int argc, char* argv[]) {
 		<< desc << std::endl; 
       return 0; 
     } 
+
+    if (opts.count("debug")) {
+      std::cout << "Debugging enabled" << std::endl;
+      debug = true;
+    }
     
     try {
       po::notify(opts);
@@ -99,10 +119,18 @@ int main(int argc, char* argv[]) {
     std::cerr << "Error: Unrecognized parameter\n";
     return 2;
   } 
-  
+
+  if (!debug) {
+    // Initialize the logger with default properties
+    flexran_log::PropertyConfigurator::configure(path + "/log_config/basic_log");
+  } else {
+    // Initialize the logger with debugging properties
+    flexran_log::PropertyConfigurator::configure(path + "/log_config/debug_log");
+  }
+    
   std::shared_ptr<flexran::app::scheduler::flexible_scheduler> flex_sched_app;
-  
-  std::cout << "Listening on port " << cport << " for incoming agent connections" << std::endl;
+
+  LOG4CXX_INFO(flexran::core::core_logger, "Listening on port " << cport << " for incoming agent connections");
   flexran::network::async_xface net_xface(cport);
   
   // Create the rib

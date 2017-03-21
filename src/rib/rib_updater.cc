@@ -29,6 +29,8 @@
 
 #include "rt_controller_common.h"
 
+#include "flexran_log.h"
+
 void flexran::rib::rib_updater::run() {
   update_rib();
 }
@@ -40,7 +42,7 @@ void flexran::rib::rib_updater::update_rib() {
   while(net_xface_.get_msg_from_network(tm) && (rem_msgs > 0)) {
     /* TODO: update the RIB based on what you see */
     if (tm->getSize() == 0) { // New connection. update the pending eNBs list
-      std::cout << "Seems that a new connection was established" << std::endl;
+      LOG4CXX_INFO(flexran::core::rib_logger, "A new agent connection was established");
       rib_.add_pending_agent(tm->getTag());
       protocol::flex_header *header(new protocol::flex_header);
       header->set_type(protocol::FLPT_HELLO);
@@ -59,9 +61,9 @@ void flexran::rib::rib_updater::update_rib() {
       in_message.ParseFromArray(tm->getMessageContents(), tm->getSize());
       // Update the RIB based on the message type
       if(in_message.has_hello_msg()) {
-	std::cout << "Time to handle a hello msg" << std::endl;
+	LOG4CXX_INFO(flexran::core::rib_logger, "Received a hello msg");
 	handle_message(tm->getTag(), in_message.hello_msg(), in_message.msg_dir());
-	std::cout << "Handled it" << std::endl;
+	LOG4CXX_INFO(flexran::core::rib_logger, "Handled the hello msg");
       } else if(in_message.has_echo_request_msg()) {
 	handle_message(tm->getTag(), in_message.echo_request_msg());
       } else if(in_message.has_echo_reply_msg()) {
@@ -74,16 +76,16 @@ void flexran::rib::rib_updater::update_rib() {
       } else if(in_message.has_ul_sr_info_msg()) {
 	/* TODO: Need to implement to enable UL scheduling */
       } else if(in_message.has_enb_config_reply_msg()) {
-	std::cout<<"Got an eNB config reply msg" << std::endl;
+	LOG4CXX_INFO(flexran::core::rib_logger, "Got an eNB config reply msg");
 	handle_message(tm->getTag(), in_message.enb_config_reply_msg());
       } else if(in_message.has_ue_config_reply_msg()) {
-	std::cout<<"Got a UE config reply msg" << std::endl;
+	LOG4CXX_INFO(flexran::core::rib_logger, "Got a UE config reply msg");
 	handle_message(tm->getTag(), in_message.ue_config_reply_msg());
       } else if(in_message.has_lc_config_reply_msg()) {
-	std::cout<<"Got an LC config reply msg" << std::endl;
+	LOG4CXX_INFO(flexran::core::rib_logger, "Got an LC config reply msg");
         handle_message(tm->getTag(), in_message.lc_config_reply_msg());
       } else if(in_message.has_ue_state_change_msg()) {
-	std::cout << "Seems like a UE state changed" << std::endl;
+	LOG4CXX_INFO(flexran::core::rib_logger, "Seems like a UE state changed");
 	handle_message(tm->getTag(), in_message.ue_state_change_msg());
       }
     }

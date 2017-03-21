@@ -1,0 +1,18 @@
+# Set root logger level to INFO and its only appender to A1.
+log4j.rootLogger=DEBUG, stdout, file
+
+# stdout is set to be a ConsoleAppender.
+log4j.appender.stdout=org.apache.log4j.ConsoleAppender
+
+# stdout uses PatternLayout.
+log4j.appender.stdout.layout=org.apache.log4j.PatternLayout
+log4j.appender.stdout.layout.ConversionPattern=[%p][%c] - %m%n
+
+# file is set to be a FileAppender.
+log4j.appender.file=org.apache.log4j.FileAppender
+log4j.appender.file.File=rt_controller.log
+
+# stdout uses PatternLayout.
+log4j.appender.file.layout=org.apache.log4j.PatternLayout
+log4j.appender.file.layout.ConversionPattern=[%p][%c](%F:%L) - %m%n
+log4j.appender.file.MaxBackupIndex=1

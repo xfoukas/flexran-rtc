@@ -12,6 +12,16 @@ function install_pistache {
     sudo make install
 }
 
+function install_log4cxx {
+    echo "Installing log4cxx"
+    wget https://aur.archlinux.org/cgit/aur.git/snapshot/log4cxx.tar.gz
+    tar vxzf log4cxx.tar.gz
+    cd log4cxx
+    makepkg -Acs
+    sudo pacman -U --noconfirm log4cxx*.pkg.tar.xz
+    cd ..
+}
+
 function install_protobuf {
     echo "Downloading protobuf"
     wget https://github.com/google/protobuf/releases/download/v2.6.1/protobuf-2.6.1.tar.gz
@@ -33,7 +43,9 @@ then
     echo "Installing required packages"
     sudo pacman -Syu
     sudo pacman --noconfirm -S base-devel cmake protobuf boost boost-libs git
+    sudo pacman --noconfirm -S apr-util libxml2 autoconf automake gzip libtool patch sed zip 
     install_pistache
+    install_log4cxx
 elif [[ $os_version == *"Ubuntu"* ]]
 then
     echo "Detected Ubuntu"
@@ -43,6 +55,7 @@ then
     sudo apt-get install git -y
     sudo apt-get install cmake -y
     sudo apt-get install libboost-all-dev -y
+    sudo apt-get install liblog4cxx-dev liblog4cxx10v5 -y
     install_protobuf
     install_pistache
 fi

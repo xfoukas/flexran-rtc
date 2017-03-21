@@ -45,6 +45,12 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/build)
 #Find threads library
 find_package (Threads)
 
+#Find log4cxx library
+set(Log4CXX_DIR "${CMAKE_SOURCE_DIR}/cmake_modules")
+find_package(Log4CXX REQUIRED)
+
+include_directories(${Log4CXX_INCLUDE_DIR})
+
 # Create and generate protobuf messages library
 include(FindProtobuf)
 find_package(Protobuf REQUIRED)
@@ -224,6 +230,7 @@ target_link_libraries(rt_controller
   RT_CONTROLLER_RIB_LIB
   RT_CONTROLLER_NETWORK_LIB
   ${FLPT_MSG_LIB}
+  ${Log4CXX_LIBRARIES}
   ${Boost_LIBRARIES}
   ${CMAKE_THREAD_LIBS_INIT}
   ${PROTOBUF_LIBRARY}

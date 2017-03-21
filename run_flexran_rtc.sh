@@ -9,13 +9,14 @@ if [ -f $FLEXRAN_RTC_EXEC/rt_controller ]; then
     
     BIN_FILE="$FLEXRAN_RTC_EXEC/rt_controller"
 
-    while getopts up:n: option
+    while getopts dup:n: option
     do
 	case "${option}"
 	in
 	    p) AGENT_PORT=${OPTARG};;
 	    n) REST_PORT=${OPTARG};;
-	    u) SUPERUSER=""
+	    u) SUPERUSER="";;
+	    d) DEBUG="-d";;
 	esac
     done
 
@@ -29,6 +30,12 @@ if [ -f $FLEXRAN_RTC_EXEC/rt_controller ]; then
 	echo "Using default REST port (9999)"
     else
 	exe_arguments="$exe_arguments -n $REST_PORT"
+    fi
+
+    if [ -z $DEBUG ]; then
+	echo " "
+    else
+	exe_arguments="$exe_arguments -d"
     fi
     
     exec $SUPERUSER $BIN_FILE $exe_arguments
