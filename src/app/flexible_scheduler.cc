@@ -74,9 +74,22 @@ void flexran::app::scheduler::flexible_scheduler::run_periodic_task() {
 void flexran::app::scheduler::flexible_scheduler::reconfigure_agent(int agent_id, std::string policy_name) {
   std::ifstream policy_file(policy_name);
   std::string str_policy;
+  int len;
 
+  if (!policy_file.good()) {
+    // TODO: Need to log this properly
+    std::cout << "The policy could not be loaded" << std::endl;
+    return;
+  }
+  
   policy_file.seekg(0, std::ios::end);
-  str_policy.reserve(policy_file.tellg());
+  len = policy_file.tellg();
+  if (len <= 0) {
+    // TODO: Need to add a proper warning message here
+    std::cout << "Policy could not be found. Make sure that it is stored in the proper directory" << std::endl;
+    return;
+  }
+  str_policy.reserve(len);
   policy_file.seekg(0, std::ios::beg);
 
   str_policy.assign((std::istreambuf_iterator<char>(policy_file)),
@@ -112,8 +125,18 @@ void flexran::app::scheduler::flexible_scheduler::push_code(int agent_id, std::s
   control_delegation_msg->set_delegation_type(protocol::FLCDT_MAC_DL_UE_SCHEDULER);
   
   ::std::ifstream fin(lib_name, std::ios::in | std::ios::binary);
-  fin.seekg( 0, std::ios::end );  
-  size_t len = fin.tellg();
+  if (!fin.good()) {
+    // TODO: Need to log this properly
+    std::cout << "The library could not be loaded" << std::endl;
+    return;
+  }
+  fin.seekg(0, std::ios::end );  
+  int len = fin.tellg();
+  if (len <= 0) {
+    // TODO: Need to add a proper warning message here
+    std::cout << "Library could not be found. Make sure that it is stored in the proper directory" << std::endl;
+    return;
+  }
   char *ret = new char[len];  
   fin.seekg(0, std::ios::beg);   
   fin.read(ret, len);  
@@ -134,10 +157,24 @@ void flexran::app::scheduler::flexible_scheduler::enable_central_scheduling(bool
   
   for (auto& agent_id : agent_ids) {
 
-    if (central_sch) {
-      reconfigure_agent(agent_id, "../tests/delegation_control/remote_policy.yaml");
+    std::string path = "";
+    std::string remote_policy = "";
+    std::string local_policy = "";
+      
+    if(const char* env_p = std::getenv("FLEXRAN_RTC_HOME")) {
+      path = path + env_p + "/tests/delegation_control/";
     } else {
-      reconfigure_agent(agent_id, "../tests/delegation_control/local_policy.yaml");
+      path = "../tests/delegation_control/";
+    }
+    
+    remote_policy = path + "remote_policy.yaml";
+    local_policy = path + "local_policy.yaml";
+    
+    
+    if (central_sch) {
+      reconfigure_agent(agent_id, remote_policy);
+    } else {
+      reconfigure_agent(agent_id, local_policy);
     }
   }
 }
