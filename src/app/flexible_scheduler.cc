@@ -34,6 +34,8 @@
 #include "rib_common.h"
 #include "cell_mac_rib_info.h"
 
+#include "flexran_log.h"
+
 int32_t flexran::app::scheduler::flexible_scheduler::tpc_accumulated = 0;
 
 void flexran::app::scheduler::flexible_scheduler::run_periodic_task() {
@@ -77,16 +79,14 @@ void flexran::app::scheduler::flexible_scheduler::reconfigure_agent(int agent_id
   int len;
 
   if (!policy_file.good()) {
-    // TODO: Need to log this properly
-    std::cout << "The policy could not be loaded" << std::endl;
+    LOG4CXX_WARN(flexran::core::app_logger, "The policy could not be loaded");
     return;
   }
   
   policy_file.seekg(0, std::ios::end);
   len = policy_file.tellg();
   if (len <= 0) {
-    // TODO: Need to add a proper warning message here
-    std::cout << "Policy could not be found. Make sure that it is stored in the proper directory" << std::endl;
+    LOG4CXX_WARN(flexran::core::app_logger, "Policy could not be found. Make sure that it is stored in the proper directory");
     return;
   }
   str_policy.reserve(len);
@@ -127,14 +127,13 @@ void flexran::app::scheduler::flexible_scheduler::push_code(int agent_id, std::s
   ::std::ifstream fin(lib_name, std::ios::in | std::ios::binary);
   if (!fin.good()) {
     // TODO: Need to log this properly
-    std::cout << "The library could not be loaded" << std::endl;
+    LOG4CXX_WARN(flexran::core::app_logger, "The library could not be loaded");
     return;
   }
   fin.seekg(0, std::ios::end );  
   int len = fin.tellg();
   if (len <= 0) {
-    // TODO: Need to add a proper warning message here
-    std::cout << "Library could not be found. Make sure that it is stored in the proper directory" << std::endl;
+    LOG4CXX_WARN(flexran::core::app_logger, "Library could not be found. Make sure that it is stored in the proper directory");
     return;
   }
   char *ret = new char[len];  
@@ -218,7 +217,7 @@ void flexran::app::scheduler::flexible_scheduler::run_central_scheduler() {
     if (enb_sched_info) {
       // Nothing to do if this exists
     } else { // eNB sched info was not found for this agent
-      ::std::cout << "Config was not found. Creating" << ::std::endl;
+      LOG4CXX_INFO(flexran::core::app_logger, "Config was not found. Creating");
       scheduling_info_.insert(::std::pair<int,
 			      ::std::shared_ptr<enb_scheduling_info>>(agent_id,
 								      ::std::shared_ptr<enb_scheduling_info>(new enb_scheduling_info)));
@@ -320,7 +319,7 @@ void flexran::app::scheduler::flexible_scheduler::run_central_scheduler() {
 	  // Check if the preprocessor allocated rbs for this and if
 	  // CCE allocation is feasible
 	  if (CCE_allocation_infeasible(enb_sched_info, cell_config, ue_config, aggregation, target_subframe)) {
-	    std::cout << "CCE allocation was infeasible" << std::endl;
+	    LOG4CXX_DEBUG(flexran::core::app_logger, "CCE allocation was infeasible");
 	    continue;
 	  }
 

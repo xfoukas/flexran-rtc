@@ -26,6 +26,8 @@
 #include "stats_manager.h"
 #include "flexran.pb.h"
 
+#include "flexran_log.h"
+
 void flexran::app::stats::stats_manager::run_periodic_task() {
 
   // Simply request stats for any registered eNB and print them
@@ -63,7 +65,7 @@ void flexran::app::stats::stats_manager::run_periodic_task() {
       msg.set_msg_dir(protocol::INITIATING_MESSAGE);
       msg.set_allocated_stats_request_msg(stats_request_msg);
       req_manager_.send_message(agent_id, msg);
-      std::cout << "Time to make a new request for stats" << std::endl;
+      LOG4CXX_INFO(flexran::core::app_logger, "Time to make a new request for stats");
     }
   }
 }
