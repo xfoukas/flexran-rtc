@@ -25,9 +25,9 @@ function install_log4cxx {
 function install_protobuf {
     echo "Downloading protobuf"
     wget https://github.com/google/protobuf/releases/download/v2.6.1/protobuf-2.6.1.tar.gz
-    tar -xzvf protobuf-2.6.1.tar.gz
+    tar -xzvf protobuf-2.6.1.tar.gz --owner $USER --group $USER --no-same-owner
     cd protobuf-2.6.1/
-    ./configure
+    ./configure 
     echo "Compiling protobuf"
     make -j`nproc`
     sudo make install
