@@ -28,7 +28,8 @@
 void flexran::north_api::flexible_sched_calls::register_calls(Net::Rest::Router& router) {
 
   Net::Rest::Routes::Post(router, "/dl_sched/:sched_type", Net::Rest::Routes::bind(&flexran::north_api::flexible_sched_calls::change_scheduler, this));
-  
+
+  Net::Rest::Routes::Post(router, "/rrm/:policyname", Net::Rest::Routes::bind(&flexran::north_api::flexible_sched_calls::apply_policy, this));
 }
 
 void flexran::north_api::flexible_sched_calls::change_scheduler(const Net::Rest::Request& request, Net::Http::ResponseWriter response) {
@@ -43,6 +44,22 @@ void flexran::north_api::flexible_sched_calls::change_scheduler(const Net::Rest:
     response.send(Net::Http::Code::Ok, "Loaded Remote Scheduler");
   } else { // Scheduler type not supported
     response.send(Net::Http::Code::Not_Found, "Scheduler type does not exist");
+  }
+  
+}
+
+void flexran::north_api::flexible_sched_calls::apply_policy(const Net::Rest::Request& request, Net::Http::ResponseWriter response) {
+
+  auto policy_name = request.param(":policyname").as<std::string>();
+  std::string resp;
+  if (policy_name != "") { // Local scheduler
+    if (sched_app->apply_agent_rrm_policy(policy_name)) {
+      response.send(Net::Http::Code::Ok, "Set the policy to the agent\n");
+    } else {
+      response.send(Net::Http::Code::Method_Not_Allowed, "Agent-side scheduling is currently inactive\n");
+    }
+  } else { // Scheduler policy not set
+    response.send(Net::Http::Code::Not_Found, "Policy not set\n");
   }
   
 }

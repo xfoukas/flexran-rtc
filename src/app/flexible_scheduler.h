@@ -55,6 +55,8 @@ namespace flexran {
 	void reconfigure_agent(int agent_id, std::string policy_name);
 
 	void enable_central_scheduling(bool central_sch);
+
+	bool apply_agent_rrm_policy(std::string policy_name);
 	
 	static int32_t tpc_accumulated;
 

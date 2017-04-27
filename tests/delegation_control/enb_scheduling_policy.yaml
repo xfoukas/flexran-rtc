@@ -1,0 +1,7 @@
+mac:
+ - dl_scheduler:
+       parameters:
+                 n_active_slices : !!int 1
+		           slice_percentage : [!!float 1.0, !!float 0.4, !!float 0.0, !!float 0.0]
+			   slice_maxmcs : [!!int 28, !!int 28, !int 28, !!int 28]
+			   #update_dl_scheduler : [!!int 1, !!int 1, !!int 0, !!int 0]

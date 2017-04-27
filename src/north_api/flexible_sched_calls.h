@@ -45,6 +45,8 @@ namespace flexran {
 
       void change_scheduler(const Net::Rest::Request& request, Net::Http::ResponseWriter response);
 
+      void apply_policy(const Net::Rest::Request& request, Net::Http::ResponseWriter response);
+      
     private:
 
       std::shared_ptr<flexran::app::scheduler::flexible_scheduler> sched_app;

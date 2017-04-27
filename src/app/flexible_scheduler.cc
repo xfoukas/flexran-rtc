@@ -72,6 +72,37 @@ void flexran::app::scheduler::flexible_scheduler::run_periodic_task() {
   }
 }
 
+// this fucntion will be called by the rest API as this is already registered as a valid URI
+bool flexran::app::scheduler::flexible_scheduler::apply_agent_rrm_policy(std::string policy_name) {
+
+  // The central scheduler is currently running
+  // Cannot push agent side policy
+  if (central_scheduling.load() == true) {
+    return false;
+  }
+  
+  std::string policy_file="";
+  if(const char* env_p = std::getenv("FLEXRAN_RTC_HOME")) {
+    policy_file = policy_file + env_p + "/tests/delegation_control/";
+  } else {
+    policy_file = "../tests/delegation_control/";
+  }
+  policy_file += policy_name;
+  // check if the policy file exist.
+  ::std::set<int> agent_ids = ::std::move(rib_.get_available_agents());
+
+  // this might be different
+  for (auto& agent_id : agent_ids) {
+
+    std::cout << "reconfigure the agent: applying the policy file: " << policy_file << std::endl;
+
+    reconfigure_agent(agent_id, policy_file);
+
+  }
+
+  return true;
+  
+}
 
 void flexran::app::scheduler::flexible_scheduler::reconfigure_agent(int agent_id, std::string policy_name) {
   std::ifstream policy_file(policy_name);
