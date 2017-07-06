@@ -50,6 +50,7 @@ void flexran::app::stats::stats_manager::run_periodic_task() {
       int ue_flags = 0;
       ue_flags |= protocol::FLUST_PRH;                                                                            
       ue_flags |= protocol::FLUST_DL_CQI;
+      ue_flags |= protocol::FLUST_BSR;
       ue_flags |= protocol::FLUST_RLC_BS;
       ue_flags |= protocol::FLUST_MAC_CE_BS;
       ue_flags |= protocol::FLUST_UL_CQI;
