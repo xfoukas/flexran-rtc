@@ -52,11 +52,15 @@ namespace flexran {
 
 	void push_code(int agent_id, std::string function_name, std::string lib_name);
 
-	void reconfigure_agent(int agent_id, std::string policy_name);
+	void reconfigure_agent_file(int agent_id, std::string policy_name);
+
+	void reconfigure_agent_string(int agent_id, std::string policy);
 
 	void enable_central_scheduling(bool central_sch);
 
 	bool apply_agent_rrm_policy(std::string policy_name);
+
+	bool apply_agent_rrm_policy_string(std::string policy);
 	
 	static int32_t tpc_accumulated;
 

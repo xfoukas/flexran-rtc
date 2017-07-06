@@ -46,6 +46,8 @@ namespace flexran {
       void change_scheduler(const Net::Rest::Request& request, Net::Http::ResponseWriter response);
 
       void apply_policy(const Net::Rest::Request& request, Net::Http::ResponseWriter response);
+
+      void apply_policy_string(const Net::Rest::Request& request, Net::Http::ResponseWriter response);
       
     private:
 

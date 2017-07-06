@@ -94,9 +94,9 @@ bool flexran::app::scheduler::flexible_scheduler::apply_agent_rrm_policy(std::st
   // this might be different
   for (auto& agent_id : agent_ids) {
 
-    std::cout << "reconfigure the agent: applying the policy file: " << policy_file << std::endl;
+    LOG4CXX_INFO(flexran::core::app_logger, "Reconfigure the agent: Applying the requested RRM policy from file " << policy_file);
 
-    reconfigure_agent(agent_id, policy_file);
+    reconfigure_agent_file(agent_id, policy_file);
 
   }
 
@@ -104,7 +104,32 @@ bool flexran::app::scheduler::flexible_scheduler::apply_agent_rrm_policy(std::st
   
 }
 
-void flexran::app::scheduler::flexible_scheduler::reconfigure_agent(int agent_id, std::string policy_name) {
+// this fucntion will be called by the rest API as this is already registered as a valid URI
+bool flexran::app::scheduler::flexible_scheduler::apply_agent_rrm_policy_string(std::string policy) {
+
+  // The central scheduler is currently running
+  // Cannot push agent side policy
+  if (central_scheduling.load() == true) {
+    return false;
+  }
+
+  // check if the policy file exist.
+  ::std::set<int> agent_ids = ::std::move(rib_.get_available_agents());
+
+  // this might be different
+  for (auto& agent_id : agent_ids) {
+
+    LOG4CXX_INFO(flexran::core::app_logger, "Reconfigure the agent: Applying the requested RRM policy");
+
+    reconfigure_agent_string(agent_id, policy);
+
+  }
+
+  return true;
+  
+}
+
+void flexran::app::scheduler::flexible_scheduler::reconfigure_agent_file(int agent_id, std::string policy_name) {
   std::ifstream policy_file(policy_name);
   std::string str_policy;
   int len;
@@ -126,6 +151,12 @@ void flexran::app::scheduler::flexible_scheduler::reconfigure_agent(int agent_id
   str_policy.assign((std::istreambuf_iterator<char>(policy_file)),
 		    std::istreambuf_iterator<char>());
 
+  reconfigure_agent_string(agent_id, str_policy);
+  
+}
+
+void flexran::app::scheduler::flexible_scheduler::reconfigure_agent_string(int agent_id, std::string policy) {
+
   protocol::flexran_message config_message;
   // Create control delegation message header
   protocol::flex_header *config_header(new protocol::flex_header);
@@ -136,7 +167,7 @@ void flexran::app::scheduler::flexible_scheduler::reconfigure_agent(int agent_id
   protocol::flex_agent_reconfiguration *agent_reconfiguration_msg(new protocol::flex_agent_reconfiguration);
   agent_reconfiguration_msg->set_allocated_header(config_header);
 
-  agent_reconfiguration_msg->set_policy(str_policy);
+  agent_reconfiguration_msg->set_policy(policy);
 
   config_message.set_msg_dir(protocol::INITIATING_MESSAGE);
   config_message.set_allocated_agent_reconfiguration_msg(agent_reconfiguration_msg);
@@ -202,9 +233,9 @@ void flexran::app::scheduler::flexible_scheduler::enable_central_scheduling(bool
     
     
     if (central_sch) {
-      reconfigure_agent(agent_id, remote_policy);
+      reconfigure_agent_file(agent_id, remote_policy);
     } else {
-      reconfigure_agent(agent_id, local_policy);
+      reconfigure_agent_file(agent_id, local_policy);
     }
   }
 }
