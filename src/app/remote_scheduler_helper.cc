@@ -284,7 +284,7 @@ void flexran::app::scheduler::remote_scheduler_helper::perform_pre_processor_all
 	sched_info->toggle_vrb_map(cell_id, i);
 	ue_sched_info->set_rballoc_sub(cell_id, i, 1);
 	int nb_rem = ue_sched_info->get_nb_rbs_required_remaining(cell_id) - min_rb_unit + 1;
-	ue_sched_info->set_nb_rbs_required_remaining(cell_id, nb_rem);
+	nb_rem <= 0 ? ue_sched_info->set_nb_rbs_required_remaining(cell_id, 0) : ue_sched_info->set_nb_rbs_required_remaining(cell_id, nb_rem);
 	nb_rem = ue_sched_info->get_pre_nb_rbs_available(cell_id) + min_rb_unit - 1;
 	ue_sched_info->set_pre_nb_rbs_available(cell_id, nb_rem);
       } else {
@@ -293,7 +293,7 @@ void flexran::app::scheduler::remote_scheduler_helper::perform_pre_processor_all
 	  sched_info->toggle_vrb_map(cell_id, i);
 	  ue_sched_info->set_rballoc_sub(cell_id, i, 1);
 	  int nb_rem = ue_sched_info->get_nb_rbs_required_remaining(cell_id) - min_rb_unit;
-	  ue_sched_info->set_nb_rbs_required_remaining(cell_id, nb_rem);
+	  nb_rem <= 0 ? ue_sched_info->set_nb_rbs_required_remaining(cell_id, 0) : ue_sched_info->set_nb_rbs_required_remaining(cell_id, nb_rem);
 	  nb_rem = ue_sched_info->get_pre_nb_rbs_available(cell_id) + min_rb_unit;
 	  ue_sched_info->set_pre_nb_rbs_available(cell_id, nb_rem);
 	}
