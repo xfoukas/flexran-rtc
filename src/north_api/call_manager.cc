@@ -27,7 +27,7 @@
 
 
 void flexran::north_api::manager::call_manager::init(size_t thr) {
-  auto opts = Net::Http::Endpoint::options().threads(thr);
+  auto opts = Pistache::Http::Endpoint::options().threads(thr);
   httpEndpoint->init(opts);
 }
 

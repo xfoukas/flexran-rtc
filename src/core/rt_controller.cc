@@ -184,8 +184,8 @@ int main(int argc, char* argv[]) {
   // Initialize the northbound API
 
   // Set the port and the IP to listen for REST calls and initialize the call manager
-  Net::Port port(north_port);
-  Net::Address addr(Net::Ipv4::any(), port);
+  Pistache::Port port(north_port);
+  Pistache::Address addr(Pistache::Ipv4::any(), port);
   flexran::north_api::manager::call_manager north_api(addr);
 
   // Register API calls for the developed applications

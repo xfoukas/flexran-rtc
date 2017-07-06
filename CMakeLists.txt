@@ -114,15 +114,15 @@ if(Boost_FOUND)
   link_directories(${Boost_LIBRARY_DIRS})
 endif(Boost_FOUND)
 
-if(REST_NORTHBOUND)
-
 # Pistache support
-
-set(PISTACHE_INCLUDE_DIRS /usr/local/include/pistache)
-set(PISTACHE_LIB /usr/local/lib/libnet_static.a)
-
-include_directories(${PISTACHE_INCLUDE_DIRS})
-
+if(REST_NORTHBOUND)
+  find_package(Pistache REQUIRED)
+  if(Pistache_FOUND)
+    message(STATUS "Pistache found")
+    set(PISTACHE_INCLUDE_DIRS /usr/local/include/pistache)
+    set(PISTACHE_LIB /usr/local/lib/libpistache.a)
+    include_directories(${PISTACHE_INCLUDE_DIRS})
+  endif()
 endif()
 
 # Network component

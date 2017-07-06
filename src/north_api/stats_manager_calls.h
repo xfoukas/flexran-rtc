@@ -41,9 +41,9 @@ namespace flexran {
 	: stats_app(stats)
       { }
       
-      void register_calls(Net::Rest::Router& router);
+      void register_calls(Pistache::Rest::Router& router);
 
-      void obtain_stats(const Net::Rest::Request& request, Net::Http::ResponseWriter response);
+      void obtain_stats(const Pistache::Rest::Request& request, Pistache::Http::ResponseWriter response);
 
     private:
 

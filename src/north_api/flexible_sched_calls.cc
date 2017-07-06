@@ -25,58 +25,58 @@
 
 #include "flexible_sched_calls.h"
 
-void flexran::north_api::flexible_sched_calls::register_calls(Net::Rest::Router& router) {
+void flexran::north_api::flexible_sched_calls::register_calls(Pistache::Rest::Router& router) {
 
-  Net::Rest::Routes::Post(router, "/dl_sched/:sched_type", Net::Rest::Routes::bind(&flexran::north_api::flexible_sched_calls::change_scheduler, this));
+  Pistache::Rest::Routes::Post(router, "/dl_sched/:sched_type", Pistache::Rest::Routes::bind(&flexran::north_api::flexible_sched_calls::change_scheduler, this));
 
-  Net::Rest::Routes::Post(router, "/rrm/:policyname", Net::Rest::Routes::bind(&flexran::north_api::flexible_sched_calls::apply_policy, this));
+  Pistache::Rest::Routes::Post(router, "/rrm/:policyname", Pistache::Rest::Routes::bind(&flexran::north_api::flexible_sched_calls::apply_policy, this));
 
-  Net::Rest::Routes::Post(router, "/rrm_confif/", Net::Rest::Routes::bind(&flexran::north_api::flexible_sched_calls::apply_policy_string, this));
+  Pistache::Rest::Routes::Post(router, "/rrm_confif/", Pistache::Rest::Routes::bind(&flexran::north_api::flexible_sched_calls::apply_policy_string, this));
 }
 
-void flexran::north_api::flexible_sched_calls::change_scheduler(const Net::Rest::Request& request, Net::Http::ResponseWriter response) {
+void flexran::north_api::flexible_sched_calls::change_scheduler(const Pistache::Rest::Request& request, Pistache::Http::ResponseWriter response) {
 
   auto sched_type = request.param(":sched_type").as<int>();
   
   if (sched_type == 0) { // Local scheduler
     sched_app->enable_central_scheduling(false);
-    response.send(Net::Http::Code::Ok, "Loaded Local Scheduler");
+    response.send(Pistache::Http::Code::Ok, "Loaded Local Scheduler");
   } else if (sched_type == 1) { //Remote scheduler 
     sched_app->enable_central_scheduling(true);
-    response.send(Net::Http::Code::Ok, "Loaded Remote Scheduler");
+    response.send(Pistache::Http::Code::Ok, "Loaded Remote Scheduler");
   } else { // Scheduler type not supported
-    response.send(Net::Http::Code::Not_Found, "Scheduler type does not exist");
+    response.send(Pistache::Http::Code::Not_Found, "Scheduler type does not exist");
   }
   
 }
 
-void flexran::north_api::flexible_sched_calls::apply_policy(const Net::Rest::Request& request, Net::Http::ResponseWriter response) {
+void flexran::north_api::flexible_sched_calls::apply_policy(const Pistache::Rest::Request& request, Pistache::Http::ResponseWriter response) {
 
   auto policy_name = request.param(":policyname").as<std::string>();
   std::string resp;
   if (policy_name != "") { // Local scheduler
     if (sched_app->apply_agent_rrm_policy(policy_name)) {
-      response.send(Net::Http::Code::Ok, "Set the policy to the agent\n");
+      response.send(Pistache::Http::Code::Ok, "Set the policy to the agent\n");
     } else {
-      response.send(Net::Http::Code::Method_Not_Allowed, "Agent-side scheduling is currently inactive\n");
+      response.send(Pistache::Http::Code::Method_Not_Allowed, "Agent-side scheduling is currently inactive\n");
     }
   } else { // Scheduler policy not set
-    response.send(Net::Http::Code::Not_Found, "Policy not set\n");
+    response.send(Pistache::Http::Code::Not_Found, "Policy not set\n");
   }
   
 }
 
-void flexran::north_api::flexible_sched_calls::apply_policy_string(const Net::Rest::Request& request, Net::Http::ResponseWriter response) {
+void flexran::north_api::flexible_sched_calls::apply_policy_string(const Pistache::Rest::Request& request, Pistache::Http::ResponseWriter response) {
 
   auto policy = request.body();
 
   if (policy.length() != 0) {
     if (sched_app->apply_agent_rrm_policy_string(policy)) {
-      response.send(Net::Http::Code::Ok, "Set the policy to the agent\n");
+      response.send(Pistache::Http::Code::Ok, "Set the policy to the agent\n");
     } else {
-      response.send(Net::Http::Code::Method_Not_Allowed, "Agent-side scheduling is currently inactive. Cannot set policy\n");
+      response.send(Pistache::Http::Code::Method_Not_Allowed, "Agent-side scheduling is currently inactive. Cannot set policy\n");
     }
   } else {
-    response.send(Net::Http::Code::Not_Found, "No policy defined in request\n");
+    response.send(Pistache::Http::Code::Not_Found, "No policy defined in request\n");
   }
 }

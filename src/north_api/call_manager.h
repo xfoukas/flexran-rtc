@@ -40,8 +40,8 @@ namespace flexran {
 
       public:
 
-      call_manager(Net::Address addr)
-	: httpEndpoint(std::make_shared<Net::Http::Endpoint>(addr))
+      call_manager(Pistache::Address addr)
+	: httpEndpoint(std::make_shared<Pistache::Http::Endpoint>(addr))
 	  { }
 
 	void init(size_t thr = 1);
@@ -56,9 +56,9 @@ namespace flexran {
 
 	void setup_routes();
 	
-	std::shared_ptr<Net::Http::Endpoint> httpEndpoint;
+	std::shared_ptr<Pistache::Http::Endpoint> httpEndpoint;
 	
-	Net::Rest::Router router_;
+	Pistache::Rest::Router router_;
       };
       
     }

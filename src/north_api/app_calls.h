@@ -34,7 +34,7 @@ namespace flexran {
 
     public:
 
-      virtual void register_calls(Net::Rest::Router& router) = 0;
+      virtual void register_calls(Pistache::Rest::Router& router) = 0;
 
     };
   }

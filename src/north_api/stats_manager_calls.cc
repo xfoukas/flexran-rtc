@@ -26,13 +26,13 @@
 
 #include "stats_manager_calls.h"
 
-void flexran::north_api::stats_manager_calls::register_calls(Net::Rest::Router& router) {
+void flexran::north_api::stats_manager_calls::register_calls(Pistache::Rest::Router& router) {
 
-  Net::Rest::Routes::Get(router, "/stats_manager/:stats_type", Net::Rest::Routes::bind(&flexran::north_api::stats_manager_calls::obtain_stats, this));
+  Pistache::Rest::Routes::Get(router, "/stats_manager/:stats_type", Pistache::Rest::Routes::bind(&flexran::north_api::stats_manager_calls::obtain_stats, this));
   
 }
 
-void flexran::north_api::stats_manager_calls::obtain_stats(const Net::Rest::Request& request, Net::Http::ResponseWriter response) {
+void flexran::north_api::stats_manager_calls::obtain_stats(const Pistache::Rest::Request& request, Pistache::Http::ResponseWriter response) {
 
   auto stats_type = request.param(":stats_type").as<std::string>();
   
@@ -40,14 +40,14 @@ void flexran::north_api::stats_manager_calls::obtain_stats(const Net::Rest::Requ
   
   if (stats_type.compare("all") == 0) {
     resp = stats_app->all_stats_to_string();
-    response.send(Net::Http::Code::Ok, resp);
+    response.send(Pistache::Http::Code::Ok, resp);
   } else if (stats_type.compare("enb_config") == 0) {
     resp = stats_app->enb_config_to_string();
-    response.send(Net::Http::Code::Ok, resp);
+    response.send(Pistache::Http::Code::Ok, resp);
   } else if (stats_type.compare("mac_stats") == 0) {
     resp = stats_app->mac_config_to_string();
-    response.send(Net::Http::Code::Ok, resp);
+    response.send(Pistache::Http::Code::Ok, resp);
   } else {
-    response.send(Net::Http::Code::Not_Found, "Statistics type does not exist");
+    response.send(Pistache::Http::Code::Not_Found, "Statistics type does not exist");
   }
 }
