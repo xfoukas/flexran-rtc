@@ -31,7 +31,7 @@ void flexran::north_api::flexible_sched_calls::register_calls(Pistache::Rest::Ro
 
   Pistache::Rest::Routes::Post(router, "/rrm/:policyname", Pistache::Rest::Routes::bind(&flexran::north_api::flexible_sched_calls::apply_policy, this));
 
-  Pistache::Rest::Routes::Post(router, "/rrm_confif/", Pistache::Rest::Routes::bind(&flexran::north_api::flexible_sched_calls::apply_policy_string, this));
+  Pistache::Rest::Routes::Post(router, "/rrm_config/", Pistache::Rest::Routes::bind(&flexran::north_api::flexible_sched_calls::apply_policy_string, this));
 }
 
 void flexran::north_api::flexible_sched_calls::change_scheduler(const Pistache::Rest::Request& request, Pistache::Http::ResponseWriter response) {
