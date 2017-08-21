@@ -40,7 +40,7 @@ namespace flexran {
       public:
 	
       ue_scheduling_info(rib::rnti_t rnti)
-	: ta_timer_(20), rnti_(rnti), ndi_{{0}}, nb_scheduled_rbs_{{0}}, mcs_{{0}}, rballoc_sub_scheduled_{{{0}}},
+	: ta_timer_(20), rnti_(rnti), ndi_{{0}}, tpc_{{0}}, nb_scheduled_rbs_{{0}}, mcs_{{0}}, rballoc_sub_scheduled_{{{0}}},
 						dl_pow_off_{2}, nb_rbs_required_{0}, harq_round_{{{0}}}, rballoc_sub_{{0}},
 						    nb_rbs_required_remaining_{0}, nb_rbs_required_remaining_1_{0},
 						    pre_nb_rbs_available_{0}, pucch_tpc_tx_frame_(0), pucch_tpc_tx_subframe_(0),
@@ -130,6 +130,12 @@ namespace flexran {
        void toggle_ndi(uint16_t cell_id, uint8_t harq_pid) {
 	 ndi_[cell_id][harq_pid] = 1 - ndi_[cell_id][harq_pid];
        }
+
+       uint8_t get_tpc(uint16_t cell_id, uint8_t harq_pid) const { return tpc_[cell_id][harq_pid];}
+       
+       void set_tpc(uint16_t cell_id, uint8_t harq_pid, uint8_t tpc) {
+	 tpc_[cell_id][harq_pid] = tpc;
+       }
        
        void set_dl_power_offset(uint16_t cell_id, int val) {
 	 dl_pow_off_[cell_id] = val;
@@ -165,6 +171,7 @@ namespace flexran {
        
        rib::rnti_t rnti_;
        uint8_t ndi_[rib::MAX_NUM_CC][rib::MAX_NUM_HARQ];
+       uint8_t tpc_[rib::MAX_NUM_CC][rib::MAX_NUM_HARQ];
        
        uint16_t nb_scheduled_rbs_[rib::MAX_NUM_CC][rib::MAX_NUM_HARQ];
        uint16_t mcs_[rib::MAX_NUM_CC][rib::MAX_NUM_HARQ];

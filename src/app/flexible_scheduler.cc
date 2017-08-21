@@ -463,7 +463,7 @@ void flexran::app::scheduler::flexible_scheduler::run_central_scheduler() {
 		}
 	      }
 	      ndi = ue_sched_info->get_ndi(cell_id, harq_pid);
-	      tpc = 1;
+	      tpc = ue_sched_info->get_tpc(cell_id, harq_pid);
 	      ue_has_transmission = true;
 	    } else {
 	      // Do not schedule. The retransmission takes more resources than what we have
@@ -643,16 +643,13 @@ void flexran::app::scheduler::flexible_scheduler::run_central_scheduler() {
 
 	      if (((framex10psubframe+10) <= (target_frame*10 + target_subframe)) || // normal case
 		  ((framex10psubframe > (target_frame*10 + target_subframe)) && (((10240 - framex10psubframe + target_frame*10+target_subframe) >= 10 )))) {// Frame wrap-around
-
 		if (rx_power_needs_update) {
+		  ue_sched_info->set_pucch_tpc_tx_frame(target_frame);
+		  ue_sched_info->set_pucch_tpc_tx_subframe(target_subframe);
 		  if (normalized_rx_power > (target_rx_power+1)) {
-		    ue_sched_info->set_pucch_tpc_tx_frame(target_frame);
-		    ue_sched_info->set_pucch_tpc_tx_subframe(target_subframe);
 		    tpc = 0; //-1
 		    tpc_accumulated--;
 		  } else if (normalized_rx_power < (target_rx_power - 1)) {
-		    ue_sched_info->set_pucch_tpc_tx_frame(target_frame);
-		    ue_sched_info->set_pucch_tpc_tx_subframe(target_subframe);
 		    tpc = 2; //+1
 		    tpc_accumulated++;
 		  } else {
@@ -666,6 +663,7 @@ void flexran::app::scheduler::flexible_scheduler::run_central_scheduler() {
 	      }
 	      ue_sched_info->toggle_ndi(cell_id, harq_pid);
 	      ndi = ue_sched_info->get_ndi(cell_id, harq_pid);
+	      ue_sched_info->set_tpc(cell_id, harq_pid, tpc);
 	      ue_has_transmission = true;
 	    } else { // There is no data to transmit, so don't schedule
 	      ue_has_transmission = false;
