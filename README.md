@@ -3,6 +3,10 @@ A real-time controller for SD-RAN. This is the original version of the code as i
 
 https://dl.acm.org/citation.cfm?id=2999599
 
+For a newer version of the FlexRAN code please check the Mosaic5G project:
+
+http://mosaic-5g.io/flexran/
+ 
 Requirements:
 * Cmake >= 2.8
 * libprotobuf v2.6.1
