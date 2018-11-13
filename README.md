@@ -1,5 +1,7 @@
 # FlexRAN-rtc
-A real-time controller for SD-RAN
+A real-time controller for SD-RAN. This is the original version of the code as it appeared in the paper published at ACM CoNEXT 2016:
+
+https://dl.acm.org/citation.cfm?id=2999599
 
 Requirements:
 * Cmake >= 2.8
